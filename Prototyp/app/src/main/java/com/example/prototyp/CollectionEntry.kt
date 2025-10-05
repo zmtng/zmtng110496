@@ -3,6 +3,7 @@ package com.example.prototyp
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 
+//Kommentar Test-Commit Collection-Entry
 @Entity(
     tableName = "collection",
     primaryKeys = ["setCode", "cardNumber"]

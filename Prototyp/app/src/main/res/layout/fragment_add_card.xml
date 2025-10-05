@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Scrollbarer Inhalt -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -18,7 +17,6 @@
             android:layout_marginTop="75dp"
             android:padding="20dp">
 
-            <!-- Header / Intro-Card (optional, ohne feste IDs) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -49,8 +47,8 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Name (Autocomplete) -->
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutInputName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Name"
@@ -60,7 +58,8 @@
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusBottomEnd="12dp"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                app:endIconMode="clear_text">
 
                 <AutoCompleteTextView
                     android:id="@+id/inputName"
@@ -74,7 +73,6 @@
                     android:paddingBottom="14dp"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Nummer -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -97,7 +95,6 @@
                     android:paddingBottom="14dp"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Set (Dropdown) -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -120,7 +117,6 @@
                     android:paddingBottom="14dp"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Menge -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -143,7 +139,6 @@
                     android:paddingBottom="14dp"/>
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -165,14 +160,12 @@
                     android:text="Speichern"/>
             </LinearLayout>
 
-            <!-- Kleiner Bodenabstand, damit die FAB nichts überdeckt -->
             <Space
                 android:layout_width="match_parent"
                 android:layout_height="72dp"/>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Floating Scan Button (IDs beibehalten) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabScan"
         android:layout_width="wrap_content"

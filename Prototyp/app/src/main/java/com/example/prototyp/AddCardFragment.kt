@@ -15,6 +15,7 @@ import com.example.yourapp.data.db.AppDatabase
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.*
 
 class AddCardFragment : Fragment(R.layout.fragment_add_card) {
@@ -24,6 +25,7 @@ class AddCardFragment : Fragment(R.layout.fragment_add_card) {
     private lateinit var masterDao: MasterCardDao
 
     // UI
+    private lateinit var layoutInputName: TextInputLayout
     private lateinit var inputSet: MaterialAutoCompleteTextView
     private lateinit var inputNumber: TextInputEditText
     private lateinit var inputName: AutoCompleteTextView
@@ -42,6 +44,8 @@ class AddCardFragment : Fragment(R.layout.fragment_add_card) {
             "$cardName — $setName ($setCode) • #$cardNumber"
     }
 
+    // NEU: Zustand für die ausgewählte Karte
+    private var selectedSuggestion: NameSuggestion? = null
     private lateinit var nameAdapter: ArrayAdapter<NameSuggestion>
     private var suggestJob: Job? = null
 
@@ -52,6 +56,7 @@ class AddCardFragment : Fragment(R.layout.fragment_add_card) {
         cardDao = db.cardDao()
         masterDao = db.masterCardDao()
 
+        layoutInputName = view.findViewById(R.id.layoutInputName)
         inputSet = view.findViewById(R.id.inputSet)
         inputNumber = view.findViewById(R.id.inputNumber)
         inputName = view.findViewById(R.id.inputName)
@@ -100,6 +105,12 @@ class AddCardFragment : Fragment(R.layout.fragment_add_card) {
 
         inputName.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
+                // GEÄNDERT: Suche nur starten, wenn keine Karte ausgewählt ist
+                if (selectedSuggestion != null) {
+                    nameAdapter.clear()
+                    return
+                }
+
                 val q = s?.toString()?.trim().orEmpty()
                 suggestJob?.cancel()
                 if (q.length < 2) {
@@ -128,12 +139,52 @@ class AddCardFragment : Fragment(R.layout.fragment_add_card) {
         })
 
         inputName.setOnItemClickListener { parent, _, position, _ ->
-            val s = parent.getItemAtPosition(position) as? NameSuggestion ?: return@setOnItemClickListener
-            // Felder vorbefüllen
-            inputName.setText(s.cardName, false)
-            inputNumber.setText(s.cardNumber.toString())
-            inputSet.setText("${s.setName} (${s.setCode})", false)
+            val suggestion = parent.getItemAtPosition(position) as? NameSuggestion ?: return@setOnItemClickListener
+            lockFieldsOnSelection(suggestion)
         }
+
+        layoutInputName.setEndIconOnClickListener {
+            resetSelection()
+        }
+
+
+    }
+
+    // NEU: Funktion, die die Felder nach Auswahl sperrt
+    private fun lockFieldsOnSelection(suggestion: NameSuggestion) {
+        selectedSuggestion = suggestion
+
+        // Felder vorbefüllen
+        inputName.setText(suggestion.cardName, false) // `false`, um den Adapter nicht erneut zu triggern
+        inputNumber.setText(suggestion.cardNumber.toString())
+        inputSet.setText("${suggestion.setName} (${suggestion.setCode})", false)
+
+        // Felder deaktivieren, um Änderungen zu verhindern
+        inputName.isEnabled = false
+        inputNumber.isEnabled = false
+        inputSet.isEnabled = false
+
+        // Dropdown-Liste leeren und schließen
+        nameAdapter.clear()
+        inputName.dismissDropDown()
+    }
+
+    // NEU: Funktion, die die Auswahl und die Felder zurücksetzt
+    private fun resetSelection() {
+        selectedSuggestion = null
+
+        // Texte leeren
+        inputName.text.clear()
+        inputNumber.text?.clear()
+        inputSet.text.clear()
+
+        // Felder wieder aktivieren
+        inputName.isEnabled = true
+        inputNumber.isEnabled = true
+        inputSet.isEnabled = true
+
+        // Fokus auf das Namensfeld setzen, damit der Nutzer neu beginnen kann
+        inputName.requestFocus()
     }
 
     // -------------------- Autofill Name/Nummer ↔ Set --------------------

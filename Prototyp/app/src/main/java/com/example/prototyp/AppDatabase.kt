@@ -9,7 +9,6 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.prototyp.CollectionEntry
-import com.example.prototyp.CardMaster
 import com.example.prototyp.CardSet
 import com.example.prototyp.MasterCard
 import com.example.prototyp.MasterCardDao
@@ -34,6 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun cardDao(): CardDao
     abstract fun masterCardDao(): MasterCardDao
+
 
     companion object {
 

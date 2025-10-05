@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Basis-Theme im Light-Mode -->
+    <style name="Theme.Riftbound" parent="Theme.Material3.Light.NoActionBar">
+
+        <!-- Statusbar Icons dunkel -->
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

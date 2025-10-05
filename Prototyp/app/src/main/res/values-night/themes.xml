@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Basis-Theme im Dark-Mode -->
+    <style name="Theme.Riftbound" parent="Theme.Material3.Dark.NoActionBar">
+
+        <!-- Statusbar Icons hell -->
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

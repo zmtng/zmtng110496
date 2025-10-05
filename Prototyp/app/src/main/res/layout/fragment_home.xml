@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="80dp"
+    android:padding="20dp">
+
+    <!-- Hero-Bild (optional) -->
+    <ImageView
+
+        android:id="@+id/heroImage"
+        android:layout_width="0dp"
+        android:layout_height="160dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/riftboundheader"
+        android:contentDescription="@string/app_name"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="#EFEFEF"
+        android:clipToOutline="true"
+        tools:ignore="ContentDescription" />
+
+    <!-- Titel -->
+    <TextView
+        android:id="@+id/homeTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Riftbound Sammlung"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/heroImage"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Untertitel -->
+    <TextView
+        android:id="@+id/homeSubtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Tracke deine Karten und den Wert deiner Sammlung!"
+        android:textSize="14sp"
+        android:textColor="#6A6A6A"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/homeTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Guideline (beibehalten) – sitzt ca. bei 55% Höhe -->
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.55" />
+
+    <!-- Kleine Info-Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/infoCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="1dp"
+        app:layout_constraintTop_toBottomOf="@id/homeSubtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/infoTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Aktuell unterstützte Sets"
+                android:textStyle="bold"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/infoText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="OGN, OGS"
+                android:textSize="13sp"
+                android:textColor="#6A6A6A"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Dein ursprünglicher Container (IDs beibehalten) -->
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/guideline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btnCollection"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Meine Sammlung öffnen" />
+
+        <Button
+            android:id="@+id/btnWishlist"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Wunschliste" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/switchDark"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Dunkles Design erzwingen" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

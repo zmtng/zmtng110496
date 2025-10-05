@@ -1,0 +1,55 @@
+package com.example.prototyp
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+
+@Dao
+interface MasterCardDao {
+
+    @Query("SELECT COUNT(*) FROM master_cards")
+    suspend fun count(): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(items: List<MasterCard>)
+
+    @Query("SELECT * FROM master_cards WHERE setCode = :setCode")
+    suspend fun bySet(setCode: String): List<MasterCard>
+
+    @Query("SELECT * FROM master_cards")
+    fun allFlow(): kotlinx.coroutines.flow.Flow<List<MasterCard>>
+
+    @Query("""
+        SELECT setCode, cardNumber, cardName, setName, color
+        FROM master_cards
+        WHERE LOWER(cardName) LIKE '%' || LOWER(:q) || '%'
+        ORDER BY setCode, cardNumber
+    """)
+    suspend fun search(q: String): List<MasterCard>
+
+    @Query("SELECT DISTINCT cardName FROM master_cards ORDER BY cardName")
+    fun allNamesFlow(): kotlinx.coroutines.flow.Flow<List<String>>
+
+    @Query("UPDATE master_cards SET color = :color WHERE setCode = :setCode AND cardNumber = :number")
+    suspend fun updateColor(setCode: String, number: Int, color: String)
+
+    @Query("""
+        SELECT cardNumber
+        FROM master_cards
+        WHERE setCode = :setCode AND LOWER(cardName) = LOWER(:cardName)
+        LIMIT 1
+    """)
+    suspend fun getNumberForName(setCode: String, cardName: String): Int?
+
+    @Query("""
+        SELECT setCode, cardNumber, cardName, setName, color
+        FROM master_cards
+        WHERE setCode = :setCode AND cardNumber = :cardNumber
+        LIMIT 1
+    """)
+    suspend fun getBySetAndNumber(setCode: String, cardNumber: Int): MasterCard?
+
+
+}
+

@@ -11,7 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 class CardAdapter(
     private val items: List<CollectionRow>,
     private val onIncrement: (CollectionRow) -> Unit,
-    private val onDecrement: (CollectionRow) -> Unit
+    private val onDecrement: (CollectionRow) -> Unit,
+    private val onItemClick: (CollectionRow) -> Unit
+
 ) : RecyclerView.Adapter<CardAdapter.VH>() {
 
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -51,6 +53,7 @@ class CardAdapter(
 
         h.btnIncrement.setOnClickListener { onIncrement(row) }
         h.btnDecrement.setOnClickListener { onDecrement(row) }
+        h.itemView.setOnClickListener { onItemClick(row) }
 
         val ctx = h.itemView.context
         val colorInt = ContextCompat.getColor(ctx, colorResFor(row.color))

@@ -8,5 +8,7 @@ data class CollectionRow(
     val number: Int,        // m.cardNumber (kann null sein)
     val quantity: Int,       // c.Anzahl
     val price: Double? = null, // c.Preis
-    val color: String
+    val color: String,
+    val personalNotes: String? = null,
+    val generalNotes: String? = null
 )

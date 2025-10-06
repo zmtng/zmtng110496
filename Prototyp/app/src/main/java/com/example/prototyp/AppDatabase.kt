@@ -26,7 +26,7 @@ import java.io.InputStreamReader
         MasterCard::class,       // falls genutzt
         CardSet::class           // falls genutzt
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -47,7 +47,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "riftbound.db")
-                .addMigrations(MIGRATION_3_4) // <- wichtig: die (3,4)-Migration hier registrieren
+                .addMigrations(MIGRATION_3_4, MIGRATION_5_6) // <- wichtig: die (3,4)-Migration hier registrieren
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
@@ -92,10 +92,17 @@ abstract class AppDatabase : RoomDatabase() {
          * Migration von Version 1 (nur Card-Tabelle) auf Version 2 (fügt MasterCard-Tabelle hinzu).
          * Passt die Namen/Spalten bei Bedarf an, falls du deine Card-Tabelle anders definiert hast.
          */
-        val MIGRATION_3_4 = object : Migration(4, 5) {
+        val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 /*db.execSQL("ALTER TABLE master_cards ADD COLUMN color TEXT NOT NULL DEFAULT 'R'")
                 db.execSQL("ALTER TABLE collection  ADD COLUMN color TEXT NOT NULL DEFAULT 'R'")*/
+            }
+        }
+
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE collection ADD COLUMN personalNotes TEXT")
+                database.execSQL("ALTER TABLE collection ADD COLUMN generalNotes TEXT")
             }
         }
 

@@ -14,10 +14,14 @@ import com.example.prototyp.CollectionEntry
  * Erwartetes Entity-Schema:
  * @Entity(tableName = "collection", primaryKeys = ["setCode","cardNumber"])
  * data class CollectionEntry(
- *   val setCode: String,
- *   val cardNumber: Int,
- *   val quantity: Int,
- *   val price: Double? = null
+ * val setCode: String,
+ * val cardNumber: Int,
+ * val quantity: Int,
+ * val price: Double? = null,
+ * val color: String,
+ * // NEU: Notiz-Felder hinzufügen
+ * val personal_notes: String? = null,
+ * val general_notes: String? = null
  * )
  */
 @Dao
@@ -40,7 +44,8 @@ interface CardDao {
     @Transaction
     suspend fun upsertBySetAndNumber(setCode: String, cardNumber: Int, delta: Int, color: String) {
         val inserted = tryInsert(
-            CollectionEntry(setCode, cardNumber, delta, null, color)
+            // WICHTIG: CollectionEntry wurde um die Notiz-Felder erweitert
+            CollectionEntry(setCode, cardNumber, delta, null, color, null, null)
         )
         if (inserted == -1L) {
             addQuantity(setCode, cardNumber, delta)
@@ -55,7 +60,7 @@ interface CardDao {
     suspend fun deleteByKey(setCode: String, cardNumber: Int)
 
     // ---------------------------
-    // Menge & Preis
+    // Menge, Preis & Notizen
     // ---------------------------
 
     @Query("""
@@ -72,6 +77,15 @@ interface CardDao {
     """)
     suspend fun updatePrice(setCode: String, cardNumber: Int, price: Double?)
 
+    // ##### HINZUGEFÜGT: updateNotes Methode #####
+    @Query("""
+        UPDATE collection
+        SET personalNotes = :personalNotes, generalNotes = :generalNotes
+        WHERE setCode = :setCode AND cardNumber = :cardNumber
+    """)
+    suspend fun updateNotes(setCode: String, cardNumber: Int, personalNotes: String?, generalNotes: String?)
+
+
     // ---------------------------
     // Lesen aus collection (ohne Joins)
     // ---------------------------
@@ -79,11 +93,13 @@ interface CardDao {
     // Alle Collection-Einträge (roh, ohne Joins)
     @Query("""
     SELECT
-      setCode    AS setCode,
-      cardNumber AS cardNumber,
-      quantity   AS quantity,
-      price      AS price,
-      color      AS color          -- NEU
+      setCode         AS setCode,
+      cardNumber      AS cardNumber,
+      quantity        AS quantity,
+      price           AS price,
+      color           AS color,
+      personalNotes  AS personalNotes,
+      generalNotes   AS generalNotes
     FROM collection
     ORDER BY setCode, cardNumber
 """)
@@ -92,11 +108,13 @@ interface CardDao {
     // Nach Set filtern
     @Query("""
     SELECT
-      setCode    AS setCode,
-      cardNumber AS cardNumber,
-      quantity   AS quantity,
-      price      AS price,
-      color      AS color          -- NEU
+      setCode         AS setCode,
+      cardNumber      AS cardNumber,
+      quantity        AS quantity,
+      price           AS price,
+      color           AS color,
+      personalNotes  AS personalNotes,
+      generalNotes   AS generalNotes
     FROM collection
     WHERE setCode = :setCode
     ORDER BY cardNumber
@@ -106,11 +124,13 @@ interface CardDao {
     // Einzelnen Eintrag holen
     @Query("""
     SELECT
-      setCode    AS setCode,
-      cardNumber AS cardNumber,
-      quantity   AS quantity,
-      price      AS price,
-      color      AS color          -- NEU
+      setCode         AS setCode,
+      cardNumber      AS cardNumber,
+      quantity        AS quantity,
+      price           AS price,
+      color           AS color,
+      personalNotes  AS personalNotes,
+      generalNotes   AS generalNotes
     FROM collection
     WHERE setCode = :setCode AND cardNumber = :cardNumber
     LIMIT 1
@@ -128,10 +148,14 @@ interface CardDao {
 }
 
 /** Kleines DTO nur für `collection`-Spalten (keine Joins). */
+// ##### ANGEPASST: Notiz-Felder hinzugefügt #####
 data class CollectionItem(
     val setCode: String,
     val cardNumber: Int,
     val quantity: Int,
     val price: Double?,
-    val color:String
+    val color: String,
+    val personalNotes: String?,
+
+    val generalNotes: String?
 )

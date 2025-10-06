@@ -1,19 +1,13 @@
 package com.example.prototyp
 
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Button
-import android.widget.ImageView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.prototyp.databinding.FragmentHomeBinding
 import com.example.prototyp.prefs.ThemePrefs
-import com.google.android.material.animation.AnimationUtils
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 

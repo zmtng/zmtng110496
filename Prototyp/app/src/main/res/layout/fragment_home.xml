@@ -115,6 +115,12 @@
             android:text="Meine Sammlung öffnen" />
 
         <Button
+            android:id="@+id/btnDecks"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Meine Decks" />
+
+        <Button
             android:id="@+id/btnOptions"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="match_parent"

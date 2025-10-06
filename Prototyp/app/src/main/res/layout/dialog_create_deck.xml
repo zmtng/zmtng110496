@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <EditText
+        android:id="@+id/etDeckName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Name des Decks" />
+
+    <EditText
+        android:id="@+id/etDeckColor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Farbe (z.B. #FFC107)"
+        android:text="#FFC107" />
+
+</LinearLayout>

@@ -18,21 +18,28 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import com.example.prototyp.deckBuilder.Deck
+import com.example.prototyp.deckBuilder.DeckCard
+import com.example.prototyp.deckBuilder.DeckDao
 
 
 @Database(
     entities = [
         CollectionEntry::class,  // ← bleibt
         MasterCard::class,       // falls genutzt
-        CardSet::class           // falls genutzt
+        CardSet::class,         // falls genutzt
+        Deck::class,
+        DeckCard::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun cardDao(): CardDao
     abstract fun masterCardDao(): MasterCardDao
+
+    abstract fun deckDao(): DeckDao
 
 
     companion object {
@@ -47,7 +54,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "riftbound.db")
-                .addMigrations(MIGRATION_3_4, MIGRATION_5_6) // <- wichtig: die (3,4)-Migration hier registrieren
+                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8)
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
@@ -105,6 +112,30 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE collection ADD COLUMN personalNotes TEXT")
                 database.execSQL("ALTER TABLE collection ADD COLUMN generalNotes TEXT")
+            }
+        }
+
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Erstellt die 'decks'-Tabelle
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `decks` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `colorHex` TEXT NOT NULL
+                    )
+                """)
+                // Erstellt die 'deck_cards'-Tabelle
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `deck_cards` (
+                        `deckId` INTEGER NOT NULL,
+                        `setCode` TEXT NOT NULL,
+                        `cardNumber` INTEGER NOT NULL,
+                        `quantity` INTEGER NOT NULL,
+                        PRIMARY KEY(`deckId`, `setCode`, `cardNumber`),
+                        FOREIGN KEY(`deckId`) REFERENCES `decks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
+                    )
+                """)
             }
         }
 

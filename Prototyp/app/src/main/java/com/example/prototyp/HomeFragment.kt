@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.databinding.FragmentHomeBinding
+import com.example.prototyp.deckBuilder.DeckOverviewFragment
 import com.example.prototyp.prefs.ThemePrefs
 import com.example.yourapp.data.db.AppDatabase
 import kotlinx.coroutines.flow.collectLatest
@@ -68,6 +69,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.btnCollection.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, CollectionFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+        binding.btnDecks.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, DeckOverviewFragment())
                 .addToBackStack(null)
                 .commit()
         }

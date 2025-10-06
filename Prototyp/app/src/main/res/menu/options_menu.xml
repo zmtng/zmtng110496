@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_calculate_value"
+        android:title="Wert berechnen" />
+    <item
+        android:id="@+id/action_export"
+        android:title="Sammlung exportieren" />
+    <item
+        android:id="@+id/action_import"
+        android:title="Sammlung importieren" />
+    <item
+        android:id="@+id/action_toggle_dark_mode"
+        android:title="Dark Mode umschalten" />
+</menu>

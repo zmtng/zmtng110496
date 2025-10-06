@@ -16,12 +16,25 @@ import kotlinx.coroutines.withContext
 
 class HomeViewModel(private val cardDao: CardDao) : ViewModel() {
 
+    private val _totalCollectionValue = MutableStateFlow<Double?>(null)
+    val totalCollectionValue = _totalCollectionValue.asStateFlow()
+
     // Ein Flow, um dem Fragment Nachrichten zu senden (z.B. "Export erfolgreich")
     private val _userMessage = MutableStateFlow<String?>(null)
     val userMessage = _userMessage.asStateFlow()
 
     fun onUserMessageShown() {
         _userMessage.value = null
+    }
+
+    fun updateTotalValue() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val allItems = cardDao.getCollectionForExport()
+            val totalValue = allItems.sumOf { entry ->
+                (entry.price ?: 0.0) * entry.quantity
+            }
+            _totalCollectionValue.value = totalValue
+        }
     }
 
     /**

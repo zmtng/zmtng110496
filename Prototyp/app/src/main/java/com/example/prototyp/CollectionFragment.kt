@@ -41,8 +41,6 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         recyclerView = view.findViewById(R.id.recyclerView)
         val spinner = view.findViewById<Spinner>(R.id.spinnerSort)
 
-        // WICHTIGER HINWEIS: Dein CardAdapter und deine CollectionRow-Klasse müssen
-        // so angepasst werden, dass sie mit `CardDao.CollectionRowData` arbeiten können.
         adapter = CardAdapter(
             onIncrement = { row: CardDao.CollectionRowData ->
                 // Die Logik hier bleibt ähnlich, greift aber auf das ViewModel zu
@@ -66,11 +64,8 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
                 .commit()
         }
 
-        // ##### HINZUGEFÜGT: Logik zur Einrichtung des Sortier-Spinners #####
         setupSortSpinner(spinner)
 
-        // ##### NEU: Beobachten der Daten aus dem ViewModel #####
-        // Dieser Block ersetzt die alte, komplexe Lade-Logik.
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.collection.collectLatest { collectionList ->
@@ -79,9 +74,22 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
                 }
             }
         }
-    }
 
-    // ##### HINZUGEFÜGT: Komplette Funktion zur Einrichtung des Spinners #####
+        view.findViewById<ImageButton>(R.id.btnFetchAllPrices).setOnClickListener {
+            viewModel.fetchAllPrices()
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.userMessage.collectLatest { message ->
+                    message?.let {
+                        Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                        viewModel.onUserMessageShown()
+                    }
+                }
+            }
+        }
+    }
     private fun setupSortSpinner(spinner: Spinner) {
         val sortOptions = listOf("Nach Name", "Nach Nummer", "Nach Farbe")
         val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
@@ -114,7 +122,26 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         val generalNotesEditText = dialogView.findViewById<EditText>(R.id.editTextGeneralNotes)
         val colorIndicator = dialogView.findViewById<View>(R.id.colorIndicator)
 
-        // ##### ÄNDERUNG 2: Feldnamen an CollectionRowData angepasst #####
+        val fetchPriceButton = dialogView.findViewById<Button>(R.id.btnFetchPrice)
+        fetchPriceButton.setOnClickListener {
+            it.isEnabled = false // Button deaktivieren, um doppelte Klicks zu verhindern
+
+            // Rufe die Funktion auf und gib den Code mit, der bei Erfolg ausgeführt werden soll
+            viewModel.fetchPriceForCard(row, showSuccessMessage = true) { newPrice ->
+                // Dieser Block ist der 'onSuccess'-Callback
+
+                // Finde das TextView für den Preis
+                val cardValueCountTextView = dialogView.findViewById<TextView>(R.id.dialogCardValueCount)
+
+                // Aktualisiere das Textfeld im Pop-up
+                cardValueCountTextView.text = "Wert: ${
+                    String.format("%.2f", newPrice)
+                }€ | Anzahl: ${row.quantity}"
+
+                it.isEnabled = true // Button wieder aktivieren
+            }
+        }
+
         cardNameTextView.text = "Kartenname: ${row.cardName}" // .name -> .cardName
         cardDetailsTextView.text = "Set: ${row.setName} | Nummer: ${row.cardNumber}" // .number -> .cardNumber
         cardValueCountTextView.text = "Wert: ${row.price ?: 0.00}€ | Anzahl: ${row.quantity}"
@@ -123,10 +150,8 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
 
         val colorCode = row.color?.trim()?.uppercase()
         if (colorCode == "M") {
-            // Fall 1: Mehrfarbig -> Setze den Gradient als Hintergrund für den Indikator
             colorIndicator.setBackgroundResource(R.drawable.rainbow_gradient)
         } else {
-            // Fall 2: Einfarbig -> Töte den Kreis mit der entsprechenden Farbe
             val colorRes = when (colorCode) {
                 "R" -> R.color.card_red
                 "B" -> R.color.card_blue

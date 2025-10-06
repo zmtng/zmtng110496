@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
@@ -58,50 +59,86 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         _binding = FragmentHomeBinding.bind(view)
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            // ViewModel mit unserer Factory erstellen
-            val database = AppDatabase.getInstance(requireContext())
-            val viewModelFactory = HomeViewModelFactory(database.cardDao())
-
-            // Button-Listener
-            view.findViewById<Button>(R.id.btnExport).setOnClickListener {
-                exportLauncher.launch("sammlung_export.csv") // Dateiname-Vorschlag
-            }
-
-            view.findViewById<Button>(R.id.btnImport).setOnClickListener {
-                importLauncher.launch("*/*") // Dateityp-Filter
-            }
-
-            val saved = ThemePrefs.modeFlow(requireContext()).first()
-            binding.switchDark.isChecked = (saved == AppCompatDelegate.MODE_NIGHT_YES)
-
-            binding.switchDark.setOnCheckedChangeListener { _, isChecked ->
-                val mode = if (isChecked) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
-                viewLifecycleOwner.lifecycleScope.launch {
-                    ThemePrefs.setMode(requireContext(), mode)
-                    requireActivity().recreate()
-                }
-            }
-
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.userMessage.collectLatest { message ->
-                    message?.let {
-                        Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-                        viewModel.onUserMessageShown() // Nachricht als "gesehen" markieren
-                    }
-                }
-            }
+        // Listener für den Optionen-Button (jetzt mit View Binding)
+        binding.btnOptions.setOnClickListener { anchorView ->
+            showOptionsMenu(anchorView)
         }
 
-
-        // Button, um zur Collection zu wechseln
-        view.findViewById<Button>(R.id.btnCollection).setOnClickListener {
+        // Listener für "Meine Sammlung öffnen" (jetzt mit View Binding)
+        binding.btnCollection.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, CollectionFragment())
                 .addToBackStack(null)
                 .commit()
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // Beobachter für User-Nachrichten (Toast)
+                launch {
+                    viewModel.userMessage.collectLatest { message ->
+                        message?.let {
+                            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                            viewModel.onUserMessageShown()
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.totalCollectionValue.collectLatest { value ->
+                        if (value != null) {
+                            binding.tvTotalValue.text = String.format("Gesamtwert: %.2f €", value)
+                        } else {
+                            binding.tvTotalValue.text = "Gesamtwert: -"
+                        }
+                    }
+                }
+            }
+        }
     }
+
+    private fun showOptionsMenu(anchorView: View) {
+        val popup = PopupMenu(requireContext(), anchorView)
+        popup.menuInflater.inflate(R.menu.options_menu, popup.menu)
+
+        popup.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.action_calculate_value -> {
+                    viewModel.updateTotalValue()
+                    true
+                }
+                R.id.action_export -> {
+                    exportLauncher.launch("sammlung_export.csv")
+                    true
+                }
+                R.id.action_import -> {
+                    importLauncher.launch("text/csv")
+                    true
+                }
+                R.id.action_toggle_dark_mode -> {
+
+                    val themePrefs = ThemePrefs(requireContext())
+
+                    val newNightMode = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+                        AppCompatDelegate.MODE_NIGHT_NO
+                    } else {
+                        AppCompatDelegate.MODE_NIGHT_YES
+                    }
+
+                    themePrefs.theme = newNightMode
+
+                    AppCompatDelegate.setDefaultNightMode(newNightMode)
+
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()

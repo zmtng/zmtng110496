@@ -40,6 +40,9 @@ interface CardDao {
         val setName: String   // vom JOIN
     )
 
+    @Query("UPDATE collection SET price = :price WHERE setCode = :setCode AND cardNumber = :cardNumber")
+    suspend fun updatePrice(setCode: String, cardNumber: Int, price: Double?)
+
     //Sortierte Abfragen
     @Query("""
         SELECT
@@ -133,13 +136,6 @@ interface CardDao {
         WHERE setCode = :setCode AND cardNumber = :cardNumber
     """)
     suspend fun setQuantity(setCode: String, cardNumber: Int, quantity: Int)
-
-    @Query("""
-        UPDATE collection
-        SET price = :price
-        WHERE setCode = :setCode AND cardNumber = :cardNumber
-    """)
-    suspend fun updatePrice(setCode: String, cardNumber: Int, price: Double?)
 
     // ##### HINZUGEFÜGT: updateNotes Methode #####
     @Query("""

@@ -92,10 +92,11 @@
                 android:textSize="13sp"
                 android:textColor="#6A6A6A"
                 android:layout_marginTop="4dp" />
+
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Dein ursprünglicher Container (IDs beibehalten) -->
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="0dp"
@@ -114,22 +115,23 @@
             android:text="Meine Sammlung öffnen" />
 
         <Button
-            android:id="@+id/btnExport"
+            android:id="@+id/btnOptions"
+            style="?attr/materialButtonOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="Sammlung exportieren" />
+            android:text="Optionen" />
 
-        <Button
-            android:id="@+id/btnImport"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Sammlung importieren" />
-
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchDark"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvTotalValue"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Dunkles Design erzwingen" />
+            android:layout_marginTop="24dp"
+            android:text="Gesamtwert: -"
+            android:textAppearance="?attr/textAppearanceHeadline5"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

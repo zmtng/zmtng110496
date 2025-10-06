@@ -80,4 +80,12 @@
         android:inputType="textMultiLine"
         android:minLines="3" />
 
+    <Button
+        android:id="@+id/btnFetchPrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="Preis von Cardmarket abrufen"
+        style="?attr/materialButtonOutlinedStyle" />
+
 </LinearLayout>

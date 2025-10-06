@@ -15,21 +15,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val themePrefs = ThemePrefs(this)
+        AppCompatDelegate.setDefaultNightMode(themePrefs.theme)
         setContentView(R.layout.activity_main)
 
         AppDatabase.getInstance(applicationContext)
 
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                ThemePrefs.modeFlow(this@MainActivity)
-                    .distinctUntilChanged()
-                    .collect { mode: Int ->
-                        if (AppCompatDelegate.getDefaultNightMode() != mode) {
-                            AppCompatDelegate.setDefaultNightMode(mode)
-                        }
-                    }
-            }
-        }
+
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()

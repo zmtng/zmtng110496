@@ -35,6 +35,15 @@
             android:layout_weight="1"
             android:layout_marginStart="8dp" />
 
+        <ImageButton
+            android:id="@+id/btnFetchAllPrices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_download_24"
+            android:contentDescription="Alle Preise aktualisieren"
+            android:layout_marginStart="8dp"
+            style="?attr/materialIconButtonStyle" />
+
     </LinearLayout>
 
 

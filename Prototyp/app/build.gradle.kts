@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
 
+    implementation("org.jsoup:jsoup:1.17.2")
+
     implementation("androidx.fragment:fragment-ktx:1.7.0")
 
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.9.3")

@@ -53,23 +53,31 @@
         android:text="Wert: [Wert]€ | Anzahl: [Anzahl]"
         android:layout_marginBottom="24dp"/>
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Persönliche Notizen:" />
+
     <EditText
         android:id="@+id/editTextPersonalNotes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Persönliche Notizen"
         android:inputType="textMultiLine"
         android:minLines="3"
         android:gravity="top"/>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Allgemeine Notizen:" />
 
     <EditText
         android:id="@+id/editTextGeneralNotes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="Allgemeine Notizen"
         android:inputType="textMultiLine"
-        android:minLines="3"
-        android:gravity="top"/>
+        android:minLines="3" />
 
 </LinearLayout>

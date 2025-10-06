@@ -3,7 +3,40 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <LinearLayout
+        android:id="@+id/layoutSortControls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="?attr/colorSurface"
+        android:elevation="4dp">
+
+        <TextView
+            android:id="@+id/labelSort"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sortieren nach:" />
+
+        <Spinner
+            android:id="@+id/spinnerSort"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -12,9 +45,13 @@
         android:clipToPadding="false"
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
-        android:paddingTop="20dp"
+        android:paddingTop="120dp"
         android:paddingBottom="20dp"
-        android:overScrollMode="never"/>
+        android:overScrollMode="never"
+        app:layout_constraintTop_toBottomOf="@id/spinnerSort"
+        app:layout_constraintBottom_toTopOf="@id/btnAddCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnAddCard"

@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.example.prototyp.CollectionEntry
+import kotlinx.coroutines.flow.Flow
 
 /**
  * CardDao: arbeitet NUR auf der Tabelle `collection`.
@@ -26,6 +27,49 @@ import com.example.prototyp.CollectionEntry
  */
 @Dao
 interface CardDao {
+
+    data class CollectionRowData(
+        val setCode: String,
+        val cardNumber: Int,
+        val quantity: Int,
+        val price: Double?,
+        val color: String,
+        val personalNotes: String?,
+        val generalNotes: String?,
+        val cardName: String, // vom JOIN
+        val setName: String   // vom JOIN
+    )
+
+    //Sortierte Abfragen
+    @Query("""
+        SELECT
+            c.setCode, c.cardNumber, c.quantity, c.price, c.color, c.personalNotes, c.generalNotes,
+            m.cardName, m.setName
+        FROM collection c
+        JOIN master_cards m ON c.setCode = m.setCode AND c.cardNumber = m.cardNumber
+        ORDER BY m.cardName ASC
+    """)
+    fun observeCollectionSortedByName(): Flow<List<CollectionRowData>>
+
+    @Query("""
+        SELECT
+            c.setCode, c.cardNumber, c.quantity, c.price, c.color, c.personalNotes, c.generalNotes,
+            m.cardName, m.setName
+        FROM collection c
+        JOIN master_cards m ON c.setCode = m.setCode AND c.cardNumber = m.cardNumber
+        ORDER BY c.setCode ASC, c.cardNumber ASC
+    """)
+    fun observeCollectionSortedByNumber(): Flow<List<CollectionRowData>>
+
+    @Query("""
+        SELECT
+            c.setCode, c.cardNumber, c.quantity, c.price, c.color, c.personalNotes, c.generalNotes,
+            m.cardName, m.setName
+        FROM collection c
+        JOIN master_cards m ON c.setCode = m.setCode AND c.cardNumber = m.cardNumber
+        ORDER BY c.color ASC, m.cardName ASC
+    """)
+    fun observeCollectionSortedByColor(): Flow<List<CollectionRowData>>
 
     // EXPORT
     /** Liest die komplette Sammlung als Liste für den Export. */
@@ -176,6 +220,6 @@ data class CollectionItem(
     val price: Double?,
     val color: String,
     val personalNotes: String?,
-
-    val generalNotes: String?
+    val generalNotes: String?,
 )
+

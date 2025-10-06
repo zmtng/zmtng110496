@@ -3,27 +3,28 @@ package com.example.prototyp
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.prototyp.data.db.CardDao
 
 class CardAdapter(
-    private val items: List<CollectionRow>,
-    private val onIncrement: (CollectionRow) -> Unit,
-    private val onDecrement: (CollectionRow) -> Unit,
-    private val onItemClick: (CollectionRow) -> Unit
-
-) : RecyclerView.Adapter<CardAdapter.VH>() {
+    private val onIncrement: (CardDao.CollectionRowData) -> Unit,
+    private val onDecrement: (CardDao.CollectionRowData) -> Unit,
+    private val onItemClick: (CardDao.CollectionRowData) -> Unit
+) : ListAdapter<CardDao.CollectionRowData, CardAdapter.VH>(CardDiffCallback()) {
 
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvName = itemView.findViewById<TextView>(R.id.cardName)
-        val tvNumber = itemView.findViewById<TextView>(R.id.cardNumber)
-        val tvSet = itemView.findViewById<TextView>(R.id.cardSet)
-        val tvQuantity = itemView.findViewById<TextView>(R.id.cardAnzahl)
-        val tvPrice = itemView.findViewById<TextView>(R.id.cardPreis)
-        val btnIncrement = itemView.findViewById<ImageButton>(R.id.btnIncrement)
-        val btnDecrement = itemView.findViewById<ImageButton>(R.id.btnDecrement)
+        val tvName: TextView = itemView.findViewById(R.id.cardName)
+        val tvNumber: TextView = itemView.findViewById(R.id.cardNumber)
+        val tvSet: TextView = itemView.findViewById(R.id.cardSet)
+        val tvQuantity: TextView = itemView.findViewById(R.id.cardAnzahl)
+        val tvPrice: TextView = itemView.findViewById(R.id.cardPreis)
+        val btnIncrement: ImageButton = itemView.findViewById(R.id.btnIncrement)
+        val btnDecrement: ImageButton = itemView.findViewById(R.id.btnDecrement)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -32,22 +33,17 @@ class CardAdapter(
         return VH(v)
     }
 
-    private fun colorResFor(letter: String?): Int = when (letter?.trim()?.uppercase()) {
-        "R" -> R.color.card_red
-        "B" -> R.color.card_blue
-        "G" -> R.color.card_green
-        "Y" -> R.color.card_yellow
-        "P" -> R.color.card_purple
-        "O" -> R.color.card_orange
-        else -> R.color.card_blue // Fallback
-    }
+    // ##### ENTFERNT: Die alte colorResFor-Funktion wird durch die neue Logik ersetzt. #####
+    /*
+    private fun colorResFor(letter: String?): Int = ...
+    */
 
     override fun onBindViewHolder(h: VH, position: Int) {
-        val row = items[position]
+        val row = getItem(position)
 
-        h.tvName.text = row.name
-        h.tvNumber.text = "Nr. ${row.number}"
-        h.tvSet.text = row.setCode
+        h.tvName.text = row.cardName
+        h.tvNumber.text = "Nr. ${row.cardNumber}"
+        h.tvSet.text = row.setName
         h.tvQuantity.text = "x${row.quantity}"
         h.tvPrice.text = row.price?.let { String.format("%.2f €", it) } ?: "–"
 
@@ -55,10 +51,38 @@ class CardAdapter(
         h.btnDecrement.setOnClickListener { onDecrement(row) }
         h.itemView.setOnClickListener { onItemClick(row) }
 
-        val ctx = h.itemView.context
-        val colorInt = ContextCompat.getColor(ctx, colorResFor(row.color))
-        h.itemView.setBackgroundColor(colorInt)
+        // ##### GEÄNDERT: Ein sauberer Aufruf an unsere neue Helfer-Funktion. #####
+        applyCardBackground(h.itemView, row.color)
     }
 
-    override fun getItemCount() = items.size
+    // ##### HINZUGEFÜGT: Die neue, zentrale Funktion, die den Hintergrund setzt. #####
+    private fun applyCardBackground(view: View, colorCode: String?) {
+        val context = view.context
+        when (colorCode?.trim()?.uppercase()) {
+            "M" -> {
+                // Fall 1: Mehrfarbig -> Setze den Gradient
+                view.setBackgroundResource(R.drawable.rainbow_gradient)
+            }
+            // Fall 2: Alle anderen Farben -> Setze eine solide Farbe
+            "R" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_red))
+            "B" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_blue))
+            "G" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_green))
+            "Y" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_yellow))
+            "P" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_purple))
+            "O" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_orange))
+            "U" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_grey))
+            else -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_grey)) // Fallback
+        }
+    }
+}
+
+// Der DiffUtil-Helfer bleibt unverändert.
+class CardDiffCallback : DiffUtil.ItemCallback<CardDao.CollectionRowData>() {
+    override fun areItemsTheSame(oldItem: CardDao.CollectionRowData, newItem: CardDao.CollectionRowData): Boolean {
+        return oldItem.setCode == newItem.setCode && oldItem.cardNumber == newItem.cardNumber
+    }
+
+    override fun areContentsTheSame(oldItem: CardDao.CollectionRowData, newItem: CardDao.CollectionRowData): Boolean {
+        return oldItem == newItem
+    }
 }

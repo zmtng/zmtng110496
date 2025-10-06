@@ -13,8 +13,8 @@ data class CollectionEntry(
     val cardNumber: Int,
     val quantity: Int,
     val price: Double?,
-    @ColumnInfo(name = "color", defaultValue = "'R'")
-    val color: String = "R",   // **nicht** nullable + Default
+    @ColumnInfo(name = "color", defaultValue = "'U'")
+    val color: String = "U",   // **nicht** nullable + Default
     var personalNotes: String? = null,
     var generalNotes: String? = null
 )

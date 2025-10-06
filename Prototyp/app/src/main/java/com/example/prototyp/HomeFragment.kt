@@ -71,14 +71,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             view.findViewById<Button>(R.id.btnImport).setOnClickListener {
                 importLauncher.launch("*/*") // Dateityp-Filter
             }
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.userMessage.collectLatest { message ->
-                    message?.let {
-                        Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-                        viewModel.onUserMessageShown() // Nachricht als "gesehen" markieren
-                    }
-                }
-            }
+
             val saved = ThemePrefs.modeFlow(requireContext()).first()
             binding.switchDark.isChecked = (saved == AppCompatDelegate.MODE_NIGHT_YES)
 
@@ -87,6 +80,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 viewLifecycleOwner.lifecycleScope.launch {
                     ThemePrefs.setMode(requireContext(), mode)
                     requireActivity().recreate()
+                }
+            }
+
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.userMessage.collectLatest { message ->
+                    message?.let {
+                        Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
+                        viewModel.onUserMessageShown() // Nachricht als "gesehen" markieren
+                    }
                 }
             }
         }

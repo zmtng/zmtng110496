@@ -9,6 +9,6 @@ data class MasterCard(
     val cardNumber: Int,
     val cardName: String,
     val setName: String,
-    @ColumnInfo(name = "color", defaultValue = "'R'")
-    val color: String = "R"
+    @ColumnInfo(name = "color", defaultValue = "'U'")
+    val color: String = "U"
 )

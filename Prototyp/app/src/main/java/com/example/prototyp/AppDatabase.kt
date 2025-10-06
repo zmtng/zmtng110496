@@ -26,7 +26,7 @@ import java.io.InputStreamReader
         MasterCard::class,       // falls genutzt
         CardSet::class           // falls genutzt
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -84,6 +84,8 @@ abstract class AppDatabase : RoomDatabase() {
                         }
                     }
                 })
+
+                .fallbackToDestructiveMigration(false)
                 .build()
         }
 
@@ -178,7 +180,7 @@ abstract class AppDatabase : RoomDatabase() {
                         val numberStr = get(iCardNo)
                         val cardName  = get(iCardName)
                         val cardNo    = numberStr.toIntOrNull() ?: return@forEach
-                        val color     = get(iColor).ifBlank { "R" } // optional mit Default
+                        val color     = get(iColor).ifBlank { "U" } // optional mit Default
 
                         if (setCode.isBlank() || setName.isBlank() || cardName.isBlank()) return@forEach
 

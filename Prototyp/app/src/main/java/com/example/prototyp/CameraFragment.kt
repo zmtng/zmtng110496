@@ -219,7 +219,11 @@ class CameraFragment : Fragment(R.layout.fragment_scan) {
             .trim()
 
     private fun publishResult(name: String) {
-        parentFragmentManager.setFragmentResult("scan_result", bundleOf("card_name" to name))
+        val finalName = name.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(java.util.Locale.getDefault()) else it.toString()
+        }
+
+        parentFragmentManager.setFragmentResult("scan_result", bundleOf("card_name" to finalName))
         parentFragmentManager.popBackStack()
     }
 }

@@ -91,7 +91,7 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         }
     }
     private fun setupSortSpinner(spinner: Spinner) {
-        val sortOptions = listOf("Nach Name", "Nach Nummer", "Nach Farbe")
+        val sortOptions = listOf("Name", "Nummer", "Farbe")
         val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = spinnerAdapter

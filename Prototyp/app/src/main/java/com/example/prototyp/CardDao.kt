@@ -27,6 +27,26 @@ import com.example.prototyp.CollectionEntry
 @Dao
 interface CardDao {
 
+    // EXPORT
+    /** Liest die komplette Sammlung als Liste für den Export. */
+    @Query("SELECT * FROM collection")
+    suspend fun getCollectionForExport(): List<CollectionEntry>
+
+
+    // IMPORT
+    /** Löscht die bestehende Sammlung und fügt eine neue Liste ein. */
+    @Transaction
+    suspend fun overrideCollection(entries: List<CollectionEntry>) {
+        deleteAll() // Zuerst alles löschen
+        insertAll(entries) // Dann die neuen Einträge einfügen
+    }
+
+    @Query("DELETE FROM collection")
+    suspend fun deleteAll()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entries: List<CollectionEntry>)
+
     // ---------------------------
     // Insert / Upsert / Delete
     // ---------------------------

@@ -55,6 +55,10 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
 
+    implementation("androidx.fragment:fragment-ktx:1.7.0")
+
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:1.9.3")
+
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     // Material3/Compat je nach Setup:

@@ -114,10 +114,16 @@
             android:text="Meine Sammlung öffnen" />
 
         <Button
-            android:id="@+id/btnWishlist"
+            android:id="@+id/btnExport"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:text="Wunschliste" />
+            android:text="Sammlung exportieren" />
+
+        <Button
+            android:id="@+id/btnImport"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Sammlung importieren" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switchDark"

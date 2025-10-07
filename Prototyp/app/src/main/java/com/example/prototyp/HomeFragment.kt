@@ -57,32 +57,38 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         _binding = FragmentHomeBinding.bind(view)
 
-        // Listener für den Optionen-Button (jetzt mit View Binding)
-        binding.btnOptions.setOnClickListener { anchorView ->
-            showOptionsMenu(anchorView)
-        }
-
-        // Listener für "Meine Sammlung öffnen" (jetzt mit View Binding)
-        binding.btnCollection.setOnClickListener {
+        // Listener für die neuen Kacheln und den Optionen-Button
+        binding.cardCollection.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, CollectionFragment())
                 .addToBackStack(null)
                 .commit()
         }
 
-        binding.btnDecks.setOnClickListener {
+        binding.cardDecks.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, DeckOverviewFragment())
                 .addToBackStack(null)
                 .commit()
         }
 
+        binding.cardWishlist.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, WishlistFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+        binding.btnOptions.setOnClickListener { anchorView ->
+            showOptionsMenu(anchorView)
+        }
+
+        // Beobachter für das ViewModel (bleiben unverändert)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Beobachter für User-Nachrichten (Toast)
+                // Beobachter für User-Nachrichten
                 launch {
                     viewModel.userMessage.collectLatest { message ->
                         message?.let {
@@ -92,12 +98,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     }
                 }
 
+                // Beobachter für Gesamtwert (aktualisiert jetzt die neue TextView)
                 launch {
                     viewModel.totalCollectionValue.collectLatest { value ->
                         if (value != null) {
-                            binding.tvTotalValue.text = String.format("Gesamtwert: %.2f €", value)
+                            binding.tvTotalValue.text = String.format("%.2f €", value)
                         } else {
-                            binding.tvTotalValue.text = "Gesamtwert: -"
+                            binding.tvTotalValue.text = "-,-- €"
                         }
                     }
                 }

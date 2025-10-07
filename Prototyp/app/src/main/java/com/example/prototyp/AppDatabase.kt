@@ -21,6 +21,8 @@ import java.io.InputStreamReader
 import com.example.prototyp.deckBuilder.Deck
 import com.example.prototyp.deckBuilder.DeckCard
 import com.example.prototyp.deckBuilder.DeckDao
+import com.example.prototyp.wishlist.WishlistDao
+import com.example.prototyp.wishlist.WishlistEntry
 
 
 @Database(
@@ -29,9 +31,10 @@ import com.example.prototyp.deckBuilder.DeckDao
         MasterCard::class,       // falls genutzt
         CardSet::class,         // falls genutzt
         Deck::class,
-        DeckCard::class
+        DeckCard::class,
+        WishlistEntry::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -40,6 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun masterCardDao(): MasterCardDao
 
     abstract fun deckDao(): DeckDao
+    abstract fun wishlistDao(): WishlistDao
 
 
     companion object {
@@ -54,7 +58,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "riftbound.db")
-                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8)
+                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9)
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
@@ -136,6 +140,19 @@ abstract class AppDatabase : RoomDatabase() {
                         FOREIGN KEY(`deckId`) REFERENCES `decks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE
                     )
                 """)
+            }
+        }
+
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                CREATE TABLE IF NOT EXISTS `wishlist` (
+                    `setCode` TEXT NOT NULL,
+                    `cardNumber` INTEGER NOT NULL,
+                    `quantity` INTEGER NOT NULL,
+                    PRIMARY KEY(`setCode`, `cardNumber`)
+                )
+            """)
             }
         }
 

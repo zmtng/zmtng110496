@@ -36,7 +36,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         HomeViewModelFactory(database.cardDao())
     }
 
-    // Launcher für den Export-Dialog
+    // Launcher for the Export-Dialog
     private val exportLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("text/csv")
     ) { uri: Uri? ->
@@ -45,7 +45,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    // Launcher für den Import-Dialog
+    // Launcher for the Import-Dialog
     private val importLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -60,31 +60,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
-        // Listener für die neuen Kacheln und den Optionen-Button
-        binding.cardCollection.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, CollectionFragment())
-                .addToBackStack(null)
-                .commit()
-        }
+        // ##### ALT: Der Listener für den Optionen-Button wird nicht mehr gebraucht. #####
+        // binding.btnOptions.setOnClickListener { anchorView ->
+        //     showOptionsMenu(anchorView)
+        // }
 
-        binding.cardDecks.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, DeckOverviewFragment())
-                .addToBackStack(null)
-                .commit()
-        }
+        // ##### NEU: Listener für die neuen Kachel-Buttons #####
+        setupClickListeners()
 
-        binding.cardWishlist.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, WishlistFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        binding.btnOptions.setOnClickListener { anchorView ->
-            showOptionsMenu(anchorView)
-        }
 
         // Beobachter für das ViewModel (bleiben unverändert)
         viewLifecycleOwner.lifecycleScope.launch {
@@ -113,48 +96,56 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    private fun showOptionsMenu(anchorView: View) {
-        val popup = PopupMenu(requireContext(), anchorView)
-        popup.menuInflater.inflate(R.menu.options_menu, popup.menu)
-
-        popup.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.action_calculate_value -> {
-                    viewModel.updateTotalValue()
-                    true
-                }
-                R.id.action_export -> {
-                    exportLauncher.launch("sammlung_export.csv")
-                    true
-                }
-                R.id.action_import -> {
-                    importLauncher.launch("text/csv")
-                    true
-                }
-                R.id.action_toggle_dark_mode -> {
-
-                    val themePrefs = ThemePrefs(requireContext())
-
-                    val newNightMode = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
-                        AppCompatDelegate.MODE_NIGHT_NO
-                    } else {
-                        AppCompatDelegate.MODE_NIGHT_YES
-                    }
-
-                    themePrefs.theme = newNightMode
-
-                    AppCompatDelegate.setDefaultNightMode(newNightMode)
-
-                    true
-                }
-                else -> false
-            }
+    // ##### NEU: Eine Funktion, um die Click-Listener zu organisieren #####
+    private fun setupClickListeners() {
+        binding.cardCollection.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, CollectionFragment())
+                .addToBackStack(null)
+                .commit()
         }
-        popup.show()
+
+        binding.cardDecks.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, DeckOverviewFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+        binding.cardWishlist.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, WishlistFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+        binding.cardCalculateValue.setOnClickListener {
+            viewModel.updateTotalValue()
+            Toast.makeText(requireContext(), "Gesamtwert wird berechnet...", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.cardExport.setOnClickListener {
+            exportLauncher.launch("sammlung_export.csv")
+        }
+
+        binding.cardImport.setOnClickListener {
+            importLauncher.launch("text/csv")
+        }
+
+        binding.cardToggleTheme.setOnClickListener {
+            val themePrefs = ThemePrefs(requireContext())
+            val newNightMode = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
+                AppCompatDelegate.MODE_NIGHT_NO
+            } else {
+                AppCompatDelegate.MODE_NIGHT_YES
+            }
+            themePrefs.theme = newNightMode
+            AppCompatDelegate.setDefaultNightMode(newNightMode)
+        }
     }
 
-
-
+    // ##### ALT: Das Popup-Menü wird nicht mehr gebraucht. #####
+    // private fun showOptionsMenu(anchorView: View) { ... }
 
     override fun onDestroyView() {
         super.onDestroyView()

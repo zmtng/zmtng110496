@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    tools:context=".wishlist.WishlistFragment">
+
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
@@ -12,40 +15,50 @@
         android:layout_height="?attr/actionBarSize"
         app:title="Wunschliste" />
 
-    <LinearLayout
+    <!-- HINZUGEFÜGT: MaterialCardView für ein konsistentes Design, analog zu fragment_collection.xml -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/searchViewWishlist"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:iconifiedByDefault="false"
-            app:queryHint="Nach Namen suchen..." />
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="16dp">
 
-            <Spinner
-                android:id="@+id/spinnerColor"
-                android:layout_width="0dp"
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchViewWishlist"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"/>
+                app:iconifiedByDefault="false"
+                app:queryHint="Nach Namen suchen..." />
 
-            <Spinner
-                android:id="@+id/spinnerSet"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <Spinner
+                    android:id="@+id/spinnerColor"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"/>
+
+                <Spinner
+                    android:id="@+id/spinnerSet"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -55,7 +68,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvWishlist"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:padding="8dp"
+            android:clipToPadding="false"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabAddCardToWishlist"
@@ -63,7 +78,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_margin="16dp"
-            android:src="@drawable/ic_baseline_add_24" />
+            app:srcCompat="@drawable/ic_baseline_add_24"
+            android:contentDescription="Karte zur Wunschliste hinzufügen" />
     </FrameLayout>
 
 </LinearLayout>

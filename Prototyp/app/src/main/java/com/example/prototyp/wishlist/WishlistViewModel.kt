@@ -77,12 +77,12 @@ class WishlistViewModel(
 
 
     @Transaction
-    fun transferToCollection(card: CardDao.CollectionRowData, quantity: Int) {
+    fun transferToCollection(card: WishlistDao.WishlistCard, quantity: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            // 1. Reduziere die Menge auf der Wunschliste
+            // 1. Reduziere die Menge auf der Wunschliste oder lösche den Eintrag
             wishlistDao.decrementOrDelete(card.setCode, card.cardNumber, quantity)
 
-            // 2. Erhöhe die Menge in der Sammlung
+            // 2. Erhöhe die Menge in der Sammlung (Collection)
             cardDao.upsertBySetAndNumber(card.setCode, card.cardNumber, quantity, card.color)
         }
     }

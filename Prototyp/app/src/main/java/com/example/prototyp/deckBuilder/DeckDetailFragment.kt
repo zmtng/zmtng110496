@@ -6,16 +6,12 @@ import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.prototyp.MasterCardDao
-import com.example.prototyp.R
-import com.example.prototyp.deckBuilder.DeckDao
-import com.example.prototyp.ui.AddCardToDeckFragment
 import com.example.prototyp.AppDatabase
+import com.example.prototyp.R
+import com.example.prototyp.ui.AddCardToDeckFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -24,29 +20,31 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
 
     private val deckId: Int by lazy { requireArguments().getInt(ARG_DECK_ID) }
 
-    private val viewModel: DeckDetailViewModel by viewModels {
+    // ##### KORRIGIERT: Nutzt jetzt activityViewModels, um das ViewModel mit anderen Fragmenten zu teilen. #####
+    private val viewModel: DeckDetailViewModel by activityViewModels {
         val db = AppDatabase.getInstance(requireContext())
-        DeckDetailViewModelFactory(deckId, db.deckDao(), db.masterCardDao(), db.wishlistDao())
+        // Die Factory wird ohne deckId aufgerufen.
+        DeckDetailViewModelFactory(db.deckDao(), db.masterCardDao(), db.wishlistDao())
     }
     private lateinit var cardAdapter: DeckCardAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Sagt dem geteilten ViewModel, welche Deck-ID es jetzt laden und bearbeiten soll.
         viewModel.setDeckId(deckId)
 
         cardAdapter = DeckCardAdapter(
             onIncrement = { card -> viewModel.incrementCardInDeck(card) },
             onDecrement = { card -> viewModel.decrementCardInDeck(card) },
             onAddToWishlist = { card ->
-                // Rufe die korrekte ViewModel-Funktion auf
                 viewModel.addCardToWishlist(card)
-                // Zeige dem Nutzer eine kurze Bestätigung
                 Toast.makeText(requireContext(), "'${card.cardName}' zur Wunschliste hinzugefügt", Toast.LENGTH_SHORT).show()
             }
         )
         val rv = view.findViewById<RecyclerView>(R.id.rvDeckCards)
         rv.adapter = cardAdapter
+        rv.layoutManager = LinearLayoutManager(requireContext())
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.deckContents.collectLatest { cards ->
@@ -55,8 +53,8 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
         }
 
         view.findViewById<FloatingActionButton>(R.id.fabAddCardToDeck).setOnClickListener {
-            parentFragmentManager.beginTransaction() // <-- Zurück zu parentFragmentManager
-                .add(R.id.fragmentContainer, AddCardToDeckFragment()) // Verwende die ID aus der MainActivity
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, AddCardToDeckFragment()) // Ziel bleibt gleich
                 .addToBackStack(null)
                 .commit()
         }
@@ -69,4 +67,3 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
         }
     }
 }
-

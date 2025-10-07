@@ -51,6 +51,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Card for Total Value (unchanged) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -80,6 +81,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Main Navigation Tiles (unchanged) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -132,45 +134,80 @@
 
             </LinearLayout>
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/infoCard"
+            <!-- ##### NEU: Titel für die Werkzeuge ##### -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Werkzeuge &amp; Einstellungen"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textStyle="bold"/>
+
+            <!-- ##### NEU: Kacheln für die Optionen ##### -->
+            <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="2dp">
+                android:layout_marginTop="12dp"
+                android:columnCount="2"
+                android:useDefaultMargins="true">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardCalculateValue"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_columnWeight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="16dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_calculate" app:tint="?attr/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Wert berechnen" android:textStyle="bold" android:gravity="center"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Aktuell unterstützte Sets"
-                        android:textStyle="bold"
-                        android:textAppearance="?attr/textAppearanceSubtitle1" />
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardExport"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_columnWeight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="16dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_export" app:tint="?attr/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Export" android:textStyle="bold"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                    <TextView
-                        android:id="@+id/infoText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="OGN, OGS"
-                        android:textAppearance="?attr/textAppearanceBody2"
-                        android:textColor="?android:attr/textColorSecondary"/>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardImport"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_columnWeight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="16dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_import" app:tint="?attr/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Import" android:textStyle="bold"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-            <Button
-                android:id="@+id/btnOptions"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Optionen &amp; Import/Export" />
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardToggleTheme"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_columnWeight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="16dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_dark_mode" app:tint="?attr/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Theme wechseln" android:textStyle="bold" android:gravity="center"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </GridLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

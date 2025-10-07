@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.prototyp.AppDatabase
 import com.example.prototyp.R
 import com.example.prototyp.deckBuilder.MasterCardSearchAdapter
 import kotlinx.coroutines.Job
@@ -18,7 +19,10 @@ import kotlinx.coroutines.launch
 
 class AddCardToWishlistFragment : Fragment(R.layout.fragment_add_card_to_deck) {
 
-    private val viewModel: WishlistViewModel by activityViewModels()
+    private val viewModel: WishlistViewModel by activityViewModels {
+        val db = AppDatabase.getInstance(requireContext())
+        WishlistViewModelFactory(db.wishlistDao(), db.masterCardDao(), db.cardDao())
+    }
     private lateinit var searchAdapter: MasterCardSearchAdapter
     private var searchJob: Job? = null
 

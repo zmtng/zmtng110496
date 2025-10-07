@@ -6,11 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
@@ -31,13 +29,13 @@ import kotlinx.coroutines.launch
 
 class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
 
-    // ##### HINZUGEFÜGT: View Binding Setup #####
     private var _binding: FragmentWishlistBinding? = null
     private val binding get() = _binding!!
 
     private val viewModel: WishlistViewModel by viewModels {
         val db = AppDatabase.getInstance(requireContext())
-        WishlistViewModelFactory(db.wishlistDao(), db.cardDao(), db.masterCardDao())
+        // ##### HINWEIS: Die Factory-Parameter-Reihenfolge muss zum ViewModel-Konstruktor passen #####
+        WishlistViewModelFactory(db.wishlistDao(), db.masterCardDao(), db.cardDao())
     }
     private lateinit var wishlistAdapter: WishlistAdapter
 
@@ -58,12 +56,17 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
     }
 
     private fun setupAdapter() {
-        // ##### VEREINFACHT: Adapter-Initialisierung (nur 'onMoveToCollection' wird benötigt) #####
-        // Increment/Decrement macht auf einer Wunschliste keinen Sinn.
-        wishlistAdapter = WishlistAdapter { card ->
-            viewModel.transferToCollection(card, 1) // Verschiebt 1 Exemplar
-            Toast.makeText(requireContext(), "'${card.cardName}' zur Sammlung hinzugefügt", Toast.LENGTH_SHORT).show()
-        }
+        // ##### KORRIGIERT: Adapter-Initialisierung mit allen benötigten Lambdas #####
+        // Der WishlistAdapter erwartet drei Funktionen im Konstruktor: onIncrement, onDecrement, onMoveToCollection
+        wishlistAdapter = WishlistAdapter(
+            onIncrement = { card -> viewModel.incrementQuantity(card) },
+            onDecrement = { card -> viewModel.decrementQuantity(card) },
+            onMoveToCollection = { card ->
+                // Hier wird jetzt die korrigierte ViewModel-Funktion aufgerufen.
+                viewModel.transferToCollection(card, 1) // Verschiebt 1 Exemplar
+                Toast.makeText(requireContext(), "'${card.cardName}' zur Sammlung hinzugefügt", Toast.LENGTH_SHORT).show()
+            }
+        )
         binding.rvWishlist.adapter = wishlistAdapter
         binding.rvWishlist.layoutManager = LinearLayoutManager(requireContext())
     }
@@ -96,7 +99,6 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
             }
         })
 
-        // ##### KORRIGIERT: Vereinfachte und korrekte Filter-Logik #####
         viewLifecycleOwner.lifecycleScope.launch {
             // Farb-Spinner
             val colorsFromDb = viewModel.getFilterColors()
@@ -105,7 +107,7 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
             binding.spinnerColor.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
                     val selection = if (position == 0) null else colorsFromDb[position - 1]
-                    viewModel.setColorFilter(selection)
+                    viewModel.setColorFilter(selection?: "")
                 }
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
@@ -117,7 +119,7 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
             binding.spinnerSet.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
                     val selection = if (position == 0) null else setsFromDb[position - 1]
-                    viewModel.setSetFilter(selection)
+                    viewModel.setSetFilter(selection?: "")
                 }
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
@@ -132,14 +134,13 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
 
 class WishlistViewModelFactory(
     private val wishlistDao: WishlistDao,
-    private val cardDao: CardDao,
-    private val masterDao: MasterCardDao
+    private val masterDao: MasterCardDao,
+    private val cardDao: CardDao
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(WishlistViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            // ##### KORRIGIERT: Parameter-Reihenfolge an den ViewModel-Konstruktor angepasst #####
-            return WishlistViewModel(wishlistDao, cardDao, masterDao) as T
+            return WishlistViewModel(wishlistDao, masterDao, cardDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

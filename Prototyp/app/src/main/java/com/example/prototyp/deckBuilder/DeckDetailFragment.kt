@@ -33,6 +33,8 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        viewModel.setDeckId(deckId)
+
         cardAdapter = DeckCardAdapter(
             onIncrement = { card -> viewModel.incrementCardInDeck(card) },
             onDecrement = { card -> viewModel.decrementCardInDeck(card) }
@@ -47,8 +49,8 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
         }
 
         view.findViewById<FloatingActionButton>(R.id.fabAddCardToDeck).setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, AddCardToDeckFragment())
+            parentFragmentManager.beginTransaction() // <-- Zurück zu parentFragmentManager
+                .add(R.id.fragmentContainer, AddCardToDeckFragment()) // Verwende die ID aus der MainActivity
                 .addToBackStack(null)
                 .commit()
         }

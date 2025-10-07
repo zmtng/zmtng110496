@@ -32,4 +32,13 @@
             android:paddingBottom="8dp"/>
     </HorizontalScrollView>
 
+    <EditText
+        android:id="@+id/etImportText"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_marginTop="8dp"
+        android:gravity="top"
+        android:hint="Deck-Code hier einfügen..."
+        android:inputType="textMultiLine" />
+
 </LinearLayout>

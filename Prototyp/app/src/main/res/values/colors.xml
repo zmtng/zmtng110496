@@ -1,10 +1,15 @@
 <resources>
-    <color name="card_red">#FFE5E5</color>
-    <color name="card_blue">#E5F0FF</color>
-    <color name="card_green">#E6F5EA</color>
-    <color name="card_yellow">#FFF8E1</color>
-    <color name="card_purple">#F1E6FF</color>
-    <color name="card_orange">#FFEEDB</color>
-    <color name="card_grey">#808080</color>
-    <color name="collection_card_text">#000000</color>
+    <color name="card_red">#FFCDD2</color>
+
+    <color name="card_blue">#BBDEFB</color>
+
+    <color name="card_green">#C8E6C9</color>
+
+    <color name="card_yellow">#FFF59D</color>
+
+    <color name="card_purple">#D1C4E9</color>
+
+    <color name="card_orange">#FFCC80</color>
+
+    <color name="card_grey">#B0BEC5</color> <color name="collection_card_text">#000000</color>
 </resources>

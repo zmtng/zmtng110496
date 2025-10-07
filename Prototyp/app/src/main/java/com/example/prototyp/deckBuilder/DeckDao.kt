@@ -1,7 +1,9 @@
 package com.example.prototyp.deckBuilder
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
@@ -69,4 +71,24 @@ interface DeckDao {
 
     @Query("UPDATE deck_cards SET quantity = :quantity WHERE deckId = :deckId AND setCode = :setCode AND cardNumber = :cardNumber")
     suspend fun updateCardQuantity(deckId: Int, setCode: String, cardNumber: Int, quantity: Int)
+
+    // ##### HINZUGEFÜGT: Funktion zum Einfügen einer Liste von Karten #####
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDeckCards(cards: List<DeckCard>)
+
+    // ##### HINZUGEFÜGT: Transaktion für den kompletten Import #####
+    @Transaction
+    suspend fun createDeckWithCards(deck: Deck, cards: List<DeckCard>) {
+        // 1. Erstelle das neue Deck und hole dir seine generierte ID
+        val deckId = insertDeck(deck)
+
+        // 2. Weise allen Karten diese neue Deck-ID zu
+        val cardsWithDeckId = cards.map { it.copy(deckId = deckId.toInt()) }
+
+        // 3. Füge alle Karten auf einmal in die Datenbank ein
+        insertDeckCards(cardsWithDeckId)
+    }
+
+    @Delete
+    suspend fun deleteDeck(deck: Deck)
 }

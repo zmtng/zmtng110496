@@ -12,15 +12,26 @@ import com.example.prototyp.R
 import com.example.prototyp.deckBuilder.Deck
 
 class DeckAdapter(
-    private val onDeckClick: (Deck) -> Unit
+    private val onDeckClick: (Deck) -> Unit,
+    private val onDeckLongClick: (Deck) -> Unit
 ) : ListAdapter<Deck, DeckAdapter.DeckViewHolder>(DeckDiffCallback()) {
 
     class DeckViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: TextView = itemView.findViewById(R.id.deckName)
 
-        fun bind(deck: Deck, onDeckClick: (Deck) -> Unit) {
+        fun bind(
+            deck: Deck,
+            onDeckClick: (Deck) -> Unit,
+            onDeckLongClick: (Deck) -> Unit
+        ) {
             nameTextView.text = deck.name
             itemView.setOnClickListener { onDeckClick(deck) }
+
+            // 3. Setze den Listener für den langen Klick
+            itemView.setOnLongClickListener {
+                onDeckLongClick(deck)
+                true
+            }
 
             // Setze die Hintergrundfarbe der Kachel
             try {
@@ -38,7 +49,7 @@ class DeckAdapter(
     }
 
     override fun onBindViewHolder(holder: DeckViewHolder, position: Int) {
-        holder.bind(getItem(position), onDeckClick)
+        holder.bind(getItem(position), onDeckClick, onDeckLongClick)
     }
 }
 

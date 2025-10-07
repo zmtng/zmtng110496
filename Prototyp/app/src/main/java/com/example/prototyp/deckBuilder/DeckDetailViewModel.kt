@@ -7,6 +7,9 @@ import com.example.prototyp.MasterCard
 import com.example.prototyp.MasterCardDao
 import com.example.prototyp.deckBuilder.DeckDao
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -30,7 +33,7 @@ class DeckDetailViewModel(
     private val deckDao: DeckDao,
     private val masterDao: MasterCardDao
 ) : ViewModel() {
-    val deckContents = deckDao.observeDeckContents(deckId)
+    private val deckIdFlow = MutableStateFlow<Int?>(null)
 
     fun incrementCardInDeck(card: DeckDao.DeckCardDetail) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -52,7 +55,10 @@ class DeckDetailViewModel(
 
     fun addCardToDeck(card: MasterCard) {
         viewModelScope.launch(Dispatchers.IO) {
-            deckDao.upsertCardInDeck(deckId, card.setCode, card.cardNumber)
+            val currentDeckId = deckIdFlow.value
+            if (currentDeckId != null) {
+                deckDao.upsertCardInDeck(currentDeckId, card.setCode, card.cardNumber)
+            }
         }
     }
 
@@ -60,6 +66,15 @@ class DeckDetailViewModel(
         return withContext(Dispatchers.IO) {
             masterDao.search(query)
         }
+    }
+
+    val deckContents = deckIdFlow.filterNotNull().flatMapLatest { deckId ->
+        deckDao.observeDeckContents(deckId)
+    }
+
+    // Neue Funktion, um das anzuzeigende Deck zu setzen
+    fun setDeckId(id: Int) {
+        deckIdFlow.value = id
     }
 
 }

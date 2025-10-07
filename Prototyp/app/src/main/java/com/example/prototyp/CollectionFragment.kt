@@ -4,115 +4,151 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.*
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.data.db.CardDao
-import com.example.yourapp.data.db.AppDatabase
+import com.example.prototyp.MasterCardDao
+import com.example.prototyp.databinding.FragmentCollectionBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.prototyp.CollectionViewModel
+import com.example.prototyp.SortOrder
 
 class CollectionFragment : Fragment(R.layout.fragment_collection) {
 
-    // ##### ENTFERNT: Direkter DAO-Zugriff und manuelle Caches #####
-    // private lateinit var cardDao: CardDao
-    // ... und die ganzen Map-Variablen ...
+    private var _binding: FragmentCollectionBinding? = null
+    private val binding get() = _binding!!
 
-    // ##### HINZUGEFÜGT: ViewModel für die gesamte Logik und Zustandsverwaltung #####
     private val viewModel: CollectionViewModel by viewModels {
-        CollectionViewModelFactory(AppDatabase.getInstance(requireContext()).cardDao())
+        val db = AppDatabase.getInstance(requireContext())
+        CollectionViewModelFactory(db.cardDao(), db.masterCardDao())
+    }
+    private lateinit var adapter: CardAdapter
+
+    // Hilfs-Map für die Farb-Namen im Spinner
+    private val colorMap = mapOf("R" to "Rot", "B" to "Blau", "G" to "Grün", "Y" to "Gelb", "P" to "Lila", "O" to "Orange", "U" to "Grau", "M" to "Mehrfarbig")
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentCollectionBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: CardAdapter // Dein Adapter muss an 'CollectionRowData' angepasst werden
-
-    // ##### STARK GEÄNDERT: onViewCreated ist jetzt viel schlanker #####
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // UI-Elemente initialisieren
-        recyclerView = view.findViewById(R.id.recyclerView)
-        val spinner = view.findViewById<Spinner>(R.id.spinnerSort)
+        // --- Initialisierung ---
+        setupAdapter()
+        setupListeners()
+        setupObservers()
+        setupFilters() // Filter am Ende initialisieren, wenn alles andere steht
+    }
 
+    private fun setupAdapter() {
         adapter = CardAdapter(
-            onIncrement = { row: CardDao.CollectionRowData ->
-                // Die Logik hier bleibt ähnlich, greift aber auf das ViewModel zu
-                viewModel.incrementQuantity(row)
-            },
-            onDecrement = { row: CardDao.CollectionRowData ->
-                viewModel.decrementQuantity(row)
-            },
-            onItemClick = { row: CardDao.CollectionRowData ->
-                showEditNotesDialog(row)
-            }
+            onIncrement = { card -> viewModel.incrementQuantity(card) },
+            onDecrement = { card -> viewModel.decrementQuantity(card) },
+            onItemClick = { card -> showEditNotesDialog(card) }
         )
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView.adapter = adapter
+        binding.rvCards.adapter = adapter
+        binding.rvCards.layoutManager = LinearLayoutManager(requireContext())
+    }
 
-        // "+ Karte" → AddCardFragment öffnen
-        view.findViewById<FloatingActionButton>(R.id.btnAddCard).setOnClickListener {
+    private fun setupListeners() {
+        binding.btnAddCard.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, AddCardFragment())
                 .addToBackStack(null)
                 .commit()
         }
+    }
 
-        setupSortSpinner(spinner)
-
+    private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.collection.collectLatest { collectionList ->
-                    // Der Adapter wird jedes Mal aktualisiert, wenn die sortierte Liste sich ändert
-                    adapter.submitList(collectionList) // <-- Richtiger Name
+                // Beobachter für die Kartenliste
+                launch {
+                    viewModel.collection.collectLatest { collectionList ->
+                        adapter.submitList(collectionList)
+                    }
                 }
-            }
-        }
-
-        view.findViewById<ImageButton>(R.id.btnFetchAllPrices).setOnClickListener {
-            viewModel.fetchAllPrices()
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.userMessage.collectLatest { message ->
-                    message?.let {
-                        Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-                        viewModel.onUserMessageShown()
+                // Beobachter für Toast-Nachrichten
+                launch {
+                    viewModel.userMessage.collectLatest { message ->
+                        message?.let {
+                            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                            viewModel.onUserMessageShown()
+                        }
                     }
                 }
             }
         }
     }
-    private fun setupSortSpinner(spinner: Spinner) {
-        val sortOptions = listOf("Name", "Nummer", "Farbe")
-        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinner.adapter = spinnerAdapter
 
-        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+    private fun setupFilters() {
+        // --- Suchleiste ---
+        binding.searchViewCollection.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean = true
+            override fun onQueryTextChange(newText: String?): Boolean {
+                viewModel.setSearchQuery(newText.orEmpty())
+                return true
+            }
+        })
+
+        // --- Sortier-Spinner ---
+        val sortOptions = listOf("Nach Name", "Nach Nummer", "Nach Farbe")
+        binding.spinnerSort.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortOptions)
+        binding.spinnerSort.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val newSortOrder = when (position) {
+                val sortBy = when (position) {
                     0 -> SortOrder.BY_NAME
                     1 -> SortOrder.BY_NUMBER
                     2 -> SortOrder.BY_COLOR
-                    else -> SortOrder.BY_NUMBER
+                    else -> SortOrder.BY_NAME
                 }
-                viewModel.setSortOrder(newSortOrder)
+                viewModel.setSortOrder(sortBy)
             }
-
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
-    }
 
-    // ##### ANGEPASST: Arbeitet jetzt mit dem neuen 'CollectionRowData'-Objekt #####
-    private fun showEditNotesDialog(row: CardDao.CollectionRowData) { // <-- ÄNDERUNG 1: Parameter-Typ angepasst
+        // --- Farb- und Set-Spinner (mit korrigierter Logik) ---
+        viewLifecycleOwner.lifecycleScope.launch {
+            // Farb-Spinner
+            val colorsFromDb = viewModel.getFilterColors()
+            val colorItemsForSpinner = colorsFromDb.map { colorMap[it] ?: it }.toMutableList().apply { add(0, "Alle Farben") }
+            binding.spinnerColor.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, colorItemsForSpinner)
+            binding.spinnerColor.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
+                    // KORREKTUR: Wähle den Farb-CODE aus der Original-Liste
+                    val selection = if (position == 0) null else colorsFromDb[position - 1]
+                    viewModel.setColorFilter(selection)
+                }
+                override fun onNothingSelected(p0: AdapterView<*>?) {}
+            }
+
+            // Set-Spinner
+            val setsFromDb = viewModel.getFilterSets()
+            val setItemsForSpinner = setsFromDb.toMutableList().apply { add(0, "Alle Sets") }
+            binding.spinnerSet.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, setItemsForSpinner)
+            binding.spinnerSet.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
+                    // KORREKTUR: Wähle den Set-NAMEN aus der Original-Liste
+                    val selection = if (position == 0) null else setsFromDb[position - 1]
+                    viewModel.setSetFilter(selection)
+                }
+                override fun onNothingSelected(p0: AdapterView<*>?) {}
+            }
+        }
+    }
+    private fun showEditNotesDialog(row: CardDao.CollectionRowData) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_notes, null)
 
         val cardNameTextView = dialogView.findViewById<TextView>(R.id.dialogCardName)
@@ -121,34 +157,23 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         val personalNotesEditText = dialogView.findViewById<EditText>(R.id.editTextPersonalNotes)
         val generalNotesEditText = dialogView.findViewById<EditText>(R.id.editTextGeneralNotes)
         val colorIndicator = dialogView.findViewById<View>(R.id.colorIndicator)
-
         val fetchPriceButton = dialogView.findViewById<Button>(R.id.btnFetchPrice)
+
         fetchPriceButton.setOnClickListener {
-            it.isEnabled = false // Button deaktivieren, um doppelte Klicks zu verhindern
-
-            // Rufe die Funktion auf und gib den Code mit, der bei Erfolg ausgeführt werden soll
+            it.isEnabled = false
             viewModel.fetchPriceForCard(row, showSuccessMessage = true) { newPrice ->
-                // Dieser Block ist der 'onSuccess'-Callback
-
-                // Finde das TextView für den Preis
-                val cardValueCountTextView = dialogView.findViewById<TextView>(R.id.dialogCardValueCount)
-
-                // Aktualisiere das Textfeld im Pop-up
-                cardValueCountTextView.text = "Wert: ${
-                    String.format("%.2f", newPrice)
-                }€ | Anzahl: ${row.quantity}"
-
-                it.isEnabled = true // Button wieder aktivieren
+                cardValueCountTextView.text = "Wert: ${String.format("%.2f", newPrice)}€ | Anzahl: ${row.quantity}"
+                it.isEnabled = true
             }
         }
 
-        cardNameTextView.text = "Kartenname: ${row.cardName}" // .name -> .cardName
-        cardDetailsTextView.text = "Set: ${row.setName} | Nummer: ${row.cardNumber}" // .number -> .cardNumber
+        cardNameTextView.text = "Kartenname: ${row.cardName}"
+        cardDetailsTextView.text = "Set: ${row.setName} | Nummer: ${row.cardNumber}"
         cardValueCountTextView.text = "Wert: ${row.price ?: 0.00}€ | Anzahl: ${row.quantity}"
         personalNotesEditText.setText(row.personalNotes)
         generalNotesEditText.setText(row.generalNotes)
 
-        val colorCode = row.color?.trim()?.uppercase()
+        val colorCode = row.color.trim().uppercase()
         if (colorCode == "M") {
             colorIndicator.setBackgroundResource(R.drawable.rainbow_gradient)
         } else {
@@ -162,40 +187,39 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
                 "U" -> R.color.card_grey
                 else -> R.color.card_grey
             }
-            // Wichtig: 'setTint' wird nur für die soliden Farben verwendet.
             colorIndicator.background.setTint(ContextCompat.getColor(requireContext(), colorRes))
         }
 
         AlertDialog.Builder(requireContext())
             .setView(dialogView)
-            .setPositiveButton("Speichern") { dialog, _ ->
+            .setPositiveButton("Speichern") { _, _ ->
                 val newPersonalNotes = personalNotesEditText.text.toString()
                 val newGeneralNotes = generalNotesEditText.text.toString()
-
-                // Greift jetzt auf die ViewModel-Funktion zu
                 viewModel.updateNotes(
                     setCode = row.setCode,
                     cardNumber = row.cardNumber,
                     personalNotes = newPersonalNotes,
                     generalNotes = newGeneralNotes
                 )
-                // Das Schließen des Dialogs passiert jetzt am besten im ViewModel oder hier
-                // nach einer Erfolgs-Rückmeldung, aber für den Moment ist das okay.
             }
-            .setNegativeButton("Abbrechen") { dialog, _ ->
-                dialog.cancel()
-            }
+            .setNegativeButton("Abbrechen", null)
             .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
 
-// ##### HINZUGEFÜGT: ViewModelFactory für die Erstellung des ViewModels #####
-// Diese Klasse kannst du entweder hier unten oder in eine eigene Datei packen.
-class CollectionViewModelFactory(private val cardDao: CardDao) : ViewModelProvider.Factory {
+class CollectionViewModelFactory(
+    private val cardDao: CardDao,
+    private val masterDao: MasterCardDao
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CollectionViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return CollectionViewModel(cardDao) as T
+            return CollectionViewModel(cardDao, masterDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

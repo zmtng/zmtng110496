@@ -50,6 +50,18 @@ interface MasterCardDao {
     """)
     suspend fun getBySetAndNumber(setCode: String, cardNumber: Int): MasterCard?
 
+    @Query("SELECT DISTINCT color FROM master_cards ORDER BY color ASC")
+    suspend fun getDistinctColors(): List<String>
+
+    @Query("SELECT DISTINCT setCode FROM master_cards ORDER BY setCode ASC")
+    suspend fun getDistinctSetCodes(): List<String>
+
+    @Query("SELECT DISTINCT cardName FROM master_cards ORDER BY cardName ASC")
+    suspend fun getDistinctCardNames(): List<String>
+
+    @Query("SELECT DISTINCT setName FROM master_cards ORDER BY setName ASC")
+    suspend fun getDistinctSetNames(): List<String>
+
 
 }
 

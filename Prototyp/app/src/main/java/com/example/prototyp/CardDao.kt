@@ -43,16 +43,27 @@ interface CardDao {
     @Query("UPDATE collection SET price = :price WHERE setCode = :setCode AND cardNumber = :cardNumber")
     suspend fun updatePrice(setCode: String, cardNumber: Int, price: Double?)
 
-    //Sortierte Abfragen
     @Query("""
         SELECT
             c.setCode, c.cardNumber, c.quantity, c.price, c.color, c.personalNotes, c.generalNotes,
             m.cardName, m.setName
         FROM collection c
         JOIN master_cards m ON c.setCode = m.setCode AND c.cardNumber = m.cardNumber
-        ORDER BY m.cardName ASC
+        WHERE 
+            (:nameQuery = '' OR m.cardName LIKE '%' || :nameQuery || '%') AND
+            (:colorFilter = '' OR c.color = :colorFilter) AND
+            (:setFilter = '' OR c.setCode = :setFilter)
+        ORDER BY
+            CASE :sortBy WHEN 'name' THEN m.cardName END ASC,
+            CASE :sortBy WHEN 'number' THEN c.cardNumber END ASC,
+            CASE :sortBy WHEN 'color' THEN c.color END ASC
     """)
-    fun observeCollectionSortedByName(): Flow<List<CollectionRowData>>
+    fun observeFilteredCollection(
+        nameQuery: String,
+        colorFilter: String,
+        setFilter: String,
+        sortBy: String
+    ): Flow<List<CollectionRowData>>
 
     @Query("""
         SELECT
@@ -60,19 +71,8 @@ interface CardDao {
             m.cardName, m.setName
         FROM collection c
         JOIN master_cards m ON c.setCode = m.setCode AND c.cardNumber = m.cardNumber
-        ORDER BY c.setCode ASC, c.cardNumber ASC
     """)
-    fun observeCollectionSortedByNumber(): Flow<List<CollectionRowData>>
-
-    @Query("""
-        SELECT
-            c.setCode, c.cardNumber, c.quantity, c.price, c.color, c.personalNotes, c.generalNotes,
-            m.cardName, m.setName
-        FROM collection c
-        JOIN master_cards m ON c.setCode = m.setCode AND c.cardNumber = m.cardNumber
-        ORDER BY c.color ASC, m.cardName ASC
-    """)
-    fun observeCollectionSortedByColor(): Flow<List<CollectionRowData>>
+    fun observeCollectionWithDetails(): Flow<List<CollectionRowData>>
 
     // EXPORT
     /** Liest die komplette Sammlung als Liste für den Export. */

@@ -1,6 +1,4 @@
-// AppDatabase.kt
-// package ggf. anpassen:
-package com.example.yourapp.data.db
+package com.example.prototyp
 
 import android.content.Context
 import androidx.room.Database
@@ -27,9 +25,9 @@ import com.example.prototyp.wishlist.WishlistEntry
 
 @Database(
     entities = [
-        CollectionEntry::class,  // ← bleibt
-        MasterCard::class,       // falls genutzt
-        CardSet::class,         // falls genutzt
+        CollectionEntry::class,
+        MasterCard::class,
+        CardSet::class,
         Deck::class,
         DeckCard::class,
         WishlistEntry::class

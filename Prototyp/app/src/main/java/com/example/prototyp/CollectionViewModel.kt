@@ -4,50 +4,71 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.prototyp.data.db.CardDao
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 
-private const val TAG = "PriceScraper"
+enum class SortOrder { BY_NAME, BY_NUMBER, BY_COLOR }
 
-enum class SortOrder {
-    BY_NAME, BY_NUMBER, BY_COLOR
-}
+class CollectionViewModel(
+    private val cardDao: CardDao,
+    private val masterDao: MasterCardDao
+) : ViewModel() {
 
-class CollectionViewModel(private val cardDao: CardDao) : ViewModel() {
+    // --- StateFlows für Filter und Sortierung ---
+    private val _sortOrder = MutableStateFlow(SortOrder.BY_NAME)
+    private val _searchQuery = MutableStateFlow("")
+    private val _colorFilter = MutableStateFlow<String?>(null)
+    private val _setFilter = MutableStateFlow<String?>(null)
 
-    val currentSortOrder = MutableStateFlow(SortOrder.BY_NAME)
+    // --- Der neue, intelligente Datenfluss ---
+    val collection: StateFlow<List<CardDao.CollectionRowData>> = combine(
+        cardDao.observeCollectionWithDetails(), // 1. Die Rohdaten von der DB
+        _sortOrder,                              // 2. Die aktuelle Sortierung
+        _searchQuery,                            // 3. Der aktuelle Suchtext
+        _colorFilter,                            // 4. Der gewählte Farbfilter
+        _setFilter                               // 5. Der gewählte Setfilter
+    ) { fullList, sort, query, color, set ->
+        // Dieser Block wird JEDES MAL ausgeführt, wenn sich irgendetwas ändert
 
-    val collection: StateFlow<List<CardDao.CollectionRowData>> = currentSortOrder.flatMapLatest { sortOrder ->
-        when (sortOrder) {
-            SortOrder.BY_NAME -> cardDao.observeCollectionSortedByName()
-            SortOrder.BY_NUMBER -> cardDao.observeCollectionSortedByNumber()
-            SortOrder.BY_COLOR -> cardDao.observeCollectionSortedByColor()
+        // Schritt A: Filtern
+        val filteredList = fullList.filter { item ->
+            (query.isBlank() || item.cardName.contains(query, ignoreCase = true)) &&
+                    (color == null || item.color == color) &&
+                    (set == null || item.setName == set)
         }
-    }.stateIn(
-        scope = viewModelScope, // Der Geltungsbereich des ViewModels
-        started = SharingStarted.WhileSubscribed(5000), // Startet den Flow, wenn die UI lauscht
-        initialValue = emptyList() // Der Anfangswert ist eine leere Liste
-    )
 
+        // Schritt B: Sortieren
+        when (sort) {
+            SortOrder.BY_NAME -> filteredList.sortedBy { it.cardName }
+            SortOrder.BY_NUMBER -> filteredList.sortedWith(compareBy({ it.setCode }, { it.cardNumber }))
+            SortOrder.BY_COLOR -> filteredList.sortedBy { it.color }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+
+    // --- Öffentliche Funktionen zum Ändern der Filter ---
+    fun setSortOrder(sortBy: SortOrder) { _sortOrder.value = sortBy }
+    fun setSearchQuery(query: String) { _searchQuery.value = query }
+    fun setColorFilter(color: String?) { _colorFilter.value = color }
+    fun setSetFilter(set: String?) { _setFilter.value = set }
+
+    suspend fun getFilterColors(): List<String> = withContext(Dispatchers.IO) { masterDao.getDistinctColors() }
+    suspend fun getFilterSets(): List<String> = withContext(Dispatchers.IO) { masterDao.getDistinctSetNames() }
     private val _userMessage = MutableStateFlow<String?>(null)
     val userMessage = _userMessage.asStateFlow()
+    fun onUserMessageShown() { _userMessage.value = null }
 
-    fun onUserMessageShown() {
-        _userMessage.value = null
-    }
-
-    fun setSortOrder(sortOrder: SortOrder) {
-        currentSortOrder.value = sortOrder
-    }
 
     fun updateNotes(setCode: String, cardNumber: Int, personalNotes: String?, generalNotes: String?) {
         viewModelScope.launch(Dispatchers.IO) {

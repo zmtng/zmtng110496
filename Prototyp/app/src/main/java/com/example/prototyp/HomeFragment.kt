@@ -20,7 +20,7 @@ import com.example.prototyp.databinding.FragmentHomeBinding
 import com.example.prototyp.deckBuilder.DeckOverviewFragment
 import com.example.prototyp.prefs.ThemePrefs
 import com.example.prototyp.wishlist.WishlistFragment
-import com.example.yourapp.data.db.AppDatabase
+import com.example.prototyp.AppDatabase
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch

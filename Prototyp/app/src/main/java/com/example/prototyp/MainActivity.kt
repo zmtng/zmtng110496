@@ -8,7 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.prototyp.prefs.ThemePrefs
 import kotlinx.coroutines.launch
-import com.example.yourapp.data.db.AppDatabase
+import com.example.prototyp.AppDatabase
 import kotlinx.coroutines.flow.distinctUntilChanged
 
 class MainActivity : AppCompatActivity() {

@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
 import com.example.prototyp.deckBuilder.DeckDao
-import com.example.yourapp.data.db.AppDatabase
+import com.example.prototyp.AppDatabase
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

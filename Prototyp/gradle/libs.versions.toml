@@ -14,6 +14,7 @@ recyclerview = "1.4.0"
 fragment = "1.8.9"
 roomCommonJvm = "2.8.1"
 room = "2.8.1"
+playServicesDrive = "17.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -30,6 +31,7 @@ androidx-fragment = { group = "androidx.fragment", name = "fragment", version.re
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+play-services-drive = { group = "com.google.android.gms", name = "play-services-drive", version.ref = "playServicesDrive" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

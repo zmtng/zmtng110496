@@ -14,7 +14,7 @@ import com.example.prototyp.MasterCardDao
 import com.example.prototyp.R
 import com.example.prototyp.deckBuilder.DeckDao
 import com.example.prototyp.ui.AddCardToDeckFragment
-import com.example.yourapp.data.db.AppDatabase
+import com.example.prototyp.AppDatabase
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

@@ -33,11 +33,6 @@ class CardAdapter(
         return VH(v)
     }
 
-    // ##### ENTFERNT: Die alte colorResFor-Funktion wird durch die neue Logik ersetzt. #####
-    /*
-    private fun colorResFor(letter: String?): Int = ...
-    */
-
     override fun onBindViewHolder(h: VH, position: Int) {
         val row = getItem(position)
 
@@ -51,19 +46,17 @@ class CardAdapter(
         h.btnDecrement.setOnClickListener { onDecrement(row) }
         h.itemView.setOnClickListener { onItemClick(row) }
 
-        // ##### GEÄNDERT: Ein sauberer Aufruf an unsere neue Helfer-Funktion. #####
         applyCardBackground(h.itemView, row.color)
     }
 
-    // ##### HINZUGEFÜGT: Die neue, zentrale Funktion, die den Hintergrund setzt. #####
     private fun applyCardBackground(view: View, colorCode: String?) {
         val context = view.context
         when (colorCode?.trim()?.uppercase()) {
             "M" -> {
-                // Fall 1: Mehrfarbig -> Setze den Gradient
+
                 view.setBackgroundResource(R.drawable.rainbow_gradient)
             }
-            // Fall 2: Alle anderen Farben -> Setze eine solide Farbe
+
             "R" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_red))
             "B" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_blue))
             "G" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_green))
@@ -76,7 +69,7 @@ class CardAdapter(
     }
 }
 
-// Der DiffUtil-Helfer bleibt unverändert.
+
 class CardDiffCallback : DiffUtil.ItemCallback<CardDao.CollectionRowData>() {
     override fun areItemsTheSame(oldItem: CardDao.CollectionRowData, newItem: CardDao.CollectionRowData): Boolean {
         return oldItem.setCode == newItem.setCode && oldItem.cardNumber == newItem.cardNumber

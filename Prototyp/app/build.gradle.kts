@@ -53,6 +53,7 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.play.services.drive)
     kapt(libs.androidx.room.compiler)
 
     implementation("org.jsoup:jsoup:1.17.2")

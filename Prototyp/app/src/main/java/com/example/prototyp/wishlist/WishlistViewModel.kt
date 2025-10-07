@@ -3,8 +3,10 @@ package com.example.prototyp.wishlist
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.Transaction
 import com.example.prototyp.MasterCard
 import com.example.prototyp.MasterCardDao
+import com.example.prototyp.data.db.CardDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -13,7 +15,8 @@ import kotlinx.coroutines.flow.*
 private const val TAG = "WishlistViewModel"
 class WishlistViewModel(
     private val wishlistDao: WishlistDao,
-    private val masterDao: MasterCardDao
+    private val masterDao: MasterCardDao,
+    private val cardDao: CardDao
 ) : ViewModel() {
 
     // 1. StateFlows für jeden einzelnen Filter
@@ -68,6 +71,19 @@ class WishlistViewModel(
                 // Ansonsten wird die Menge nur reduziert
                 wishlistDao.updateQuantity(card.setCode, card.cardNumber, card.quantity - 1)
             }
+        }
+    }
+
+
+
+    @Transaction
+    fun transferToCollection(card: CardDao.CollectionRowData, quantity: Int) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // 1. Reduziere die Menge auf der Wunschliste
+            wishlistDao.decrementOrDelete(card.setCode, card.cardNumber, quantity)
+
+            // 2. Erhöhe die Menge in der Sammlung
+            cardDao.upsertBySetAndNumber(card.setCode, card.cardNumber, quantity, card.color)
         }
     }
 

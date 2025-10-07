@@ -6,5 +6,5 @@ import androidx.room.Entity
 data class WishlistEntry(
     val setCode: String,
     val cardNumber: Int,
-    var quantity: Int // Wie viele Exemplare gewünscht sind
+    var quantity: Int
 )

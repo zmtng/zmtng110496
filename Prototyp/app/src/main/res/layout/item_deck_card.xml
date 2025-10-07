@@ -61,6 +61,15 @@
             app:layout_constraintBottom_toBottomOf="parent">
 
             <ImageButton
+                android:id="@+id/btnAddToWishlist"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_add_to_wishlist"
+                app:tint="#000000"
+                style="?attr/materialIconButtonStyle"
+                android:layout_marginEnd="8dp"/>
+
+            <ImageButton
                 android:id="@+id/btnDecrement"
                 android:layout_width="36dp"
                 android:layout_height="36dp"

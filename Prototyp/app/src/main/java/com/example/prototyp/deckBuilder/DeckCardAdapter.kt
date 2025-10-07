@@ -11,12 +11,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
+import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.deckBuilder.DeckDao
 import com.google.android.material.card.MaterialCardView
 
 class DeckCardAdapter(
     private val onIncrement: (DeckDao.DeckCardDetail) -> Unit,
-    private val onDecrement: (DeckDao.DeckCardDetail) -> Unit
+    private val onDecrement: (DeckDao.DeckCardDetail) -> Unit,
+    private val onAddToWishlist: (DeckDao.DeckCardDetail) -> Unit
 ) : ListAdapter<DeckDao.DeckCardDetail, DeckCardAdapter.ViewHolder>(DiffCallback()) {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -24,7 +26,8 @@ class DeckCardAdapter(
         private val nameText: TextView = itemView.findViewById(R.id.tvCardName)
         private val setText: TextView = itemView.findViewById(R.id.tvCardSet)
         private val quantityText: TextView = itemView.findViewById(R.id.tvQuantity)
-        // HINZUGEFÜGT: Die neuen Buttons finden
+
+        val addToWishlistButton: ImageButton = itemView.findViewById(R.id.btnAddToWishlist)
         val decrementButton: ImageButton = itemView.findViewById(R.id.btnDecrement)
         val incrementButton: ImageButton = itemView.findViewById(R.id.btnIncrement)
 
@@ -32,7 +35,8 @@ class DeckCardAdapter(
         fun bind(
             card: DeckDao.DeckCardDetail,
             onIncrement: (DeckDao.DeckCardDetail) -> Unit,
-            onDecrement: (DeckDao.DeckCardDetail) -> Unit
+            onDecrement: (DeckDao.DeckCardDetail) -> Unit,
+            onAddToWishlist: (DeckDao.DeckCardDetail) -> Unit
         ) {
             nameText.text = card.cardName
             setText.text = card.setName
@@ -45,6 +49,7 @@ class DeckCardAdapter(
             }
 
             // Die Listener an die Buttons binden
+            addToWishlistButton.setOnClickListener { onAddToWishlist(card) }
             decrementButton.setOnClickListener { onDecrement(card) }
             incrementButton.setOnClickListener { onIncrement(card) }
         }
@@ -58,7 +63,7 @@ class DeckCardAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val card = getItem(position)
-        holder.bind(getItem(position), onIncrement, onDecrement)
+        holder.bind(getItem(position), onIncrement, onDecrement, onAddToWishlist)
         applyCardBackground(holder.itemView, card.color)
     }
 

@@ -3,6 +3,7 @@ package com.example.prototyp.wishlist
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -10,12 +11,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
+import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.wishlist.WishlistDao
 import com.google.android.material.card.MaterialCardView
 
 class WishlistAdapter(
     private val onIncrement: (WishlistDao.WishlistCard) -> Unit,
-    private val onDecrement: (WishlistDao.WishlistCard) -> Unit
+    private val onDecrement: (WishlistDao.WishlistCard) -> Unit,
+    private val onMoveToCollection: (WishlistDao.WishlistCard) -> Unit
 ) : ListAdapter<WishlistDao.WishlistCard, WishlistAdapter.ViewHolder>(DiffCallback()) {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -24,17 +27,20 @@ class WishlistAdapter(
         val quantityText: TextView = itemView.findViewById(R.id.tvQuantity)
         val incrementButton: ImageButton = itemView.findViewById(R.id.btnIncrement)
         val decrementButton: ImageButton = itemView.findViewById(R.id.btnDecrement)
+        val moveButton: Button = itemView.findViewById(R.id.btnMoveToCollection)
 
         fun bind(
             card: WishlistDao.WishlistCard,
             onIncrement: (WishlistDao.WishlistCard) -> Unit,
-            onDecrement: (WishlistDao.WishlistCard) -> Unit
+            onDecrement: (WishlistDao.WishlistCard) -> Unit,
+            onMoveToCollection: (WishlistDao.WishlistCard) -> Unit
         ) {
             nameText.text = card.cardName
             setText.text = card.setName
             quantityText.text = "x${card.quantity}"
             incrementButton.setOnClickListener { onIncrement(card) }
             decrementButton.setOnClickListener { onDecrement(card) }
+            moveButton.setOnClickListener { onMoveToCollection(card) }
         }
     }
 
@@ -45,7 +51,7 @@ class WishlistAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val card = getItem(position)
-        holder.bind(card, onIncrement, onDecrement)
+        holder.bind(card, onIncrement, onDecrement, onMoveToCollection)
         applyCardBackground(holder.itemView, card.color)
     }
 

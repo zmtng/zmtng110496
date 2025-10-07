@@ -59,4 +59,19 @@ interface WishlistDao {
 
     @Query("DELETE FROM wishlist WHERE setCode = :setCode AND cardNumber = :cardNumber")
     suspend fun deleteEntry(setCode: String, cardNumber: Int)
+
+    @Transaction
+    suspend fun decrementOrDelete(setCode: String, cardNumber: Int, removeQuantity: Int) {
+        // 1. Hole den aktuellen Eintrag
+        val existing = getEntry(setCode, cardNumber) ?: return
+
+        // 2. Prüfe, ob die Menge nach dem Abzug 0 oder weniger wäre
+        if (existing.quantity <= removeQuantity) {
+            // Wenn ja, lösche den kompletten Eintrag
+            deleteEntry(existing.setCode, existing.cardNumber)
+        } else {
+            // Wenn nein, aktualisiere nur die Menge
+            updateQuantity(setCode, cardNumber, existing.quantity - removeQuantity)
+        }
+    }
 }

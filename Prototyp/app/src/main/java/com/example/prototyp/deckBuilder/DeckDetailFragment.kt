@@ -2,6 +2,7 @@ package com.example.prototyp.deckBuilder
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -23,10 +24,9 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
 
     private val deckId: Int by lazy { requireArguments().getInt(ARG_DECK_ID) }
 
-    private val viewModel: DeckDetailViewModel by activityViewModels {
-        DeckDetailViewModelFactory(deckId,
-            AppDatabase.getInstance(requireContext()).deckDao(),
-            AppDatabase.getInstance(requireContext()).masterCardDao())
+    private val viewModel: DeckDetailViewModel by viewModels {
+        val db = AppDatabase.getInstance(requireContext())
+        DeckDetailViewModelFactory(deckId, db.deckDao(), db.masterCardDao(), db.wishlistDao())
     }
     private lateinit var cardAdapter: DeckCardAdapter
 
@@ -37,7 +37,13 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
 
         cardAdapter = DeckCardAdapter(
             onIncrement = { card -> viewModel.incrementCardInDeck(card) },
-            onDecrement = { card -> viewModel.decrementCardInDeck(card) }
+            onDecrement = { card -> viewModel.decrementCardInDeck(card) },
+            onAddToWishlist = { card ->
+                // Rufe die korrekte ViewModel-Funktion auf
+                viewModel.addCardToWishlist(card)
+                // Zeige dem Nutzer eine kurze Bestätigung
+                Toast.makeText(requireContext(), "'${card.cardName}' zur Wunschliste hinzugefügt", Toast.LENGTH_SHORT).show()
+            }
         )
         val rv = view.findViewById<RecyclerView>(R.id.rvDeckCards)
         rv.adapter = cardAdapter

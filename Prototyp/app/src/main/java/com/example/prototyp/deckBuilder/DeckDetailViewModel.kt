@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.prototyp.MasterCard
 import com.example.prototyp.MasterCardDao
 import com.example.prototyp.deckBuilder.DeckDao
+import com.example.prototyp.wishlist.WishlistDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -16,13 +17,13 @@ import kotlinx.coroutines.withContext
 class DeckDetailViewModelFactory(
     private val deckId: Int,
     private val deckDao: DeckDao,
-    private val masterDao: MasterCardDao
+    private val masterDao: MasterCardDao,
+    private val wishlistDao: WishlistDao
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(DeckDetailViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            // HINZUGEFÜGT: Übergib das masterDao an das ViewModel
-            return DeckDetailViewModel(deckId, deckDao, masterDao) as T
+            return DeckDetailViewModel(deckId, deckDao, masterDao, wishlistDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
@@ -31,7 +32,8 @@ class DeckDetailViewModelFactory(
 class DeckDetailViewModel(
     private val deckId: Int,
     private val deckDao: DeckDao,
-    private val masterDao: MasterCardDao
+    private val masterDao: MasterCardDao,
+    private val wishlistDao: WishlistDao
 ) : ViewModel() {
     private val deckIdFlow = MutableStateFlow<Int?>(null)
 
@@ -59,6 +61,13 @@ class DeckDetailViewModel(
             if (currentDeckId != null) {
                 deckDao.upsertCardInDeck(currentDeckId, card.setCode, card.cardNumber)
             }
+        }
+    }
+
+    fun addCardToWishlist(card: DeckDao.DeckCardDetail) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // Fügt die Karte 1x zur Wunschliste hinzu (oder erhöht die Anzahl)
+            wishlistDao.upsertCard(card.setCode, card.cardNumber)
         }
     }
 

@@ -26,8 +26,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:contentDescription="@string/app_name"
+                android:layout_marginBottom="60dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/riftboundheader"
+                android:src="@drawable/unnamed"
                 app:layout_collapseMode="parallax" />
 
             <androidx.appcompat.widget.Toolbar
@@ -35,7 +36,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
-                app:title="Riftbound Tracker" />
+                />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>

@@ -19,6 +19,7 @@ import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.databinding.FragmentHomeBinding
 import com.example.prototyp.deckBuilder.DeckOverviewFragment
 import com.example.prototyp.prefs.ThemePrefs
+import com.example.prototyp.wishlist.WishlistFragment
 import com.example.yourapp.data.db.AppDatabase
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first

@@ -204,6 +204,9 @@ interface CardDao {
 """)
     suspend fun getByKey(setCode: String, cardNumber: Int): CollectionEntry?
 
+    @Query("DELETE FROM collection WHERE setCode = :setCode AND cardNumber = :cardNumber")
+    suspend fun deleteBySetAndNumber(setCode: String, cardNumber: Int)
+
 
 }
 

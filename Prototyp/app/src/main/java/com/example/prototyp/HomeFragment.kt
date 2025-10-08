@@ -4,9 +4,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -24,6 +26,7 @@ import com.example.prototyp.AppDatabase
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import com.example.prototyp.externalCollection.*
 
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
@@ -50,7 +53,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         uri?.let {
-            viewModel.importCollection(it, requireContext())
+            showImportTargetDialog(it) // Ruft den neuen Dialog auf
         }
     }
 
@@ -112,6 +115,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 .commit()
         }
 
+        binding.cardInfo.setOnClickListener {
+            showInfoDialog()
+        }
+
+        binding.cardExternal.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, ExternalCollectionOverviewFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         binding.cardWishlist.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, WishlistFragment())
@@ -147,6 +161,65 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showImportTargetDialog(uri: Uri) {
+        val options = arrayOf("In meine Sammlung", "Als externe Sammlung")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Wohin importieren?")
+            .setItems(options) { dialog, which ->
+                when (which) {
+                    0 -> viewModel.importCollection(uri, requireContext()) // Bestehende Funktion
+                    1 -> showNameInputDialogForExternal(uri)
+                }
+            }
+            .show()
+    }
+
+    private fun showNameInputDialogForExternal(uri: Uri) {
+        val input = EditText(requireContext())
+        AlertDialog.Builder(requireContext())
+            .setTitle("Name für externe Sammlung")
+            .setView(input)
+            .setPositiveButton("Importieren") { _, _ ->
+                val name = input.text.toString()
+                if (name.isNotBlank()) {
+                    // Hier bräuchten wir Zugriff auf das neue ViewModel...
+                    // Wir lösen das, indem wir es im Fragment erstellen.
+                    val externalViewModel: ExternalCollectionOverviewViewModel by viewModels {
+                        ExternalCollectionOverviewViewModelFactory(AppDatabase.getInstance(requireContext()).externalCollectionDao())
+                    }
+                    externalViewModel.importCollection(uri, requireContext(), name)
+                }
+            }
+            .setNegativeButton("Abbrechen", null)
+            .show()
+    }
+
+    private fun showInfoDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Info & Hilfe")
+            .setMessage(
+                "Willkommen beim Riftbound TCG Manager!\n\n" +
+                        "Hier findest du eine Übersicht aller wichtigen Funktionen:\n\n" +
+                        "--- ÜBERSICHT ---\n\n" +
+                        "• Wert berechnen: Tippe auf diese Kachel, um die aktuellen Preise (Preis-Trend von Cardmarket) für alle Karten deiner Sammlung abzurufen und den Gesamtwert zu ermitteln.\n\n" +
+                        "--- SAMMLUNG ---\n\n" +
+                        "• Karten hinzufügen: Nutze den Plus-Button (+) unten rechts, um neue Karten über die Suchfunktion zu deiner Sammlung hinzuzufügen.\n\n" +
+                        "• Preise aktualisieren: Mit dem Aktualisieren-Button (Pfeil im Kreis) links unten kannst du die Preise für deine gesamte Sammlung auf den neuesten Stand bringen.\n\n" +
+                        "• Notizen erfassen: Tippe eine Karte in der Sammlungsliste an, um persönliche Notizen hinzuzufügen oder zu bearbeiten.\n\n" +
+                        "--- DECKS ---\n\n" +
+                        "• Deck erstellen: Erstelle mit dem Plus-Button (+) eigene Decks von Grund auf.\n\n" +
+                        "• Deck importieren: Nutze den Import-Button (Pfeil nach unten), um Decks direkt aus 'Piltover\'s Archive' zu importieren. Exportiere dazu dein Deck auf der Webseite als \"TTS-Code\" und füge diesen hier ein.\n\n" +
+                        "• Sammlungs-Status: In der Deckansicht zeigt das Hand-Symbol, ob du eine Karte besitzt (grün) oder nicht (rot).\n\n" +
+                        "• Zur Wunschliste: Mit dem Stern-Symbol kannst du eine fehlende Karte direkt auf deine Wunschliste setzen. Ein ausgefüllter, gelber Stern bedeutet, die Karte ist bereits auf der Liste.\n\n" +
+                        "--- WUNSCHLISTE ---\n\n" +
+                        "• In Sammlung übertragen: Tippe auf den 'In Sammlung'-Button bei einer Karte in der Wunschliste, um sie in deine Sammlung zu verschieben.\n\n" +
+                        "--- ALLGEMEIN ---\n\n" +
+                        "• Löschen: Du kannst fast alles (Karten in Listen, Decks in der Übersicht) durch langes Gedrückthalten und eine anschließende Bestätigung dauerhaft löschen."
+            )
+            .setPositiveButton("Verstanden", null)
+            .show()
     }
 }
 

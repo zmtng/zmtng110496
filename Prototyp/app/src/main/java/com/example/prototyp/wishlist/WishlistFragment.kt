@@ -1,5 +1,6 @@
 package com.example.prototyp.wishlist
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -65,7 +66,8 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
                 // Hier wird jetzt die korrigierte ViewModel-Funktion aufgerufen.
                 viewModel.transferToCollection(card, 1) // Verschiebt 1 Exemplar
                 Toast.makeText(requireContext(), "'${card.cardName}' zur Sammlung hinzugefügt", Toast.LENGTH_SHORT).show()
-            }
+            },
+            onLongClick = { showDeleteConfirmationDialog(it) }
         )
         binding.rvWishlist.adapter = wishlistAdapter
         binding.rvWishlist.layoutManager = LinearLayoutManager(requireContext())
@@ -129,6 +131,17 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showDeleteConfirmationDialog(card: WishlistDao.WishlistCard) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Karte löschen")
+            .setMessage("Möchtest du '${card.cardName}' wirklich von der Wunschliste entfernen?")
+            .setPositiveButton("Löschen") { _, _ ->
+                viewModel.deleteCard(card)
+            }
+            .setNegativeButton("Abbrechen", null)
+            .show()
     }
 }
 

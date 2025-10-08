@@ -93,4 +93,10 @@ class WishlistViewModel(
             masterDao.search(query, color, set)
         }
     }
+
+    fun deleteCard(card: WishlistDao.WishlistCard) {
+        viewModelScope.launch(Dispatchers.IO) {
+            wishlistDao.deleteEntry(card.setCode, card.cardNumber)
+        }
+    }
 }

@@ -14,7 +14,8 @@ import com.example.prototyp.data.db.CardDao
 class CardAdapter(
     private val onIncrement: (CardDao.CollectionRowData) -> Unit,
     private val onDecrement: (CardDao.CollectionRowData) -> Unit,
-    private val onItemClick: (CardDao.CollectionRowData) -> Unit
+    private val onItemClick: (CardDao.CollectionRowData) -> Unit,
+    private val onLongClick: (CardDao.CollectionRowData) -> Unit
 ) : ListAdapter<CardDao.CollectionRowData, CardAdapter.VH>(CardDiffCallback()) {
 
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -45,6 +46,10 @@ class CardAdapter(
         h.btnIncrement.setOnClickListener { onIncrement(row) }
         h.btnDecrement.setOnClickListener { onDecrement(row) }
         h.itemView.setOnClickListener { onItemClick(row) }
+        h.itemView.setOnLongClickListener {
+            onLongClick(row)
+            true
+        }
 
         applyCardBackground(h.itemView, row.color)
     }
@@ -53,7 +58,6 @@ class CardAdapter(
         val context = view.context
         when (colorCode?.trim()?.uppercase()) {
             "M" -> {
-
                 view.setBackgroundResource(R.drawable.rainbow_gradient)
             }
 

@@ -200,4 +200,10 @@ class CollectionViewModel(
             masterDao.search(query, color, set)
         }
     }
+
+    fun deleteCard(card: CardDao.CollectionRowData) {
+        viewModelScope.launch(Dispatchers.IO) {
+            cardDao.deleteBySetAndNumber(card.setCode, card.cardNumber)
+        }
+    }
 }

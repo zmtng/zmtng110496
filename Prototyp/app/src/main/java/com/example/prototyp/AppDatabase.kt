@@ -19,6 +19,7 @@ import java.io.InputStreamReader
 import com.example.prototyp.deckBuilder.Deck
 import com.example.prototyp.deckBuilder.DeckCard
 import com.example.prototyp.deckBuilder.DeckDao
+import com.example.prototyp.externalCollection.*
 import com.example.prototyp.wishlist.WishlistDao
 import com.example.prototyp.wishlist.WishlistEntry
 
@@ -30,9 +31,11 @@ import com.example.prototyp.wishlist.WishlistEntry
         CardSet::class,
         Deck::class,
         DeckCard::class,
-        WishlistEntry::class
+        WishlistEntry::class,
+        ExternalCollection::class,
+        ExternalCollectionCard::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -42,6 +45,8 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun deckDao(): DeckDao
     abstract fun wishlistDao(): WishlistDao
+
+    abstract fun externalCollectionDao(): ExternalCollectionDao
 
 
     companion object {
@@ -56,7 +61,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "riftbound.db")
-                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9)
+                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
@@ -151,6 +156,31 @@ abstract class AppDatabase : RoomDatabase() {
                     PRIMARY KEY(`setCode`, `cardNumber`)
                 )
             """)
+            }
+        }
+
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // SQL-Befehl zum Erstellen der neuen Tabelle für externe Sammlungen
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `external_collections` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `name` TEXT NOT NULL
+                    )
+                """.trimIndent())
+
+                // SQL-Befehl zum Erstellen der neuen Tabelle für die Karten darin
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `external_collection_cards` (
+                        `collectionId` INTEGER NOT NULL,
+                        `setCode` TEXT NOT NULL,
+                        `cardNumber` INTEGER NOT NULL,
+                        `quantity` INTEGER NOT NULL,
+                        `price` REAL,
+                        PRIMARY KEY(`collectionId`, `setCode`, `cardNumber`),
+                        FOREIGN KEY(`collectionId`) REFERENCES `external_collections`(`id`) ON DELETE CASCADE
+                    )
+                """.trimIndent())
             }
         }
 

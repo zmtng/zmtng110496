@@ -104,4 +104,15 @@ class DeckDetailViewModel(
         }
     }
 
+    fun deleteCard(card: DeckDao.DeckCardDetail) {
+        // Hole den aktuellen Wert aus dem StateFlow.
+        // Wenn er null ist, breche sicher ab.
+        val currentDeckId = deckId.value ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            // Übergebe den ausgepackten Int-Wert
+            deckDao.deleteCardFromDeck(currentDeckId, card.setCode, card.cardNumber)
+        }
+    }
+
 }

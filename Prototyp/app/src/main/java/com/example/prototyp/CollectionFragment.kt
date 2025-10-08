@@ -56,7 +56,8 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         adapter = CardAdapter(
             onIncrement = { card -> viewModel.incrementQuantity(card) },
             onDecrement = { card -> viewModel.decrementQuantity(card) },
-            onItemClick = { card -> showEditNotesDialog(card) }
+            onItemClick = { card -> showEditNotesDialog(card) },
+            onLongClick = { showDeleteConfirmationDialog(it) }
         )
         binding.rvCards.adapter = adapter
         binding.rvCards.layoutManager = LinearLayoutManager(requireContext())
@@ -215,6 +216,17 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showDeleteConfirmationDialog(card: CardDao.CollectionRowData) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Karte löschen")
+            .setMessage("Möchtest du '${card.cardName}' wirklich aus der Sammlung entfernen?")
+            .setPositiveButton("Löschen") { _, _ ->
+                viewModel.deleteCard(card)
+            }
+            .setNegativeButton("Abbrechen", null)
+            .show()
     }
 }
 

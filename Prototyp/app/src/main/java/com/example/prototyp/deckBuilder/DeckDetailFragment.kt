@@ -1,5 +1,6 @@
 package com.example.prototyp.deckBuilder
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -40,7 +41,8 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
             onAddToWishlist = { card ->
                 viewModel.addCardToWishlist(card)
                 Toast.makeText(requireContext(), "'${card.cardName}' zur Wunschliste hinzugefügt", Toast.LENGTH_SHORT).show()
-            }
+            },
+            onLongClick = { showDeleteConfirmationDialog(it) }
         )
         val rv = view.findViewById<RecyclerView>(R.id.rvDeckCards)
         rv.adapter = cardAdapter
@@ -58,6 +60,16 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
                 .addToBackStack(null)
                 .commit()
         }
+    }
+    private fun showDeleteConfirmationDialog(card: DeckDao.DeckCardDetail) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Karte löschen")
+            .setMessage("Möchtest du '${card.cardName}' wirklich aus dem Deck entfernen?")
+            .setPositiveButton("Löschen") { _, _ ->
+                viewModel.deleteCard(card)
+            }
+            .setNegativeButton("Abbrechen", null)
+            .show()
     }
 
     companion object {

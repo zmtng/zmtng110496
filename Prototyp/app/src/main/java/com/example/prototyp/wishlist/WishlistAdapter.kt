@@ -1,5 +1,6 @@
 package com.example.prototyp.wishlist
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +19,8 @@ import com.google.android.material.card.MaterialCardView
 class WishlistAdapter(
     private val onIncrement: (WishlistDao.WishlistCard) -> Unit,
     private val onDecrement: (WishlistDao.WishlistCard) -> Unit,
-    private val onMoveToCollection: (WishlistDao.WishlistCard) -> Unit
+    private val onMoveToCollection: (WishlistDao.WishlistCard) -> Unit,
+    private val onLongClick: (WishlistDao.WishlistCard) -> Unit
 ) : ListAdapter<WishlistDao.WishlistCard, WishlistAdapter.ViewHolder>(DiffCallback()) {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -35,7 +37,8 @@ class WishlistAdapter(
             card: WishlistDao.WishlistCard,
             onIncrement: (WishlistDao.WishlistCard) -> Unit,
             onDecrement: (WishlistDao.WishlistCard) -> Unit,
-            onMoveToCollection: (WishlistDao.WishlistCard) -> Unit
+            onMoveToCollection: (WishlistDao.WishlistCard) -> Unit,
+            onLongClick: (WishlistDao.WishlistCard) -> Unit
         ) {
             nameText.text = card.cardName
             setText.text = card.setName
@@ -44,6 +47,10 @@ class WishlistAdapter(
             incrementButton.setOnClickListener { onIncrement(card) }
             decrementButton.setOnClickListener { onDecrement(card) }
             moveButton.setOnClickListener { onMoveToCollection(card) }
+            itemView.setOnLongClickListener {
+                onLongClick(card)
+                true
+            }
         }
     }
 
@@ -54,7 +61,7 @@ class WishlistAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val card = getItem(position)
-        holder.bind(card, onIncrement, onDecrement, onMoveToCollection)
+        holder.bind(card, onIncrement, onDecrement, onMoveToCollection, onLongClick)
         applyCardBackground(holder.itemView, card.color)
     }
 
@@ -63,7 +70,10 @@ class WishlistAdapter(
         val context = view.context
 
         when (colorCode?.trim()?.uppercase()) {
-            "M" -> cardView.setBackgroundResource(R.drawable.rainbow_gradient)
+            "M" -> {
+                cardView.setCardBackgroundColor(Color.TRANSPARENT)
+                cardView.setBackgroundResource(R.drawable.rainbow_gradient)
+            }
             "R" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_red))
             "B" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_blue))
             "G" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_green))

@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:fitsSystemWindows="true"
-    tools:context=".CollectionFragment">
+    android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true">
 
+    <!-- Toolbar für den Titel -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:title="Meine Sammlung" />
+        app:title="Karte hinzufügen" />
 
+    <!-- Schicke Karte für Suche und Filter -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -29,25 +30,29 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Suchleiste -->
             <androidx.appcompat.widget.SearchView
-                android:id="@+id/searchViewCollection"
+                android:id="@+id/searchView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:iconifiedByDefault="false"
                 app:queryHint="Nach Namen suchen..." />
 
+            <ImageButton
+                android:id="@+id/btnCameraScan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:src="@drawable/ic_camera"
+                android:contentDescription="Karte scannen"
+                style="@style/Widget.AppCompat.Button.Borderless"/>
+
+            <!-- Horizontales Layout für die Filter-Spinner -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:orientation="horizontal">
-
-                <Spinner
-                    android:id="@+id/spinnerSort"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"/>
 
                 <Spinner
                     android:id="@+id/spinnerColor"
@@ -66,34 +71,13 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <FrameLayout
+    <!-- Liste der Suchergebnisse -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMasterCards"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvCards"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:padding="8dp"/>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fabUpdatePrices"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|left"
-            android:layout_margin="16dp"
-            android:contentDescription="Kartenpreise aktualisieren"
-            app:srcCompat="@drawable/ic_update" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/btnAddCard"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="16dp"
-            android:contentDescription="Neue Karte hinzufügen"
-            app:srcCompat="@drawable/plus" /> </FrameLayout>
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:padding="8dp"/>
 
 </LinearLayout>

@@ -88,11 +88,9 @@ class WishlistViewModel(
     }
 
 
-    suspend fun searchMasterCards(query: String): List<MasterCard> {
+    suspend fun searchMasterCards(query: String, color: String, set: String): List<MasterCard> {
         return withContext(Dispatchers.IO) {
-            masterDao.search(query)
+            masterDao.search(query, color, set)
         }
-
-
     }
 }

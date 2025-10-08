@@ -123,7 +123,7 @@ class CollectionViewModel(
             for ((index, card) in currentCollection.withIndex()) {
                 _userMessage.value = "Prüfe Karte ${index + 1}/${currentCollection.size}: ${card.cardName}"
                 fetchPriceForCard(card, showSuccessMessage = false) {}
-                delay(1500L)
+                delay(500L)
             }
 
             _userMessage.value = "Preis-Update abgeschlossen!"
@@ -186,6 +186,18 @@ class CollectionViewModel(
                     _userMessage.value = "Preis für '${row.cardName}' konnte nicht abgerufen werden."
                 }
             }
+        }
+    }
+    fun addCardToCollection(card: MasterCard) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // Die upsert-Funktion in deinem CardDao wird hier wiederverwendet
+            cardDao.upsertBySetAndNumber(card.setCode, card.cardNumber, 1, card.color)
+        }
+    }
+
+    suspend fun searchMasterCards(query: String, color: String, set: String): List<MasterCard> {
+        return withContext(Dispatchers.IO) {
+            masterDao.search(query, color, set)
         }
     }
 }

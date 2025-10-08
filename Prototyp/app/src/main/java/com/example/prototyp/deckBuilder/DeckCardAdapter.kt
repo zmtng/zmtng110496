@@ -48,8 +48,16 @@ class DeckCardAdapter(
                 statusIcon.setImageResource(R.drawable.ic_close_circle)
             }
 
+            addToWishlistButton.isActivated = card.onWishlist
+
+            addToWishlistButton.setOnClickListener {
+                onAddToWishlist(card)
+                // Setzt den Button sofort auf "aktiviert", um direktes Feedback zu geben.
+                // Die Liste wird sich sowieso neu laden und den korrekten Zustand aus der DB anzeigen.
+                it.isActivated = true
+            }
+
             // Die Listener an die Buttons binden
-            addToWishlistButton.setOnClickListener { onAddToWishlist(card) }
             decrementButton.setOnClickListener { onDecrement(card) }
             incrementButton.setOnClickListener { onIncrement(card) }
         }

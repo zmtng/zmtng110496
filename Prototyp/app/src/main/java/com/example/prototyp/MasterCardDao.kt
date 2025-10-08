@@ -62,6 +62,17 @@ interface MasterCardDao {
     @Query("SELECT DISTINCT setName FROM master_cards ORDER BY setName ASC")
     suspend fun getDistinctSetNames(): List<String>
 
+    @Query("""
+        SELECT *
+        FROM master_cards
+        WHERE
+            (:q = '' OR LOWER(cardName) LIKE '%' || LOWER(:q) || '%') AND
+            (:color = '' OR color = :color) AND
+            (:set = '' OR setCode = :set)
+        ORDER BY cardName, setCode, cardNumber
+    """)
+    suspend fun search(q: String, color: String, set: String): List<MasterCard>
+
 
 }
 

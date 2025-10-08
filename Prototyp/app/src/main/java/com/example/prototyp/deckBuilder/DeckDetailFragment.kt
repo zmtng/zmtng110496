@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.AppDatabase
 import com.example.prototyp.R
-import com.example.prototyp.ui.AddCardToDeckFragment
+import com.example.prototyp.deckBuilder.AddCardToDeckFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch

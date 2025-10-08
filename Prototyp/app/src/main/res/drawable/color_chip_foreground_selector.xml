@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Dieser Selektor ist standardmäßig unsichtbar und zeigt
-     NUR einen Ring, wenn das Element ausgewählt ist. -->
+<!-- Dieser Selektor ist standardmäßig unsichtbar -->
+<!-- und zeigt nur einen Ring, wenn das Element ausgewählt ist. -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Zustand: Wenn ausgewählt -> zeige einen Ring -->
     <item android:state_selected="true">
         <shape android:shape="oval">
+            <!-- Wichtig: Keine Füllfarbe, nur ein Rand -->
             <solid android:color="@android:color/transparent" />
             <stroke
                 android:width="3dp"

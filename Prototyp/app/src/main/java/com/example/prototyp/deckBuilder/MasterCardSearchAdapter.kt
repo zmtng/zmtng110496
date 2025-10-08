@@ -19,6 +19,8 @@ class MasterCardSearchAdapter(
         val nameText: TextView = itemView.findViewById(R.id.tvCardName)
         val setText: TextView = itemView.findViewById(R.id.tvCardSet)
         val addButton: Button = itemView.findViewById(R.id.btnAdd)
+
+        val numberText: TextView = itemView.findViewById(R.id.tvCardNumber)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -32,7 +34,7 @@ class MasterCardSearchAdapter(
         holder.setText.text = card.setName
         holder.addButton.setOnClickListener { onAddClick(card) }
 
-        // ##### HINZUGEFÜGT: Hintergrundfarbe setzen #####
+        holder.numberText.text = "#${card.cardNumber.toString().padStart(3, '0')}"
         applyCardBackground(holder.itemView, card.color)
     }
 

@@ -1,5 +1,18 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="24dp" android:tint="#000000" android:viewportHeight="960" android:viewportWidth="960" android:width="24dp">
-      
-    <path android:fillColor="@android:color/white" android:pathData="M389,560L480,505L571,560L547,456L627,387L522,378L480,280L438,378L333,387L413,456L389,560ZM200,840L200,200Q200,167 223.5,143.5Q247,120 280,120L680,120Q713,120 736.5,143.5Q760,167 760,200L760,840L480,720L200,840ZM280,718L480,632L680,718L680,200Q680,200 680,200Q680,200 680,200L280,200Q280,200 280,200Q280,200 280,200L280,718ZM280,200L280,200Q280,200 280,200Q280,200 280,200L680,200Q680,200 680,200Q680,200 680,200L680,200L480,200L280,200Z"/>
-    
-</vector>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dieser Selektor ändert die Farbe des Icons basierend auf dem "activated"-Zustand -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Zustand: Wenn aktiviert (state_activated="true") -> wird gelb -->
+    <item android:state_activated="true">
+        <vector android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+            <path android:fillColor="@android:color/holo_orange_light" android:pathData="M12,17.27L18.18,21l-1.64,-7.03L22,9.24l-7.19,-0.61L12,2 9.19,8.63 2,9.24l5.46,4.73L5.82,21z"/>
+        </vector>
+    </item>
+
+    <!-- Standard-Zustand: Nutzt die normale Textfarbe (die wir per app:tint setzen) -->
+    <item>
+        <vector android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+            <path android:fillColor="?android:attr/textColorPrimary" android:pathData="M22,9.24l-7.19,-0.62L12,2 9.19,8.63 2,9.24l5.46,4.73L5.82,21 12,17.27 18.18,21l-1.63,-7.03L22,9.24zM12,15.4l-3.76,2.27 1,-4.28 -3.09,-2.68 4.4,-0.38L12,6.1l1.45,4.24 4.4,0.38 -3.09,2.68 1,4.28L12,15.4z"/>
+        </vector>
+    </item>
+</selector>

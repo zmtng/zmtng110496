@@ -29,6 +29,8 @@ class WishlistAdapter(
         val decrementButton: ImageButton = itemView.findViewById(R.id.btnDecrement)
         val moveButton: Button = itemView.findViewById(R.id.btnMoveToCollection)
 
+        val numberText: TextView = itemView.findViewById(R.id.tvCardNumber)
+
         fun bind(
             card: WishlistDao.WishlistCard,
             onIncrement: (WishlistDao.WishlistCard) -> Unit,
@@ -37,6 +39,7 @@ class WishlistAdapter(
         ) {
             nameText.text = card.cardName
             setText.text = card.setName
+            numberText.text = "#${card.cardNumber.toString().padStart(3, '0')}"
             quantityText.text = "x${card.quantity}"
             incrementButton.setOnClickListener { onIncrement(card) }
             decrementButton.setOnClickListener { onDecrement(card) }

@@ -16,19 +16,16 @@ interface DeckDao {
 
     @Query("SELECT * FROM decks ORDER BY name ASC")
     fun observeAllDecks(): Flow<List<Deck>>
-
-    // ##### HINZUGEFÜGT: DTO für die Detailansicht #####
-    // Dieses Objekt hält das Ergebnis unserer komplexen Abfrage.
     data class DeckCardDetail(
         // Basis-Infos
         val setCode: String,
         val cardNumber: Int,
-        val quantity: Int, // Anzahl im Deck
+        val quantity: Int,
         val cardName: String,
         val setName: String,
         val color: String,
-        // Der "in Sammlung"-Status
-        val inCollection: Boolean
+        val inCollection: Boolean,
+        val onWishlist: Boolean
     )
 
     // ##### HINZUGEFÜGT: Die komplexe JOIN-Abfrage #####
@@ -36,10 +33,12 @@ interface DeckDao {
         SELECT
             dc.setCode, dc.cardNumber, dc.quantity,
             m.cardName, m.setName, m.color,
-            CASE WHEN c.quantity > 0 THEN 1 ELSE 0 END as inCollection
+            CASE WHEN c.quantity > 0 THEN 1 ELSE 0 END as inCollection,
+            CASE WHEN w.quantity > 0 THEN 1 ELSE 0 END as onWishlist
         FROM deck_cards dc
         JOIN master_cards m ON dc.setCode = m.setCode AND dc.cardNumber = m.cardNumber
         LEFT JOIN collection c ON dc.setCode = c.setCode AND dc.cardNumber = c.cardNumber
+        LEFT JOIN wishlist w ON dc.setCode = w.setCode AND dc.cardNumber = w.cardNumber
         WHERE dc.deckId = :deckId
         ORDER BY m.cardName ASC
     """)
@@ -88,6 +87,8 @@ interface DeckDao {
         // 3. Füge alle Karten auf einmal in die Datenbank ein
         insertDeckCards(cardsWithDeckId)
     }
+
+
 
     @Delete
     suspend fun deleteDeck(deck: Deck)

@@ -17,11 +17,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.MasterCardDao
 import com.example.prototyp.databinding.FragmentCollectionBinding
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import com.example.prototyp.CollectionViewModel
-import com.example.prototyp.SortOrder
+
 
 class CollectionFragment : Fragment(R.layout.fragment_collection) {
 
@@ -50,6 +48,8 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         setupListeners()
         setupObservers()
         setupFilters() // Filter am Ende initialisieren, wenn alles andere steht
+
+
     }
 
     private fun setupAdapter() {
@@ -65,9 +65,14 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
     private fun setupListeners() {
         binding.btnAddCard.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, AddCardFragment())
+                .replace(R.id.fragmentContainer, AddCardToCollectionFragment())
                 .addToBackStack(null)
                 .commit()
+        }
+
+        binding.fabUpdatePrices.setOnClickListener {
+            viewModel.fetchAllPrices()
+            Toast.makeText(requireContext(), "Starte Preis-Update...", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -158,6 +163,7 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         val generalNotesEditText = dialogView.findViewById<EditText>(R.id.editTextGeneralNotes)
         val colorIndicator = dialogView.findViewById<View>(R.id.colorIndicator)
         val fetchPriceButton = dialogView.findViewById<Button>(R.id.btnFetchPrice)
+
 
         fetchPriceButton.setOnClickListener {
             it.isEnabled = false

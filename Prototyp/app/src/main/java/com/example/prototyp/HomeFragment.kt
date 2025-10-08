@@ -129,7 +129,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         binding.cardImport.setOnClickListener {
-            importLauncher.launch("text/csv")
+            importLauncher.launch("*/*")
         }
 
         binding.cardToggleTheme.setOnClickListener {
@@ -143,9 +143,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             AppCompatDelegate.setDefaultNightMode(newNightMode)
         }
     }
-
-    // ##### ALT: Das Popup-Menü wird nicht mehr gebraucht. #####
-    // private fun showOptionsMenu(anchorView: View) { ... }
 
     override fun onDestroyView() {
         super.onDestroyView()

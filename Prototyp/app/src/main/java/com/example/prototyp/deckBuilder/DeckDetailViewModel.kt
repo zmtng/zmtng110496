@@ -78,9 +78,9 @@ class DeckDetailViewModel(
         }
     }
 
-    suspend fun searchMasterCards(query: String): List<MasterCard> {
+    suspend fun searchMasterCards(query: String, color: String, set: String): List<MasterCard> {
         return withContext(Dispatchers.IO) {
-            masterDao.search(query)
+            masterDao.search(query, color, set)
         }
     }
 
@@ -92,4 +92,16 @@ class DeckDetailViewModel(
     fun setDeckId(id: Int) {
         _deckIdFlow.value = id
     }
+    suspend fun getFilterColors(): List<String> {
+        return withContext(Dispatchers.IO) {
+            masterDao.getDistinctColors()
+        }
+    }
+
+    suspend fun getFilterSets(): List<String> {
+        return withContext(Dispatchers.IO) {
+            masterDao.getDistinctSetCodes()
+        }
+    }
+
 }

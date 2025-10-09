@@ -14,7 +14,7 @@ data class CollectionEntry(
     val quantity: Int,
     val price: Double?,
     @ColumnInfo(name = "color", defaultValue = "'U'")
-    val color: String = "U",   // **nicht** nullable + Default
+    val color: String = "U",
     var personalNotes: String? = null,
     var generalNotes: String? = null
 )

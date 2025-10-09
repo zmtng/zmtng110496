@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.prototyp.AppDatabase
 import com.example.prototyp.R
-import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.deckBuilder.MasterCardSearchAdapter
 import com.example.prototyp.databinding.FragmentAddCardWithFiltersBinding
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +37,6 @@ class AddCardToWishlistFragment : Fragment() {
     private lateinit var searchAdapter: MasterCardSearchAdapter
     private val colorMap = mapOf("R" to "Rot", "B" to "Blau", "G" to "Grün", "Y" to "Gelb", "P" to "Lila", "O" to "Orange", "U" to "Grau", "M" to "Mehrfarbig")
 
-    // StateFlows für die Filter
     private val searchQuery = MutableStateFlow("")
     private val colorFilter = MutableStateFlow("")
     private val setFilter = MutableStateFlow("")
@@ -54,7 +52,6 @@ class AddCardToWishlistFragment : Fragment() {
 
         binding.toolbar.title = "Karte zur Wunschliste hinzufügen"
 
-        // NEU: Listener für den Kamera-Button
         binding.btnCameraScan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, CameraFragment())
@@ -62,12 +59,11 @@ class AddCardToWishlistFragment : Fragment() {
                 .commit()
         }
 
-        // NEU: Beobachter für den gescannten Text
         viewLifecycleOwner.lifecycleScope.launch {
             cameraViewModel.scannedText.collect { text ->
                 text?.let {
-                    binding.searchView.setQuery(it, true) // Füllt die Suche aus
-                    cameraViewModel.consumeScannedText() // Setzt den Wert zurück
+                    binding.searchView.setQuery(it, true)
+                    cameraViewModel.consumeScannedText()
                 }
             }
         }

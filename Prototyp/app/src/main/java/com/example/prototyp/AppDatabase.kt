@@ -85,7 +85,7 @@ abstract class AppDatabase : RoomDatabase() {
 
                     override fun onOpen(db: SupportSQLiteDatabase) {
                         super.onOpen(db)
-                        // Fallback: Wenn master_cards leer ist (z.B. nach Reinstall oder wenn onCreate schiefging), erneut importieren
+                        // Fallback: Wenn master_cards leer ist erneut importieren
                         val appDb = getInstance(context)
                         CoroutineScope(Dispatchers.IO).launch {
                             try {
@@ -108,10 +108,6 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
 
-        /**
-         * Migration von Version 1 (nur Card-Tabelle) auf Version 2 (fügt MasterCard-Tabelle hinzu).
-         * Passt die Namen/Spalten bei Bedarf an, falls du deine Card-Tabelle anders definiert hast.
-         */
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 /*db.execSQL("ALTER TABLE master_cards ADD COLUMN color TEXT NOT NULL DEFAULT 'R'")
@@ -128,7 +124,6 @@ abstract class AppDatabase : RoomDatabase() {
 
         val MIGRATION_7_8 = object : Migration(7, 8) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // Erstellt die 'decks'-Tabelle
                 db.execSQL("""
                     CREATE TABLE IF NOT EXISTS `decks` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -136,7 +131,6 @@ abstract class AppDatabase : RoomDatabase() {
                         `colorHex` TEXT NOT NULL
                     )
                 """)
-                // Erstellt die 'deck_cards'-Tabelle
                 db.execSQL("""
                     CREATE TABLE IF NOT EXISTS `deck_cards` (
                         `deckId` INTEGER NOT NULL,
@@ -173,7 +167,6 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                 """.trimIndent())
 
-                // SQL-Befehl zum Erstellen der neuen Tabelle für die Karten darin
                 database.execSQL("""
                     CREATE TABLE IF NOT EXISTS `external_collection_cards` (
                         `collectionId` INTEGER NOT NULL,
@@ -210,14 +203,6 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        /**
-         * CSV-Lader für assets/master_cards.csv
-         *
-         * Erwartetes Header-Format (case-insensitive):
-         * set_code,set_name,card_number,card_name
-         *
-         * Falls deine CSV andere Spaltennamen nutzt: unten die Keys im Zugriff anpassen.
-         */
         private fun loadCardsFromAssets(context: Context, assetName: String): List<MasterCard> {
             context.assets.open(assetName).use { input ->
                 BufferedReader(InputStreamReader(input, Charsets.UTF_8)).use { br ->
@@ -226,10 +211,8 @@ abstract class AppDatabase : RoomDatabase() {
 
                     val headerLine = br.readLine() ?: return emptyList()
 
-                    // Trennzeichen automatisch erkennen (Komma vs. Semikolon)
                     val delimiter = if (headerLine.count { it == ';' } > headerLine.count { it == ',' }) ';' else ','
 
-                    // CSV-Zeile mit Quote-Unterstützung splitten
                     fun splitCsv(line: String): List<String> {
                         val res = mutableListOf<String>()
                         val sb = StringBuilder()
@@ -254,13 +237,11 @@ abstract class AppDatabase : RoomDatabase() {
                     val headerCols = splitCsv(headerLine)
                     val headerNorm = headerCols.map { normalize(it) }
 
-                    // Hilfsfunktion: spaltenindex per Synonym finden
                     fun idx(vararg synonyms: String): Int {
                         val wanted = synonyms.map(::normalize)
                         return headerNorm.indexOfFirst { hn -> wanted.any { it == hn } }
                     }
 
-                    // Tolerante Zuordnung der Pflichtfelder
                     val iSetCode   = idx("set_code","setcode","code","set")
                     val iSetName   = idx("set_name","setname","name","settitle","setlabel")
                     val iCardNo    = idx("card_number","cardnumber","number","no","nr")
@@ -268,7 +249,6 @@ abstract class AppDatabase : RoomDatabase() {
                     val iColor     = idx("color","colour")
 
                     if (iSetCode < 0 || iSetName < 0 || iCardNo < 0 || iCardName < 0) {
-                        // Header passt nicht – lieber leer zurück statt crashen
                         return emptyList()
                     }
 

@@ -21,13 +21,11 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import com.example.prototyp.camera.*
 
-// Wir benennen das alte AddCardFragment quasi in AddCardToCollectionFragment um
 class AddCardToCollectionFragment : Fragment() {
 
     private var _binding: FragmentAddCardWithFiltersBinding? = null
     private val binding get() = _binding!!
 
-    // Geteiltes ViewModel für die Sammlung
     private val viewModel: CollectionViewModel by activityViewModels {
         CollectionViewModelFactory(
             AppDatabase.getInstance(requireContext()).cardDao(),
@@ -35,7 +33,6 @@ class AddCardToCollectionFragment : Fragment() {
         )
     }
 
-    // Geteiltes ViewModel für die Kamera-Ergebnisse
     private val cameraViewModel: CameraViewModel by activityViewModels()
 
     private lateinit var searchAdapter: MasterCardSearchAdapter
@@ -48,7 +45,6 @@ class AddCardToCollectionFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentAddCardWithFiltersBinding.inflate(inflater, container, false)
-        // WICHTIG: Die Toolbar bekommt den richtigen Titel
         binding.toolbar.title = "Karte zur Sammlung hinzufügen"
         return binding.root
     }
@@ -72,7 +68,6 @@ class AddCardToCollectionFragment : Fragment() {
     }
 
     private fun setupCamera() {
-        // Listener für den Kamera-Button
         binding.btnCameraScan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, CameraFragment())
@@ -80,13 +75,13 @@ class AddCardToCollectionFragment : Fragment() {
                 .commit()
         }
 
-        // Beobachter für den gescannten Text
+
         viewLifecycleOwner.lifecycleScope.launch {
             cameraViewModel.scannedText.collect { text ->
                 text?.let {
-                    binding.searchView.setQuery(it, true) // Füllt die Suche aus
-                    searchQuery.value = it // Wichtig: Auch den StateFlow aktualisieren
-                    cameraViewModel.consumeScannedText() // Setzt den Wert zurück
+                    binding.searchView.setQuery(it, true)
+                    searchQuery.value = it
+                    cameraViewModel.consumeScannedText()
                 }
             }
         }

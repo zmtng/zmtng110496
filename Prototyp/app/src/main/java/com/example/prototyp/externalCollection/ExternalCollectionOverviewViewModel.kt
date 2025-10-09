@@ -34,25 +34,21 @@ class ExternalCollectionOverviewViewModel(
                 val validatedCards = mutableListOf<ExternalCollectionCard>()
                 var notFoundCount = 0
 
-                // Die CSV-Daten werden zuerst vollständig eingelesen.
                 val rows = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     csvReader().open(inputStream) {
-                        readAllWithHeaderAsSequence().toList() // Als Liste materialisieren
+                        readAllWithHeaderAsSequence().toList()
                     }
                 } ?: emptyList()
 
-                // Jetzt wird die Liste in der Coroutine durchlaufen,
-                // was den Aufruf von suspend-Funktionen erlaubt.
                 rows.forEach { row ->
                     val setCode = row["setCode"]
                     val cardNumber = row["cardNumber"]?.toIntOrNull()
 
                     if (setCode != null && cardNumber != null) {
-                        // Validierung gegen die Master-Tabelle (jetzt legal)
                         val masterCard = masterDao.getBySetAndNumber(setCode, cardNumber)
                         if (masterCard != null) {
                             val card = ExternalCollectionCard(
-                                collectionId = 0, // Platzhalter
+                                collectionId = 0,
                                 setCode = setCode,
                                 cardNumber = cardNumber,
                                 quantity = row["quantity"]?.toIntOrNull() ?: 1,

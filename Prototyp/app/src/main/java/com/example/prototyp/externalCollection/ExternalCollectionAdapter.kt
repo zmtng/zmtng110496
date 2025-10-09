@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
 
-// This is adapted from DeckAdapter.kt
 class ExternalCollectionAdapter(
     private val onClick: (ExternalCollection) -> Unit,
     private val onLongClick: (ExternalCollection) -> Unit

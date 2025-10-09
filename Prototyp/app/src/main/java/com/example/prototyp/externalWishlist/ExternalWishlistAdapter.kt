@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
 
-// Kopie von ExternalCollectionAdapter, angepasst für ExternalWishlist
 class ExternalWishlistAdapter(
     private val onClick: (ExternalWishlist) -> Unit,
     private val onLongClick: (ExternalWishlist) -> Unit
@@ -34,7 +33,7 @@ class ExternalWishlistAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_external_collection, parent, false) // Layout wiederverwenden
+            .inflate(R.layout.item_external_collection, parent, false)
         return ViewHolder(view)
     }
 

@@ -19,7 +19,6 @@ class ExternalWishlistDetailViewModel(
     private val _colorFilter = MutableStateFlow("")
     private val _setFilter = MutableStateFlow("")
 
-    // Dieser Flow kombiniert die ID und alle Filter und holt die passenden Daten aus der DB.
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val wishlistContents = wishlistId.filterNotNull().flatMapLatest { id ->
         combine(_searchQuery, _colorFilter, _setFilter) { query, color, set ->
@@ -35,7 +34,6 @@ class ExternalWishlistDetailViewModel(
     fun setColorFilter(color: String) { _colorFilter.value = color }
     fun setSetFilter(set: String) { _setFilter.value = set }
 
-    // Funktion, um eine Karte zur *eigenen* Haupt-Wunschliste hinzuzufügen
     fun addCardToOwnWishlist(card: ExternalWishlistDao.CardDetail) {
         viewModelScope.launch(Dispatchers.IO) {
             wishlistDao.upsertCard(card.setCode, card.cardNumber)

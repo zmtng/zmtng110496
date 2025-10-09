@@ -55,14 +55,12 @@ class ExternalCollectionDetailFragment : Fragment() {
         binding.rvExternalCards.adapter = cardAdapter
         binding.rvExternalCards.layoutManager = LinearLayoutManager(requireContext())
 
-        // Die Logik zum Beobachten der Daten bleibt gleich, sie ist jetzt automatisch reaktiv
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.collectionContents.collectLatest { cards ->
                 cardAdapter.submitList(cards)
             }
         }
 
-        // NEU: Rufe die Funktion zum Einrichten der Filter auf
         setupFilters()
     }
 
@@ -76,7 +74,6 @@ class ExternalCollectionDetailFragment : Fragment() {
         })
 
         viewLifecycleOwner.lifecycleScope.launch {
-            // Farb-Spinner
             val colorsFromDb = viewModel.getFilterColors()
             val colorItems = colorsFromDb.map { colorMap[it] ?: it }.toMutableList().apply { add(0, "Alle Farben") }
             binding.spinnerColor.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, colorItems)
@@ -87,7 +84,6 @@ class ExternalCollectionDetailFragment : Fragment() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
 
-            // Set-Spinner
             val setsFromDb = viewModel.getFilterSets()
             val setItems = setsFromDb.toMutableList().apply { add(0, "Alle Sets") }
             binding.spinnerSet.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, setItems)

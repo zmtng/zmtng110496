@@ -35,7 +35,6 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
 
     private val viewModel: WishlistViewModel by viewModels {
         val db = AppDatabase.getInstance(requireContext())
-        // ##### HINWEIS: Die Factory-Parameter-Reihenfolge muss zum ViewModel-Konstruktor passen #####
         WishlistViewModelFactory(db.wishlistDao(), db.masterCardDao(), db.cardDao())
     }
     private lateinit var wishlistAdapter: WishlistAdapter
@@ -57,13 +56,10 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
     }
 
     private fun setupAdapter() {
-        // ##### KORRIGIERT: Adapter-Initialisierung mit allen benötigten Lambdas #####
-        // Der WishlistAdapter erwartet drei Funktionen im Konstruktor: onIncrement, onDecrement, onMoveToCollection
         wishlistAdapter = WishlistAdapter(
             onIncrement = { card -> viewModel.incrementQuantity(card) },
             onDecrement = { card -> viewModel.decrementQuantity(card) },
             onMoveToCollection = { card ->
-                // Hier wird jetzt die korrigierte ViewModel-Funktion aufgerufen.
                 viewModel.transferToCollection(card, 1) // Verschiebt 1 Exemplar
                 Toast.makeText(requireContext(), "'${card.cardName}' zur Sammlung hinzugefügt", Toast.LENGTH_SHORT).show()
             },

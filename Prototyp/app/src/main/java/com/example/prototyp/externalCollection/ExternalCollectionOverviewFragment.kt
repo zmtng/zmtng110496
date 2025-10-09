@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import com.example.prototyp.R
 
-// This is adapted from DeckOverviewFragment.kt
 class ExternalCollectionOverviewFragment : Fragment() {
 
     private var _binding: FragmentExternalCollectionOverviewBinding? = null
@@ -57,8 +56,6 @@ class ExternalCollectionOverviewFragment : Fragment() {
                 collectionAdapter.submitList(collections)
             }
         }
-
-        // Note: The FAB for importing is handled via the Home screen for now
     }
 
     private fun showDeleteConfirmationDialog(collection: ExternalCollection) {

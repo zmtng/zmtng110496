@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
-import com.example.prototyp.deckBuilder.Deck
 
 class DeckAdapter(
     private val onDeckClick: (Deck) -> Unit,
@@ -27,13 +26,11 @@ class DeckAdapter(
             nameTextView.text = deck.name
             itemView.setOnClickListener { onDeckClick(deck) }
 
-            // 3. Setze den Listener für den langen Klick
             itemView.setOnLongClickListener {
                 onDeckLongClick(deck)
                 true
             }
 
-            // Setze die Hintergrundfarbe der Kachel
             try {
                 val color = Color.parseColor(deck.colorHex)
                 (itemView as? com.google.android.material.card.MaterialCardView)?.setCardBackgroundColor(color)

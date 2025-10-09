@@ -32,7 +32,6 @@ class HomeViewModel(
     private val _totalCollectionValue = MutableStateFlow<Double?>(null)
     val totalCollectionValue = _totalCollectionValue.asStateFlow()
 
-    // Ein Flow, um dem Fragment Nachrichten zu senden (z.B. "Export erfolgreich")
     private val _userMessage = MutableStateFlow<String?>(null)
     val userMessage = _userMessage.asStateFlow()
 
@@ -50,10 +49,8 @@ class HomeViewModel(
         }
     }
 
-    // 1. Eine Enum, um das Import-Ziel zu definieren
     enum class WishlistImportTarget { OWN_WISHLIST, EXTERNAL_WISHLIST }
 
-    // 2. Die neue Import-Funktion
     fun importWishlistFromCsv(
         uri: Uri,
         context: Context,
@@ -124,30 +121,24 @@ class HomeViewModel(
             }
         }
     }
-
-    /**
-     * Importiert eine Sammlung aus einer vom Nutzer gewählten CSV-Datei (Uri).
-     */
     fun importCollection(uri: Uri, context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val validatedEntries = mutableListOf<CollectionEntry>()
                 var notFoundCount = 0
 
-                // CSV-Daten zuerst einlesen
                 val rows = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     csvReader().open(inputStream) {
                         readAllWithHeaderAsSequence().toList()
                     }
                 } ?: emptyList()
 
-                // Jetzt die Liste innerhalb der Coroutine verarbeiten
                 rows.forEach { row ->
                     val setCode = row["setCode"]
                     val cardNumber = row["cardNumber"]?.toIntOrNull()
 
                     if (setCode != null && cardNumber != null) {
-                        // Suspend-Funktion kann jetzt aufgerufen werden
+
                         val masterCard = masterDao.getBySetAndNumber(setCode, cardNumber)
 
                         if (masterCard != null) {
@@ -188,21 +179,18 @@ class HomeViewModel(
     suspend fun createCollectionCsvForSharing(context: Context): Uri? {
         return withContext(Dispatchers.IO) {
             try {
-                // 1. Daten aus der DB holen
                 val collection = cardDao.getCollectionForExport()
                 if (collection.isEmpty()) {
                     _userMessage.value = "Sammlung ist leer. Nichts zu exportieren."
                     return@withContext null
                 }
 
-                // 2. Temporäre Datei im Cache-Verzeichnis erstellen
                 val exportDir = File(context.cacheDir, "exports")
                 if (!exportDir.exists()) {
                     exportDir.mkdirs()
                 }
                 val file = File(exportDir, "sammlung_export.csv")
 
-                // 3. CSV-Daten in die Datei schreiben
                 file.outputStream().use { outputStream ->
                     csvWriter().open(outputStream) {
                         writeRow("setCode", "cardNumber", "quantity", "price", "color", "personalNotes", "generalNotes")
@@ -220,7 +208,6 @@ class HomeViewModel(
                     }
                 }
 
-                // 4. Eine sichere Uri über den FileProvider für die Datei holen
                 return@withContext FileProvider.getUriForFile(
                     context,
                     "${context.packageName}.provider",
@@ -238,7 +225,6 @@ class HomeViewModel(
     suspend fun createWishlistCsvForSharing(context: Context): Uri? {
         return withContext(Dispatchers.IO) {
             try {
-                // Wir brauchen das WishlistDao, also fügen wir es dem Konstruktor hinzu
                 val wishlist = wishlistDao.getWishlistForExport()
                 if (wishlist.isEmpty()) {
                     _userMessage.value = "Wunschliste ist leer. Nichts zu exportieren."
@@ -251,7 +237,7 @@ class HomeViewModel(
 
                 file.outputStream().use { outputStream ->
                     csvWriter().open(outputStream) {
-                        writeRow("setCode", "cardNumber", "quantity") // Nur diese Spalten
+                        writeRow("setCode", "cardNumber", "quantity")
                         wishlist.forEach { entry ->
                             writeRow(
                                 entry.setCode,

@@ -19,30 +19,25 @@ class WishlistViewModel(
     private val cardDao: CardDao
 ) : ViewModel() {
 
-    // 1. StateFlows für jeden einzelnen Filter
     private val _searchQuery = MutableStateFlow("")
     private val _colorFilter = MutableStateFlow("")
     private val _setFilter = MutableStateFlow("")
 
-    // 2. Kombiniere alle Filter zu einem einzigen "Trigger"-Flow
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val wishlistCards: Flow<List<WishlistDao.WishlistCard>> = combine(
         _searchQuery,
         _colorFilter,
         _setFilter
     ) { query, color, set ->
-        Triple(query, color, set) // Packe alle Filterwerte zusammen
+        Triple(query, color, set)
     }.flatMapLatest { (query, color, set) ->
-        // 3. Jedes Mal, wenn sich ein Filter ändert, rufe die neue DAO-Funktion auf
         wishlistDao.observeFilteredWishlist(query, color, set)
     }
 
-    // --- Funktionen, die das Fragment aufruft, um die Filter zu ändern ---
     fun setSearchQuery(query: String) { _searchQuery.value = query }
     fun setColorFilter(color: String) { _colorFilter.value = color }
     fun setSetFilter(set: String) { _setFilter.value = set }
 
-    // --- Funktionen zum Holen der Filter-Daten für die Spinner ---
     suspend fun getFilterColors(): List<String> = withContext(Dispatchers.IO) { masterDao.getDistinctColors() }
     suspend fun getFilterSets(): List<String> = withContext(Dispatchers.IO) { masterDao.getDistinctSetCodes() }
 
@@ -65,10 +60,8 @@ class WishlistViewModel(
     fun decrementQuantity(card: WishlistDao.WishlistCard) {
         viewModelScope.launch(Dispatchers.IO) {
             if (card.quantity <= 1) {
-                // Bei 1 oder weniger wird die Karte von der Wunschliste entfernt
                 wishlistDao.deleteEntry(card.setCode, card.cardNumber)
             } else {
-                // Ansonsten wird die Menge nur reduziert
                 wishlistDao.updateQuantity(card.setCode, card.cardNumber, card.quantity - 1)
             }
         }
@@ -79,10 +72,8 @@ class WishlistViewModel(
     @Transaction
     fun transferToCollection(card: WishlistDao.WishlistCard, quantity: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            // 1. Reduziere die Menge auf der Wunschliste oder lösche den Eintrag
             wishlistDao.decrementOrDelete(card.setCode, card.cardNumber, quantity)
 
-            // 2. Erhöhe die Menge in der Sammlung (Collection)
             cardDao.upsertBySetAndNumber(card.setCode, card.cardNumber, quantity, card.color)
         }
     }

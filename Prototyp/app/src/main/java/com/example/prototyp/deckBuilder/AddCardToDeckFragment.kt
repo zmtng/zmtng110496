@@ -90,7 +90,6 @@ class AddCardToDeckFragment : Fragment() {
         })
 
         viewLifecycleOwner.lifecycleScope.launch {
-            // Farb-Spinner füllen
             val colorsFromDb = viewModel.getFilterColors()
             val colorItems = colorsFromDb.map { colorMap[it] ?: it }.toMutableList().apply { add(0, "Alle Farben") }
             binding.spinnerColor.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, colorItems)
@@ -101,7 +100,6 @@ class AddCardToDeckFragment : Fragment() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
 
-            // Set-Spinner füllen
             val setsFromDb = viewModel.getFilterSets()
             val setItems = setsFromDb.toMutableList().apply { add(0, "Alle Sets") }
             binding.spinnerSet.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, setItems)

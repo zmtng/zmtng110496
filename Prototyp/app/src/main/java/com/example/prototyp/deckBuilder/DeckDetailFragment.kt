@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.AppDatabase
 import com.example.prototyp.R
-import com.example.prototyp.deckBuilder.AddCardToDeckFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -21,10 +20,8 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
 
     private val deckId: Int by lazy { requireArguments().getInt(ARG_DECK_ID) }
 
-    // ##### KORRIGIERT: Nutzt jetzt activityViewModels, um das ViewModel mit anderen Fragmenten zu teilen. #####
     private val viewModel: DeckDetailViewModel by activityViewModels {
         val db = AppDatabase.getInstance(requireContext())
-        // Die Factory wird ohne deckId aufgerufen.
         DeckDetailViewModelFactory(db.deckDao(), db.masterCardDao(), db.wishlistDao())
     }
     private lateinit var cardAdapter: DeckCardAdapter
@@ -32,7 +29,6 @@ class DeckDetailFragment : Fragment(R.layout.fragment_deck_detail) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Sagt dem geteilten ViewModel, welche Deck-ID es jetzt laden und bearbeiten soll.
         viewModel.setDeckId(deckId)
 
         cardAdapter = DeckCardAdapter(

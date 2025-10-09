@@ -1,6 +1,5 @@
 package com.example.prototyp.deckBuilder
 
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
@@ -29,7 +28,6 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
     }
     private lateinit var deckAdapter: DeckAdapter
 
-    // Liste der Farben, die an beiden Stellen verwendet wird
     private val deckColors = listOf(
         "#F44336", "#E91E63", "#9C27B0", "#2196F3", "#009688",
         "#4CAF50", "#FFC107", "#FF9800", "#607D8B"
@@ -76,7 +74,6 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
         val etDeckName = dialogView.findViewById<EditText>(R.id.etDeckName)
         val colorPaletteContainer = dialogView.findViewById<LinearLayout>(R.id.colorPaletteContainer)
 
-        // Die neue, ausgelagerte Funktion wird hier aufgerufen
         val onColorSelected = setupColorPalette(colorPaletteContainer)
 
         AlertDialog.Builder(requireContext())
@@ -85,7 +82,6 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
             .setPositiveButton("Speichern") { _, _ ->
                 val name = etDeckName.text.toString()
                 if (name.isNotBlank()) {
-                    // Die ausgewählte Farbe wird von der neuen Funktion zurückgegeben
                     viewModel.createDeck(name, onColorSelected())
                 }
             }
@@ -99,7 +95,6 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
         val etImportText = dialogView.findViewById<EditText>(R.id.etImportText)
         val colorPaletteContainer = dialogView.findViewById<LinearLayout>(R.id.colorPaletteContainer)
 
-        // Die neue, ausgelagerte Funktion wird AUCH HIER aufgerufen
         val onColorSelected = setupColorPalette(colorPaletteContainer)
 
         AlertDialog.Builder(requireContext())
@@ -110,7 +105,6 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
                 val text = etImportText.text.toString()
 
                 if (name.isNotBlank() && text.isNotBlank()) {
-                    // Die ausgewählte Farbe wird auch hier korrekt verwendet
                     viewModel.importDeckFromText(name, onColorSelected(), text)
                 }
             }
@@ -118,10 +112,6 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
             .show()
     }
 
-    /**
-     * NEU: Eine zentrale Funktion, die die Farb-Chips erstellt und verwaltet.
-     * Sie gibt eine Funktion zurück, die den aktuell ausgewählten Farb-Hex-Code liefert.
-     */
     private fun setupColorPalette(container: LinearLayout): () -> String {
         var selectedColorHex = deckColors.first()
         var selectedChip: View? = null
@@ -134,31 +124,20 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
                 }
                 isClickable = true
 
-                // --- HIER IST DIE FINALE, ROBUSTE LÖSUNG ---
-
-                // 1. Erstelle den farbigen Kreis als eigenes Drawable-Objekt.
                 val colorCircle = android.graphics.drawable.GradientDrawable().apply {
                     shape = android.graphics.drawable.GradientDrawable.OVAL
                     setColor(Color.parseColor(colorHex))
                 }
 
-                // 2. Lade unseren Auswahlring-Selektor als zweites Drawable.
                 val selectionRing = ContextCompat.getDrawable(requireContext(), R.drawable.color_chip_selector)!!
 
-                // 3. Kombiniere beide in einer LayerDrawable.
-                //    Der farbige Kreis liegt unten, der Ring darüber.
                 val layers = arrayOf(colorCircle, selectionRing)
                 val layerDrawable = android.graphics.drawable.LayerDrawable(layers)
 
-                // 4. Setze einen Abstand (Inset) NUR für den farbigen Kreis,
-                //    damit der Ring außen Platz hat.
                 val inset = (3 * resources.displayMetrics.density).toInt()
                 layerDrawable.setLayerInset(0, inset, inset, inset, inset) // index 0 = colorCircle
 
-                // 5. Setze die fertige LayerDrawable als Hintergrund.
                 background = layerDrawable
-                // ---
-
                 setOnClickListener {
                     selectedChip?.isSelected = false
                     it.isSelected = true
@@ -188,7 +167,6 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
     }
 }
 
-// Die Factory-Klasse bleibt unverändert
 class DeckViewModelFactory(private val deckDao: DeckDao) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(DeckViewModel::class.java)) {

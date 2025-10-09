@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -12,12 +11,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.prototyp.AppDatabase
 import com.example.prototyp.R
-import com.example.prototyp.databinding.FragmentExternalCollectionOverviewBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import com.example.prototyp.databinding.FragmentExternalWishlistOverviewBinding
 
-// Fast eine 1:1 Kopie von ExternalCollectionOverviewFragment
 class ExternalWishlistOverviewFragment : Fragment() {
 
     private var _binding: FragmentExternalWishlistOverviewBinding? = null

@@ -48,7 +48,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         )
     }
 
-    // Launcher for the Import-Dialog
     private var importType: ImportType? = null
     enum class ImportType { COLLECTION, WISHLIST }
 
@@ -68,19 +67,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
-        // ##### ALT: Der Listener für den Optionen-Button wird nicht mehr gebraucht. #####
-        // binding.btnOptions.setOnClickListener { anchorView ->
-        //     showOptionsMenu(anchorView)
-        // }
-
-        // ##### NEU: Listener für die neuen Kachel-Buttons #####
         setupClickListeners()
 
-
-        // Beobachter für das ViewModel (bleiben unverändert)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Beobachter für User-Nachrichten
                 launch {
                     viewModel.userMessage.collectLatest { message ->
                         message?.let {
@@ -89,8 +79,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         }
                     }
                 }
-
-                // Beobachter für Gesamtwert (aktualisiert jetzt die neue TextView)
                 launch {
                     viewModel.totalCollectionValue.collectLatest { value ->
                         if (value != null) {
@@ -104,7 +92,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    // ##### NEU: Eine Funktion, um die Click-Listener zu organisieren #####
     private fun setupClickListeners() {
         binding.cardCollection.setOnClickListener {
             parentFragmentManager.beginTransaction()

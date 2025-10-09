@@ -11,11 +11,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface WishlistDao {
 
-    // Ein DTO für das Ergebnis der Abfrage
     data class WishlistCard(
         val setCode: String,
         val cardNumber: Int,
-        val quantity: Int, // gewünschte Anzahl
+        val quantity: Int,
         val cardName: String,
         val setName: String,
         val color: String
@@ -47,7 +46,6 @@ interface WishlistDao {
         }
     }
 
-    // --- Private Helfer-Funktionen für die Upsert-Logik ---
     @Query("SELECT * FROM wishlist WHERE setCode = :setCode AND cardNumber = :cardNumber")
     suspend fun getEntry(setCode: String, cardNumber: Int): WishlistEntry?
 
@@ -63,15 +61,11 @@ interface WishlistDao {
 
     @Transaction
     suspend fun decrementOrDelete(setCode: String, cardNumber: Int, removeQuantity: Int) {
-        // 1. Hole den aktuellen Eintrag
         val existing = getEntry(setCode, cardNumber) ?: return
 
-        // 2. Prüfe, ob die Menge nach dem Abzug 0 oder weniger wäre
         if (existing.quantity <= removeQuantity) {
-            // Wenn ja, lösche den kompletten Eintrag
             deleteEntry(existing.setCode, existing.cardNumber)
         } else {
-            // Wenn nein, aktualisiere nur die Menge
             updateQuantity(setCode, cardNumber, existing.quantity - removeQuantity)
         }
     }

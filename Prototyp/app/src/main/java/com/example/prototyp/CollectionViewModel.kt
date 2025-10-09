@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.prototyp.data.db.CardDao
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,7 +11,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,7 +23,6 @@ class CollectionViewModel(
     private val masterDao: MasterCardDao
 ) : ViewModel() {
 
-    // --- StateFlows für Filter und Sortierung ---
     private val _sortOrder = MutableStateFlow(SortOrder.BY_NAME)
     private val _searchQuery = MutableStateFlow("")
     private val _colorFilter = MutableStateFlow<String?>(null)
@@ -39,16 +36,13 @@ class CollectionViewModel(
         _colorFilter,                            // 4. Der gewählte Farbfilter
         _setFilter                               // 5. Der gewählte Setfilter
     ) { fullList, sort, query, color, set ->
-        // Dieser Block wird JEDES MAL ausgeführt, wenn sich irgendetwas ändert
 
-        // Schritt A: Filtern
         val filteredList = fullList.filter { item ->
             (query.isBlank() || item.cardName.contains(query, ignoreCase = true)) &&
                     (color == null || item.color == color) &&
                     (set == null || item.setName == set)
         }
 
-        // Schritt B: Sortieren
         when (sort) {
             SortOrder.BY_NAME -> filteredList.sortedBy { it.cardName }
             SortOrder.BY_NUMBER -> filteredList.sortedWith(compareBy({ it.setCode }, { it.cardNumber }))
@@ -56,8 +50,6 @@ class CollectionViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-
-    // --- Öffentliche Funktionen zum Ändern der Filter ---
     fun setSortOrder(sortBy: SortOrder) { _sortOrder.value = sortBy }
     fun setSearchQuery(query: String) { _searchQuery.value = query }
     fun setColorFilter(color: String?) { _colorFilter.value = color }
@@ -84,10 +76,9 @@ class CollectionViewModel(
 
     fun decrementQuantity(row: CardDao.CollectionRowData) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Menge um 1 reduzieren
+
             cardDao.addQuantity(row.setCode, row.cardNumber, -1)
 
-            // Prüfen, ob die Menge jetzt 0 oder weniger ist, und dann löschen
             val updatedEntry = cardDao.getByKey(row.setCode, row.cardNumber)
             if (updatedEntry == null || updatedEntry.quantity <= 0) {
                 cardDao.deleteByKey(row.setCode, row.cardNumber)
@@ -135,7 +126,6 @@ class CollectionViewModel(
         showSuccessMessage: Boolean = true,
         onSuccess: (updatedPrice: Double) -> Unit
     ) {
-        // Startet die gesamte Operation auf einem Hintergrund-Thread (IO)
         viewModelScope.launch(Dispatchers.IO) {
             var url = ""
             try {
@@ -174,8 +164,6 @@ class CollectionViewModel(
                         _userMessage.value = "Preis für '${row.cardName}' auf ${priceValue}€ aktualisiert."
                     }
 
-                    // *** HIER IST DIE FINALE KORREKTUR ***
-                    // Wechsle kurz zum Main-Thread, um die UI-Callback-Funktion sicher aufzurufen.
                     withContext(Dispatchers.Main) {
                         onSuccess(priceValue)
                     }
@@ -190,7 +178,6 @@ class CollectionViewModel(
     }
     fun addCardToCollection(card: MasterCard) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Die upsert-Funktion in deinem CardDao wird hier wiederverwendet
             cardDao.upsertBySetAndNumber(card.setCode, card.cardNumber, 1, card.color)
         }
     }

@@ -6,8 +6,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ExternalCollectionDao {
 
-    // --- Für die Übersichtsseite ---
-
     @Insert
     suspend fun insertCollection(collection: ExternalCollection): Long
 
@@ -17,12 +15,10 @@ interface ExternalCollectionDao {
     @Delete
     suspend fun deleteCollection(collection: ExternalCollection)
 
-    // --- Für die Detailseite & den Import ---
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCards(cards: List<ExternalCollectionCard>)
 
-    // Das Datenobjekt, das alle Infos für eine Zeile in der Detailansicht enthält
     data class CardDetail(
         // Karten-Infos
         val setCode: String,
@@ -37,7 +33,6 @@ interface ExternalCollectionDao {
         val onOwnWishlist: Boolean
     )
 
-    // Die komplexe Abfrage, die alles zusammenführt
     @Query("""
         SELECT
             ec.setCode, ec.cardNumber, ec.quantity, ec.price,

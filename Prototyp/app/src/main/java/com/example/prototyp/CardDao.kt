@@ -7,24 +7,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.example.prototyp.CollectionEntry
 import kotlinx.coroutines.flow.Flow
-
-/**
- * CardDao: arbeitet NUR auf der Tabelle `collection`.
- * Keine Joins, keine Verweise auf `card_master` oder `card_set`.
- *
- * Erwartetes Entity-Schema:
- * @Entity(tableName = "collection", primaryKeys = ["setCode","cardNumber"])
- * data class CollectionEntry(
- * val setCode: String,
- * val cardNumber: Int,
- * val quantity: Int,
- * val price: Double? = null,
- * val color: String,
- * // NEU: Notiz-Felder hinzufügen
- * val personal_notes: String? = null,
- * val general_notes: String? = null
- * )
- */
 @Dao
 interface CardDao {
 
@@ -210,8 +192,6 @@ interface CardDao {
 
 }
 
-/** Kleines DTO nur für `collection`-Spalten (keine Joins). */
-// ##### ANGEPASST: Notiz-Felder hinzugefügt #####
 data class CollectionItem(
     val setCode: String,
     val cardNumber: Int,

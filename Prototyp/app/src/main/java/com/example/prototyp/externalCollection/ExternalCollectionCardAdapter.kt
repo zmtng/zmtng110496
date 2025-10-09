@@ -16,7 +16,6 @@ class ExternalCollectionCardAdapter(
     private val onAddToWishlistClick: (ExternalCollectionDao.CardDetail) -> Unit
 ) : ListAdapter<ExternalCollectionDao.CardDetail, ExternalCollectionCardAdapter.ViewHolder>(DiffCallback()) {
 
-    // Der ViewHolder nutzt ViewBinding für sicheren Zugriff auf die UI-Elemente
     class ViewHolder(private val binding: ItemExternalCollectionCardBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             card: ExternalCollectionDao.CardDetail,
@@ -55,7 +54,6 @@ class ExternalCollectionCardAdapter(
         applyCardBackground(holder.itemView, card.color)
     }
 
-    // Der DiffCallback für effiziente Listen-Updates
     class DiffCallback : DiffUtil.ItemCallback<ExternalCollectionDao.CardDetail>() {
         override fun areItemsTheSame(oldItem: ExternalCollectionDao.CardDetail, newItem: ExternalCollectionDao.CardDetail): Boolean {
             return oldItem.setCode == newItem.setCode && oldItem.cardNumber == newItem.cardNumber
@@ -66,7 +64,6 @@ class ExternalCollectionCardAdapter(
         }
     }
 
-    // Die Hilfsfunktion zum Färben des Hintergrunds
     private fun applyCardBackground(view: View, colorCode: String?) {
         val cardView = view as? com.google.android.material.card.MaterialCardView ?: return
         val context = view.context

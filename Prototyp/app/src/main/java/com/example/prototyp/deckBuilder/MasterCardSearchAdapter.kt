@@ -45,7 +45,6 @@ class MasterCardSearchAdapter(
         notifyDataSetChanged()
     }
 
-    // ##### HINZUGEFÜGT: Die Helfer-Logik für die Farben #####
     private fun applyCardBackground(view: View, colorCode: String?) {
         val context = view.context
         when (colorCode?.trim()?.uppercase()) {

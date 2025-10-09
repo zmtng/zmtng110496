@@ -11,11 +11,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.*
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.data.db.CardDao
-import com.example.prototyp.MasterCardDao
 import com.example.prototyp.databinding.FragmentCollectionBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -31,8 +28,6 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         CollectionViewModelFactory(db.cardDao(), db.masterCardDao())
     }
     private lateinit var adapter: CardAdapter
-
-    // Hilfs-Map für die Farb-Namen im Spinner
     private val colorMap = mapOf("R" to "Rot", "B" to "Blau", "G" to "Grün", "Y" to "Gelb", "P" to "Lila", "O" to "Orange", "U" to "Grau", "M" to "Mehrfarbig")
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -43,11 +38,10 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // --- Initialisierung ---
         setupAdapter()
         setupListeners()
         setupObservers()
-        setupFilters() // Filter am Ende initialisieren, wenn alles andere steht
+        setupFilters()
 
 
     }
@@ -80,13 +74,11 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Beobachter für die Kartenliste
                 launch {
                     viewModel.collection.collectLatest { collectionList ->
                         adapter.submitList(collectionList)
                     }
                 }
-                // Beobachter für Toast-Nachrichten
                 launch {
                     viewModel.userMessage.collectLatest { message ->
                         message?.let {
@@ -100,7 +92,6 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
     }
 
     private fun setupFilters() {
-        // --- Suchleiste ---
         binding.searchViewCollection.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean = true
             override fun onQueryTextChange(newText: String?): Boolean {
@@ -109,7 +100,6 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
             }
         })
 
-        // --- Sortier-Spinner ---
         val sortOptions = listOf("Nach Name", "Nach Nummer", "Nach Farbe")
         binding.spinnerSort.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, sortOptions)
         binding.spinnerSort.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -125,7 +115,6 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // --- Farb- und Set-Spinner (mit korrigierter Logik) ---
         viewLifecycleOwner.lifecycleScope.launch {
             // Farb-Spinner
             val colorsFromDb = viewModel.getFilterColors()
@@ -133,20 +122,17 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
             binding.spinnerColor.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, colorItemsForSpinner)
             binding.spinnerColor.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
-                    // KORREKTUR: Wähle den Farb-CODE aus der Original-Liste
                     val selection = if (position == 0) null else colorsFromDb[position - 1]
                     viewModel.setColorFilter(selection)
                 }
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
 
-            // Set-Spinner
             val setsFromDb = viewModel.getFilterSets()
             val setItemsForSpinner = setsFromDb.toMutableList().apply { add(0, "Alle Sets") }
             binding.spinnerSet.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, setItemsForSpinner)
             binding.spinnerSet.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
-                    // KORREKTUR: Wähle den Set-NAMEN aus der Original-Liste
                     val selection = if (position == 0) null else setsFromDb[position - 1]
                     viewModel.setSetFilter(selection)
                 }

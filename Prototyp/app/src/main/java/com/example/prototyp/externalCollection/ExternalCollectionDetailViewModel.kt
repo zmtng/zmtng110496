@@ -26,7 +26,7 @@ class ExternalCollectionDetailViewModel(
         _colorFilter,
         _setFilter
     ) { id, query, color, set ->
-        // Dieser Flow wird bei JEDER Änderung (ID, Suche, Filter) neu ausgelöst
+
         dao.observeCollectionContents(id, query, color, set)
     }.flatMapLatest { it }
 
@@ -34,7 +34,6 @@ class ExternalCollectionDetailViewModel(
         collectionId.value = id
     }
 
-    // Neue Funktionen, um die Filter aus dem Fragment zu setzen
     fun setSearchQuery(query: String) { _searchQuery.value = query }
     fun setColorFilter(color: String) { _colorFilter.value = color }
     fun setSetFilter(set: String) { _setFilter.value = set }
@@ -45,7 +44,6 @@ class ExternalCollectionDetailViewModel(
         }
     }
 
-    // Neue Funktionen, um die Daten für die Spinner zu laden
     suspend fun getFilterColors(): List<String> = withContext(Dispatchers.IO) { masterDao.getDistinctColors() }
     suspend fun getFilterSets(): List<String> = withContext(Dispatchers.IO) { masterDao.getDistinctSetCodes() }
 }

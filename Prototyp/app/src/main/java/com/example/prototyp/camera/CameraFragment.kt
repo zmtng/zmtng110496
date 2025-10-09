@@ -14,7 +14,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.prototyp.databinding.FragmentScanBinding // Stellt sicher, dass dies der richtige Binding-Name ist
+import com.example.prototyp.databinding.FragmentScanBinding
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -36,7 +36,6 @@ class CameraFragment : Fragment() {
     private lateinit var cameraExecutor: ExecutorService
     private val recognizer by lazy { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
 
-    // --- Deine intelligente Logik aus dem alten Fragment ---
     private val masterNames = mutableSetOf<String>()
     private val ioScope by lazy { CoroutineScope(Dispatchers.IO + Job()) }
     private var lastEmitTime = 0L
@@ -65,7 +64,6 @@ class CameraFragment : Fragment() {
         ensureCameraPermission()
     }
 
-    // Lädt alle Kartennamen aus der DB zum Abgleichen
     private fun loadMasterNames() {
         ioScope.launch {
             try {
@@ -113,7 +111,6 @@ class CameraFragment : Fragment() {
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
-    // Deine bewährte Logik zur Frame-Verarbeitung
     @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
     private fun processFrame(imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image ?: run { imageProxy.close(); return }
@@ -125,12 +122,11 @@ class CameraFragment : Fragment() {
                 val candidate = pickBestCenterLine(visionText, frameHeight) ?: return@addOnSuccessListener
                 val normalized = normalize(candidate)
 
-                // Nur veröffentlichen, wenn der Name in der Master-Liste ist
                 if (masterNames.isNotEmpty() && normalized in masterNames) {
                     val now = System.currentTimeMillis()
                     if (now - lastEmitTime >= emitIntervalMs) {
                         lastEmitTime = now
-                        publishResult(candidate) // Wichtig: Den un-normalisierten Kandidaten publishen
+                        publishResult(candidate)
                     }
                 }
             }
@@ -142,7 +138,6 @@ class CameraFragment : Fragment() {
             }
     }
 
-    // Deine bewährte Logik zur Auswahl der besten Zeile
     private fun pickBestCenterLine(visionText: com.google.mlkit.vision.text.Text, frameHeight: Float): String? {
         val top = frameHeight * 0.30f
         val bottom = frameHeight * 0.70f
@@ -163,7 +158,6 @@ class CameraFragment : Fragment() {
             ?.first
     }
 
-    // Deine ursprüngliche, bessere Normalisierungsfunktion
     private fun normalize(s: String): String =
         s.lowercase()
             .replace('’', '\'')
@@ -171,12 +165,9 @@ class CameraFragment : Fragment() {
             .replace("\\s+".toRegex(), " ")
             .trim()
 
-    // Die angepasste Funktion zum Veröffentlichen des Ergebnisses
     private fun publishResult(name: String) {
-        // Die Groß- und Kleinschreibung bleibt erhalten
         cameraViewModel.setScannedText(name)
 
-        // Fragment im UI-Thread schließen
         activity?.runOnUiThread {
             parentFragmentManager.popBackStack()
         }

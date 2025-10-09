@@ -22,6 +22,7 @@ import com.example.prototyp.deckBuilder.DeckDao
 import com.example.prototyp.externalCollection.*
 import com.example.prototyp.wishlist.WishlistDao
 import com.example.prototyp.wishlist.WishlistEntry
+import com.example.prototyp.externalWishlist.*
 
 
 @Database(
@@ -33,9 +34,11 @@ import com.example.prototyp.wishlist.WishlistEntry
         DeckCard::class,
         WishlistEntry::class,
         ExternalCollection::class,
-        ExternalCollectionCard::class
+        ExternalCollectionCard::class,
+        ExternalWishlist::class,
+        ExternalWishlistCard::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -47,6 +50,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun wishlistDao(): WishlistDao
 
     abstract fun externalCollectionDao(): ExternalCollectionDao
+    abstract fun externalWishlistDao(): ExternalWishlistDao
 
 
     companion object {
@@ -61,7 +65,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "riftbound.db")
-                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
@@ -179,6 +183,28 @@ abstract class AppDatabase : RoomDatabase() {
                         `price` REAL,
                         PRIMARY KEY(`collectionId`, `setCode`, `cardNumber`),
                         FOREIGN KEY(`collectionId`) REFERENCES `external_collections`(`id`) ON DELETE CASCADE
+                    )
+                """.trimIndent())
+            }
+        }
+
+        val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `external_wishlists` (
+                        `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        `name` TEXT NOT NULL
+                    )
+                """.trimIndent())
+
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `external_wishlist_cards` (
+                        `wishlistId` INTEGER NOT NULL,
+                        `setCode` TEXT NOT NULL,
+                        `cardNumber` INTEGER NOT NULL,
+                        `quantity` INTEGER NOT NULL,
+                        PRIMARY KEY(`wishlistId`, `setCode`, `cardNumber`),
+                        FOREIGN KEY(`wishlistId`) REFERENCES `external_wishlists`(`id`) ON DELETE CASCADE
                     )
                 """.trimIndent())
             }

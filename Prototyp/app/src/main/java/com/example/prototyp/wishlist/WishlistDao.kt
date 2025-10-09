@@ -3,6 +3,7 @@ package com.example.prototyp.wishlist
 import android.util.Log
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
@@ -74,4 +75,19 @@ interface WishlistDao {
             updateQuantity(setCode, cardNumber, existing.quantity - removeQuantity)
         }
     }
+
+    @Transaction
+    suspend fun overrideWishlist(entries: List<WishlistEntry>) {
+        deleteAll()
+        insertAll(entries)
+    }
+
+    @Query("DELETE FROM wishlist")
+    suspend fun deleteAll()
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(entries: List<WishlistEntry>)
+
+    @Query("SELECT * FROM wishlist")
+    suspend fun getWishlistForExport(): List<WishlistEntry>
 }

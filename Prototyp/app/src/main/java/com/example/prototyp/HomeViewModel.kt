@@ -8,6 +8,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.CollectionEntry
+import com.example.prototyp.externalWishlist.ExternalWishlist
+import com.example.prototyp.externalWishlist.ExternalWishlistCard
+import com.example.prototyp.externalWishlist.ExternalWishlistDao
+import com.example.prototyp.wishlist.WishlistDao
+import com.example.prototyp.wishlist.WishlistEntry
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +24,9 @@ import java.io.File
 
 class HomeViewModel(
     private val cardDao: CardDao,
-    private val masterDao: MasterCardDao
+    private val masterDao: MasterCardDao,
+    private val wishlistDao: WishlistDao,
+    private val externalWishlistDao: ExternalWishlistDao
     ) : ViewModel() {
 
     private val _totalCollectionValue = MutableStateFlow<Double?>(null)
@@ -43,40 +50,80 @@ class HomeViewModel(
         }
     }
 
-    /**
-     * Exportiert die Sammlung in eine vom Nutzer gewählte Datei (Uri).
-     */
-    /*fun exportCollection(uri: Uri, context: Context) {
+    // 1. Eine Enum, um das Import-Ziel zu definieren
+    enum class WishlistImportTarget { OWN_WISHLIST, EXTERNAL_WISHLIST }
+
+    // 2. Die neue Import-Funktion
+    fun importWishlistFromCsv(
+        uri: Uri,
+        context: Context,
+        target: WishlistImportTarget,
+        externalWishlistName: String? = null
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // 1. Daten aus der DB holen
-                val collection = cardDao.getCollectionForExport()
+                val validatedCards = mutableListOf<Pair<String, Int>>() // Pair<setCode, cardNumber>
+                var notFoundCount = 0
 
-                // 2. CSV-Daten erstellen und in die Datei schreiben
-                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    csvWriter().open(outputStream) {
-                        // Kopfzeile schreiben
-                        writeRow("setCode", "cardNumber", "quantity", "price", "color", "personalNotes", "generalNotes")
-                        // Datenzeilen schreiben
-                        collection.forEach { entry ->
-                            writeRow(
-                                entry.setCode,
-                                entry.cardNumber,
-                                entry.quantity,
-                                entry.price,
-                                entry.color,
-                                entry.personalNotes,
-                                entry.generalNotes
-                            )
+                val rows = context.contentResolver.openInputStream(uri)?.use {
+                    csvReader().open(it) { readAllWithHeaderAsSequence().toList() }
+                } ?: emptyList()
+
+                rows.forEach { row ->
+                    val setCode = row["setCode"]
+                    val cardNumber = row["cardNumber"]?.toIntOrNull()
+                    if (setCode != null && cardNumber != null) {
+                        if (masterDao.getBySetAndNumber(setCode, cardNumber) != null) {
+                            validatedCards.add(Pair(setCode, cardNumber))
+                        } else {
+                            notFoundCount++
                         }
                     }
                 }
-                _userMessage.value = "Export erfolgreich!"
+
+                val groupedCards = validatedCards.groupingBy { it }.eachCount()
+
+                if (groupedCards.isEmpty()) {
+                    _userMessage.value = "Keine gültigen Karten in der Datei gefunden."
+                    return@launch
+                }
+
+                var successMessage = ""
+
+                when (target) {
+                    WishlistImportTarget.OWN_WISHLIST -> {
+                        val entries = groupedCards.map { (card, qty) ->
+                            WishlistEntry(card.first, card.second, qty)
+                        }
+                        wishlistDao.overrideWishlist(entries)
+                        successMessage = "${entries.size} Einträge in deine Wunschliste importiert."
+                    }
+                    WishlistImportTarget.EXTERNAL_WISHLIST -> {
+                        if (externalWishlistName.isNullOrBlank()) {
+                            _userMessage.value = "Name für externe Wunschliste fehlt."
+                            return@launch
+                        }
+                        val externalWishlist = ExternalWishlist(name = externalWishlistName)
+                        val cardEntries = groupedCards.map { (card, qty) ->
+                            ExternalWishlistCard(0, card.first, card.second, qty)
+                        }
+                        // Wir brauchen das externalWishlistDao hier
+                        externalWishlistDao.createWishlistWithCards(externalWishlist, cardEntries)
+                        successMessage = "Externe Wunschliste '$externalWishlistName' mit ${cardEntries.size} Einträgen erstellt."
+                    }
+                }
+
+                if (notFoundCount > 0) {
+                    successMessage += " ($notFoundCount Karten übersprungen.)"
+                }
+                _userMessage.value = successMessage
+
             } catch (e: Exception) {
-                _userMessage.value = "Export fehlgeschlagen: ${e.message}"
+                _userMessage.value = "Import fehlgeschlagen: ${e.message}"
+                Log.e("WishlistImport", "Fehler", e)
             }
         }
-    }*/
+    }
 
     /**
      * Importiert eine Sammlung aus einer vom Nutzer gewählten CSV-Datei (Uri).
@@ -183,6 +230,47 @@ class HomeViewModel(
             } catch (e: Exception) {
                 _userMessage.value = "Export fehlgeschlagen: ${e.message}"
                 Log.e("Export", "Fehler beim Erstellen der CSV", e)
+                return@withContext null
+            }
+        }
+    }
+
+    suspend fun createWishlistCsvForSharing(context: Context): Uri? {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Wir brauchen das WishlistDao, also fügen wir es dem Konstruktor hinzu
+                val wishlist = wishlistDao.getWishlistForExport()
+                if (wishlist.isEmpty()) {
+                    _userMessage.value = "Wunschliste ist leer. Nichts zu exportieren."
+                    return@withContext null
+                }
+
+                val exportDir = File(context.cacheDir, "exports")
+                if (!exportDir.exists()) { exportDir.mkdirs() }
+                val file = File(exportDir, "wunschliste_export.csv")
+
+                file.outputStream().use { outputStream ->
+                    csvWriter().open(outputStream) {
+                        writeRow("setCode", "cardNumber", "quantity") // Nur diese Spalten
+                        wishlist.forEach { entry ->
+                            writeRow(
+                                entry.setCode,
+                                entry.cardNumber,
+                                entry.quantity
+                            )
+                        }
+                    }
+                }
+
+                return@withContext FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    file
+                )
+
+            } catch (e: Exception) {
+                _userMessage.value = "Export fehlgeschlagen: ${e.message}"
+                Log.e("Export", "Fehler beim Erstellen der Wunschlisten-CSV", e)
                 return@withContext null
             }
         }

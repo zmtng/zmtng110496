@@ -28,6 +28,9 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.example.prototyp.externalCollection.*
+import com.example.prototyp.externalWishlist.ExternalWishlistDao
+import com.example.prototyp.externalWishlist.ExternalWishlistOverviewFragment
+import com.example.prototyp.wishlist.WishlistDao
 
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
@@ -37,24 +40,25 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel: HomeViewModel by viewModels {
         val database = AppDatabase.getInstance(requireContext())
-        HomeViewModelFactory(database.cardDao(), database.masterCardDao())
+        HomeViewModelFactory(
+            database.cardDao(),
+            database.masterCardDao(),
+            database.wishlistDao(),
+            database.externalWishlistDao()
+        )
     }
 
-    // Launcher for the Export-Dialog
-    /*private val exportLauncher = registerForActivityResult(
-        ActivityResultContracts.CreateDocument("text/csv")
-    ) { uri: Uri? ->
-        uri?.let {
-            viewModel.exportCollection(it, requireContext())
-        }
-    }*/
-
     // Launcher for the Import-Dialog
-    private val importLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
+    private var importType: ImportType? = null
+    enum class ImportType { COLLECTION, WISHLIST }
+
+    private val importLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
-            showImportTargetDialog(it) // Ruft den neuen Dialog auf
+            when (importType) {
+                ImportType.COLLECTION -> showImportCollectionTargetDialog(it)
+                ImportType.WISHLIST -> showImportWishlistTargetDialog(it)
+                null -> Toast.makeText(requireContext(), "Import-Typ unklar", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -120,6 +124,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             showInfoDialog()
         }
 
+        binding.cardExternalWishlist.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, ExternalWishlistOverviewFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         binding.cardExternal.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, ExternalCollectionOverviewFragment())
@@ -140,16 +151,30 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         binding.cardExport.setOnClickListener {
-            // Starte die Coroutine, um die CSV zu erstellen und zu teilen
             viewLifecycleOwner.lifecycleScope.launch {
                 val fileUri = viewModel.createCollectionCsvForSharing(requireContext())
                 if (fileUri != null) {
-                    shareCollection(fileUri)
+                    shareCsv(fileUri, "Sammlung teilen via...")
                 }
             }
         }
 
+        binding.cardExportWishlist.setOnClickListener {
+            viewLifecycleOwner.lifecycleScope.launch {
+                val fileUri = viewModel.createWishlistCsvForSharing(requireContext())
+                if (fileUri != null) {
+                    shareCsv(fileUri, "Wunschliste teilen via...")
+                }
+            }
+        }
+
+        binding.cardImportWishlist.setOnClickListener {
+            importType = ImportType.WISHLIST
+            importLauncher.launch("text/csv")
+        }
+
         binding.cardImport.setOnClickListener {
+            importType = ImportType.COLLECTION
             importLauncher.launch("*/*")
         }
 
@@ -170,16 +195,40 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding = null
     }
 
-    private fun showImportTargetDialog(uri: Uri) {
-        val options = arrayOf("In meine Sammlung", "Als externe Sammlung")
+    private fun showImportWishlistTargetDialog(uri: Uri) {
+        val options = arrayOf("In meine Wunschliste (überschreiben)", "Als neue externe Wunschliste")
         AlertDialog.Builder(requireContext())
-            .setTitle("Wohin importieren?")
-            .setItems(options) { dialog, which ->
+            .setTitle("Wunschliste importieren nach...")
+            .setItems(options) { _, which ->
                 when (which) {
-                    0 -> viewModel.importCollection(uri, requireContext()) // Bestehende Funktion
-                    1 -> showNameInputDialogForExternal(uri)
+                    0 -> viewModel.importWishlistFromCsv(
+                        uri,
+                        requireContext(),
+                        HomeViewModel.WishlistImportTarget.OWN_WISHLIST
+                    )
+                    1 -> showNameInputDialogForExternalWishlist(uri)
                 }
             }
+            .show()
+    }
+
+    private fun showNameInputDialogForExternalWishlist(uri: Uri) {
+        val input = EditText(requireContext())
+        AlertDialog.Builder(requireContext())
+            .setTitle("Name für externe Wunschliste")
+            .setView(input)
+            .setPositiveButton("Importieren") { _, _ ->
+                val name = input.text.toString()
+                if (name.isNotBlank()) {
+                    viewModel.importWishlistFromCsv(
+                        uri,
+                        requireContext(),
+                        HomeViewModel.WishlistImportTarget.EXTERNAL_WISHLIST,
+                        name
+                    )
+                }
+            }
+            .setNegativeButton("Abbrechen", null)
             .show()
     }
 
@@ -236,16 +285,40 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .setPositiveButton("Verstanden", null)
             .show()
     }
+
+    private fun shareCsv(fileUri: Uri, title: String) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/csv"
+            putExtra(Intent.EXTRA_STREAM, fileUri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(shareIntent, title))
+    }
+
+    private fun showImportCollectionTargetDialog(uri: Uri) {
+        val options = arrayOf("In meine Sammlung (überschreiben)", "Als neue externe Sammlung")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Sammlung importieren nach...")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> viewModel.importCollection(uri, requireContext())
+                    1 -> showNameInputDialogForExternal(uri) // <-- KORREKTER, DIREKTER AUFRUF
+                }
+            }
+            .show()
+    }
 }
 
 class HomeViewModelFactory(
     private val cardDao: CardDao,
-    private val masterDao: MasterCardDao // Parameter hinzugefügt
+    private val masterDao: MasterCardDao,
+    private val wishlistDao: WishlistDao,
+    private val externalWishlistDao: ExternalWishlistDao
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(cardDao, masterDao) as T
+            return HomeViewModel(cardDao, masterDao, wishlistDao, externalWishlistDao) as T // <-- NEU
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

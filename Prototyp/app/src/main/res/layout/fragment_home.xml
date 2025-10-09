@@ -52,26 +52,22 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Card for Total Value (unchanged) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardElevation="2dp"
                 app:cardCornerRadius="16dp">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Aktueller Gesamtwert"
                         android:textAppearance="?attr/textAppearanceBody2"
                         android:textColor="?android:attr/textColorSecondary" />
-
                     <TextView
                         android:id="@+id/tvTotalValue"
                         android:layout_width="wrap_content"
@@ -82,7 +78,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Main Navigation Tiles (unchanged) -->
+            <!-- ### ERSTE REIHE ### -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -135,12 +131,76 @@
 
             </LinearLayout>
 
-            <!-- ##### NEU: Titel für die Werkzeuge ##### -->
+            <!-- ### ZWEITE REIHE (NEU GEORDNET) ### -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardExternal"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="16dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_external" app:tint="?attr/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Externe Sammlungen" android:textStyle="bold" android:gravity="center"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardExternalWishlist"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="12dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="16dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_external" app:tint="?attr/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Externe Wunschlisten" android:textStyle="bold" android:gravity="center"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardCalculateValue"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="16dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_calculate"
+                            app:tint="?attr/colorPrimary"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Wert berechnen"
+                            android:textStyle="bold"
+                            android:gravity="center"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+
+            <!-- Titel für die Werkzeuge -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="Werkzeuge &amp; Einstellungen"
+                android:text="Import, Export &amp; Einstellungen"
                 android:textAppearance="?attr/textAppearanceTitleMedium"
                 android:textStyle="bold"/>
 
@@ -152,7 +212,7 @@
                 android:useDefaultMargins="true">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardCalculateValue"
+                    android:id="@+id/cardImport"
                     android:layout_width="0dp"
                     android:layout_height="120dp"
                     android:layout_columnWeight="1"
@@ -160,8 +220,8 @@
                     android:focusable="true"
                     app:cardCornerRadius="16dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_calculate" app:tint="?attr/colorPrimary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Wert berechnen" android:textStyle="bold" android:gravity="center"/>
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_import" app:tint="?attr/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Sammlung importieren" android:textStyle="bold" android:gravity="center"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -175,12 +235,12 @@
                     app:cardCornerRadius="16dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
                         <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_export" app:tint="?attr/colorPrimary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Export" android:textStyle="bold"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Sammlung exportieren" android:textStyle="bold" android:gravity="center"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardImport"
+                    android:id="@+id/cardImportWishlist"
                     android:layout_width="0dp"
                     android:layout_height="120dp"
                     android:layout_columnWeight="1"
@@ -188,8 +248,22 @@
                     android:focusable="true"
                     app:cardCornerRadius="16dp">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_import" app:tint="?attr/colorPrimary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Import" android:textStyle="bold"/>
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_wishlist_import" app:tint="?attr/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Wunschliste importieren" android:textStyle="bold" android:gravity="center"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardExportWishlist"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_columnWeight="1"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardCornerRadius="16dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
+                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_wishlist_export" app:tint="?attr/colorPrimary"/>
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Wunschliste exportieren" android:textStyle="bold" android:gravity="center"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -218,21 +292,6 @@
                     <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
                         <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_info" app:tint="?attr/colorPrimary"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Info &amp; Hilfe" android:textStyle="bold" android:gravity="center"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- NEU: Kachel für "Externe Sammlungen" -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardExternal"
-                    android:layout_width="0dp"
-                    android:layout_height="120dp"
-                    android:layout_columnWeight="1"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardCornerRadius="16dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_external" app:tint="?attr/colorPrimary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Externe Sammlungen" android:textStyle="bold" android:gravity="center"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

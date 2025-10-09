@@ -2,14 +2,19 @@ package com.example.prototyp.externalCollection
 
 import android.net.Uri
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.*
+import com.example.prototyp.MasterCardDao
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class ExternalCollectionOverviewViewModel(private val dao: ExternalCollectionDao) : ViewModel() {
+class ExternalCollectionOverviewViewModel(
+    private val dao: ExternalCollectionDao,
+    private val masterDao: MasterCardDao
+) : ViewModel() {
 
     val allCollections = dao.observeAllCollections()
     private val _userMessage = MutableStateFlow<String?>(null)
@@ -26,44 +31,69 @@ class ExternalCollectionOverviewViewModel(private val dao: ExternalCollectionDao
     fun importCollection(uri: Uri, context: Context, name: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val newCards = mutableListOf<ExternalCollectionCard>()
-                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val validatedCards = mutableListOf<ExternalCollectionCard>()
+                var notFoundCount = 0
+
+                // Die CSV-Daten werden zuerst vollständig eingelesen.
+                val rows = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                     csvReader().open(inputStream) {
-                        readAllWithHeaderAsSequence().forEach { row ->
+                        readAllWithHeaderAsSequence().toList() // Als Liste materialisieren
+                    }
+                } ?: emptyList()
+
+                // Jetzt wird die Liste in der Coroutine durchlaufen,
+                // was den Aufruf von suspend-Funktionen erlaubt.
+                rows.forEach { row ->
+                    val setCode = row["setCode"]
+                    val cardNumber = row["cardNumber"]?.toIntOrNull()
+
+                    if (setCode != null && cardNumber != null) {
+                        // Validierung gegen die Master-Tabelle (jetzt legal)
+                        val masterCard = masterDao.getBySetAndNumber(setCode, cardNumber)
+                        if (masterCard != null) {
                             val card = ExternalCollectionCard(
                                 collectionId = 0, // Platzhalter
-                                setCode = row["setCode"]!!,
-                                cardNumber = row["cardNumber"]!!.toInt(),
-                                quantity = row["quantity"]!!.toInt(),
+                                setCode = setCode,
+                                cardNumber = cardNumber,
+                                quantity = row["quantity"]?.toIntOrNull() ?: 1,
                                 price = row["price"]?.toDoubleOrNull()
                             )
-                            newCards.add(card)
+                            validatedCards.add(card)
+                        } else {
+                            notFoundCount++
+                            Log.w("ExternalImport", "Karte nicht in Master-DB: Set=$setCode, Nr=$cardNumber")
                         }
                     }
                 }
 
-                if (newCards.isNotEmpty()) {
+                if (validatedCards.isNotEmpty()) {
                     val newCollection = ExternalCollection(name = name)
-                    dao.createCollectionWithCards(newCollection, newCards)
-                    // HIER IST DIE KORREKTUR
-                    _userMessage.value = "'$name' mit ${newCards.size} Karten importiert!"
+                    dao.createCollectionWithCards(newCollection, validatedCards)
+                    var message = "'$name' mit ${validatedCards.size} Karten importiert!"
+                    if (notFoundCount > 0) {
+                        message += " ($notFoundCount ungültige übersprungen.)"
+                    }
+                    _userMessage.value = message
                 } else {
-                    // HIER IST DIE KORREKTUR
-                    _userMessage.value = "Import fehlgeschlagen: Datei ist leer oder ungültig."
+                    _userMessage.value = "Import fehlgeschlagen: Keine gültigen Karten gefunden."
                 }
             } catch (e: Exception) {
-                // HIER IST DIE KORREKTUR
                 _userMessage.value = "Import fehlgeschlagen: ${e.message}"
+                Log.e("ExternalImport", "Fehler beim Import", e)
             }
         }
     }
 }
 
-class ExternalCollectionOverviewViewModelFactory(private val dao: ExternalCollectionDao) : ViewModelProvider.Factory {
+class ExternalCollectionOverviewViewModelFactory(
+    private val dao: ExternalCollectionDao,
+    private val masterDao: MasterCardDao
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ExternalCollectionOverviewViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ExternalCollectionOverviewViewModel(dao) as T
+
+            return ExternalCollectionOverviewViewModel(dao, masterDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

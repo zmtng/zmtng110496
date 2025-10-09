@@ -1,5 +1,6 @@
 package com.example.prototyp
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -36,17 +37,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel: HomeViewModel by viewModels {
         val database = AppDatabase.getInstance(requireContext())
-        HomeViewModelFactory(database.cardDao())
+        HomeViewModelFactory(database.cardDao(), database.masterCardDao())
     }
 
     // Launcher for the Export-Dialog
-    private val exportLauncher = registerForActivityResult(
+    /*private val exportLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("text/csv")
     ) { uri: Uri? ->
         uri?.let {
             viewModel.exportCollection(it, requireContext())
         }
-    }
+    }*/
 
     // Launcher for the Import-Dialog
     private val importLauncher = registerForActivityResult(
@@ -139,7 +140,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
         binding.cardExport.setOnClickListener {
-            exportLauncher.launch("sammlung_export.csv")
+            // Starte die Coroutine, um die CSV zu erstellen und zu teilen
+            viewLifecycleOwner.lifecycleScope.launch {
+                val fileUri = viewModel.createCollectionCsvForSharing(requireContext())
+                if (fileUri != null) {
+                    shareCollection(fileUri)
+                }
+            }
         }
 
         binding.cardImport.setOnClickListener {
@@ -176,6 +183,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .show()
     }
 
+    private fun shareCollection(fileUri: Uri) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/csv"
+            putExtra(Intent.EXTRA_STREAM, fileUri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(shareIntent, "Sammlung teilen via..."))
+    }
+
     private fun showNameInputDialogForExternal(uri: Uri) {
         val input = EditText(requireContext())
         AlertDialog.Builder(requireContext())
@@ -184,10 +200,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .setPositiveButton("Importieren") { _, _ ->
                 val name = input.text.toString()
                 if (name.isNotBlank()) {
-                    // Hier bräuchten wir Zugriff auf das neue ViewModel...
-                    // Wir lösen das, indem wir es im Fragment erstellen.
                     val externalViewModel: ExternalCollectionOverviewViewModel by viewModels {
-                        ExternalCollectionOverviewViewModelFactory(AppDatabase.getInstance(requireContext()).externalCollectionDao())
+                        val db = AppDatabase.getInstance(requireContext())
+                        ExternalCollectionOverviewViewModelFactory(db.externalCollectionDao(), db.masterCardDao())
                     }
                     externalViewModel.importCollection(uri, requireContext(), name)
                 }
@@ -223,11 +238,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 }
 
-class HomeViewModelFactory(private val cardDao: CardDao) : ViewModelProvider.Factory {
+class HomeViewModelFactory(
+    private val cardDao: CardDao,
+    private val masterDao: MasterCardDao // Parameter hinzugefügt
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(cardDao) as T
+            return HomeViewModel(cardDao, masterDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

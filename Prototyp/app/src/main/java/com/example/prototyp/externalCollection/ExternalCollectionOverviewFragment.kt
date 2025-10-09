@@ -22,7 +22,8 @@ class ExternalCollectionOverviewFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: ExternalCollectionOverviewViewModel by viewModels {
-        ExternalCollectionOverviewViewModelFactory(AppDatabase.getInstance(requireContext()).externalCollectionDao())
+        val db = AppDatabase.getInstance(requireContext())
+        ExternalCollectionOverviewViewModelFactory(db.externalCollectionDao(), db.masterCardDao())
     }
     private lateinit var collectionAdapter: ExternalCollectionAdapter
 

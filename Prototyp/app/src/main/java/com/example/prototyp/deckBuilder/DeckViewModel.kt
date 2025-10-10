@@ -2,11 +2,13 @@ package com.example.prototyp.deckBuilder
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.prototyp.MasterCard
+import com.example.prototyp.MasterCardDao
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class DeckViewModel(private val deckDao: DeckDao) : ViewModel() {
+class DeckViewModel(private val deckDao: DeckDao, private val masterCardDao: MasterCardDao) : ViewModel() {
 
     val allDecks = deckDao.observeAllDecks()
 
@@ -22,22 +24,30 @@ class DeckViewModel(private val deckDao: DeckDao) : ViewModel() {
 
             val cardCodeRegex = "([A-Z]{3})-([0-9]{3})-[0-9]+".toRegex()
 
-            val deckCards = cardCodeRegex.findAll(importText)
-                .map { match ->
-
-                    val setCode = match.groupValues[1]
-                    val cardNumber = match.groupValues[2].toInt()
-                    setCode to cardNumber
+            // Zuerst alle MasterCards sammeln, die den Einträgen entsprechen
+            val foundMasterCards = mutableListOf<MasterCard>()
+            cardCodeRegex.findAll(importText).forEach { match ->
+                val setCode = match.groupValues[1]
+                val cardNumber = match.groupValues[2].toIntOrNull()
+                if (cardNumber != null) {
+                    // Der suspend-Aufruf erfolgt jetzt korrekt innerhalb der Coroutine
+                    masterCardDao.getBySetAndNumber(setCode, cardNumber)?.let { masterCard ->
+                        foundMasterCards.add(masterCard)
+                    }
                 }
-                .groupingBy { it }
-                .eachCount()
-                .map { (cardKey, quantity) ->
+            }
 
+            // Jetzt die gesammelten Karten gruppieren und in DeckCards umwandeln
+            val deckCards = foundMasterCards
+                .groupingBy { it } // Gruppiert nach dem gesamten MasterCard-Objekt
+                .eachCount()
+                .map { (masterCard, quantity) ->
                     DeckCard(
-                        deckId = 0,
-                        setCode = cardKey.first,
-                        cardNumber = cardKey.second,
-                        quantity = quantity
+                        deckId = 0, // Wird in createDeckWithCards gesetzt
+                        setCode = masterCard.setCode,
+                        cardNumber = masterCard.cardNumber,
+                        quantity = quantity,
+                        color = masterCard.color // Die korrekte Farbe wird hier verwendet
                     )
                 }
 
@@ -54,3 +64,4 @@ class DeckViewModel(private val deckDao: DeckDao) : ViewModel() {
         }
     }
 }
+

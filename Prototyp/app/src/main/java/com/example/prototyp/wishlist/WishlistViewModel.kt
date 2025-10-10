@@ -45,7 +45,7 @@ class WishlistViewModel(
         Log.d(TAG, "addCardToWishlist aufgerufen für: ${card.cardName}")
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                wishlistDao.upsertCard(card.setCode, card.cardNumber)
+                wishlistDao.upsertCard(card.setCode, card.cardNumber, card.color)
             } catch (e: Exception) {
                 // Logge den genauen Fehler, der vom DAO geworfen wird
                 Log.e(TAG, "Fehler beim Ausführen von upsertCard", e)

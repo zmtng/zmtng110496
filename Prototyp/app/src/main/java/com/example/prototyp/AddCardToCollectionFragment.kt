@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import com.example.prototyp.camera.*
 
 class AddCardToCollectionFragment : Fragment() {
 
@@ -33,7 +32,7 @@ class AddCardToCollectionFragment : Fragment() {
         )
     }
 
-    private val cameraViewModel: CameraViewModel by activityViewModels()
+
 
     private lateinit var searchAdapter: MasterCardSearchAdapter
     private val colorMap = mapOf("R" to "Rot", "B" to "Blau", "G" to "Grün", "Y" to "Gelb", "P" to "Lila", "O" to "Orange", "U" to "Grau", "M" to "Mehrfarbig")
@@ -55,7 +54,6 @@ class AddCardToCollectionFragment : Fragment() {
         setupAdapter()
         setupFilterListeners()
         observeCombinedFilters()
-        setupCamera()
     }
 
     private fun setupAdapter() {
@@ -67,25 +65,6 @@ class AddCardToCollectionFragment : Fragment() {
         binding.rvMasterCards.adapter = searchAdapter
     }
 
-    private fun setupCamera() {
-        binding.btnCameraScan.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, CameraFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            cameraViewModel.scannedText.collect { text ->
-                text?.let {
-                    binding.searchView.setQuery(it, true)
-                    searchQuery.value = it
-                    cameraViewModel.consumeScannedText()
-                }
-            }
-        }
-    }
 
     private fun setupFilterListeners() {
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {

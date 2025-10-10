@@ -31,8 +31,8 @@ interface ExternalWishlistDao {
 
     @Query("""
     SELECT
-        ewc.setCode, ewc.cardNumber, ewc.quantity,
-        m.cardName, m.setName, m.color,
+        ewc.setCode, ewc.cardNumber, ewc.quantity, ewc.color,
+        m.cardName, m.setName,
         CASE WHEN own_c.quantity > 0 THEN 1 ELSE 0 END as inOwnCollection,
         CASE WHEN own_w.quantity > 0 THEN 1 ELSE 0 END as onOwnWishlist
     FROM external_wishlist_cards ewc
@@ -41,7 +41,7 @@ interface ExternalWishlistDao {
     LEFT JOIN wishlist own_w ON ewc.setCode = own_w.setCode AND ewc.cardNumber = own_w.cardNumber
     WHERE ewc.wishlistId = :wishlistId
       AND (:nameQuery = '' OR m.cardName LIKE '%' || :nameQuery || '%')
-      AND (:colorFilter = '' OR m.color = :colorFilter)
+      AND (:colorFilter = '' OR ewc.color = :colorFilter)
       AND (:setFilter = '' OR m.setCode = :setFilter)
     ORDER BY m.cardName ASC
 """)

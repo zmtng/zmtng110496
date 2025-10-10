@@ -30,8 +30,8 @@ interface DeckDao {
 
     @Query("""
         SELECT
-            dc.setCode, dc.cardNumber, dc.quantity,
-            m.cardName, m.setName, m.color,
+            dc.setCode, dc.cardNumber, dc.quantity, dc.color,
+            m.cardName, m.setName,
             CASE WHEN c.quantity > 0 THEN 1 ELSE 0 END as inCollection,
             CASE WHEN w.quantity > 0 THEN 1 ELSE 0 END as onWishlist
         FROM deck_cards dc
@@ -44,11 +44,11 @@ interface DeckDao {
     fun observeDeckContents(deckId: Int): Flow<List<DeckCardDetail>>
 
     @Transaction
-    suspend fun upsertCardInDeck(deckId: Int, setCode: String, cardNumber: Int) {
+    suspend fun upsertCardInDeck(deckId: Int, setCode: String, cardNumber: Int, color: String) {
         val existing = getCardInDeck(deckId, setCode, cardNumber)
         if (existing == null) {
             // Karte ist neu im Deck -> mit Menge 1 einfügen
-            insertCardInDeck(DeckCard(deckId, setCode, cardNumber, 1))
+            insertCardInDeck(DeckCard(deckId, setCode, cardNumber, 1, color))
         } else {
             // Karte ist schon im Deck -> Menge um 1 erhöhen
             updateCardQuantity(deckId, setCode, cardNumber, existing.quantity + 1)

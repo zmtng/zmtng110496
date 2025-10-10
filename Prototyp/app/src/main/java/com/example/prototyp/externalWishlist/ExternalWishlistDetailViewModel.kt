@@ -36,7 +36,7 @@ class ExternalWishlistDetailViewModel(
 
     fun addCardToOwnWishlist(card: ExternalWishlistDao.CardDetail) {
         viewModelScope.launch(Dispatchers.IO) {
-            wishlistDao.upsertCard(card.setCode, card.cardNumber)
+            wishlistDao.upsertCard(card.setCode, card.cardNumber, card.color)
         }
     }
 

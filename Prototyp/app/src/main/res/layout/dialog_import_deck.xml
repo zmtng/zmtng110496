@@ -38,7 +38,7 @@
         android:layout_height="150dp"
         android:layout_marginTop="8dp"
         android:gravity="top"
-        android:hint="Deck-Code hier einfügen..."
+        android:hint="Piltover Archive -> Export -> Copy TTS Code -> Hier einfügen"
         android:inputType="textMultiLine" />
 
 </LinearLayout>

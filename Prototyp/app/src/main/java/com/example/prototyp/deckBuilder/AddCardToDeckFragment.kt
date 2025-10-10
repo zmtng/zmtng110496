@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import com.example.prototyp.camera.*
 import com.example.prototyp.R
 
 class AddCardToDeckFragment : Fragment() {
@@ -26,7 +25,6 @@ class AddCardToDeckFragment : Fragment() {
     private var _binding: FragmentAddCardWithFiltersBinding? = null
     private val binding get() = _binding!!
 
-    private val cameraViewModel: CameraViewModel by activityViewModels()
 
     private val viewModel: DeckDetailViewModel by activityViewModels {
         val db = AppDatabase.getInstance(requireContext())
@@ -50,21 +48,6 @@ class AddCardToDeckFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.toolbar.title = "Karte zum Deck hinzufügen"
-
-        binding.btnCameraScan.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, CameraFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            cameraViewModel.scannedText.collect { text ->
-                text?.let {
-                    binding.searchView.setQuery(it, true) // Füllt die Suche aus
-                    cameraViewModel.consumeScannedText() // Setzt den Wert zurück
-                }
-            }
-        }
 
         setupAdapter()
         setupFilters()

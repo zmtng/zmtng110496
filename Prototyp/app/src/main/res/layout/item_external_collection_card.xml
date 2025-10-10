@@ -23,57 +23,57 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textAppearance="?attr/textAppearanceSubtitle1"
-            android:textColor="#000000"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/btnAddToWishlist"
-            android:layout_marginEnd="16dp"
-            tools:text="Card Name That Is Very Long" />
+            app:layout_constraintEnd_toStartOf="@+id/btnAddToWishlist"
+            android:layout_marginEnd="8dp"
+            tools:text="Kartenname der sehr lang ist"/>
 
         <TextView
             android:id="@+id/tvCardSet"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:textAppearance="?attr/textAppearanceBody2"
-            android:textColor="#000000"
-            app:layout_constraintStart_toStartOf="@id/tvCardName"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvCardName"
             app:layout_constraintEnd_toEndOf="@id/tvCardName"
-            tools:text="Set Name - #001" />
+            tools:text="Setname - #123"/>
 
+        <!-- Button zum Hinzufügen (rechts oben) -->
+        <ImageButton
+            android:id="@+id/btnAddToWishlist"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Zur Wunschliste hinzufügen"
+            android:src="@drawable/ic_add_to_wishlist"
+            app:tint="@android:color/black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Anzahl-Info (links unten) -->
         <TextView
             android:id="@+id/tvQuantity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#000000"
-            android:layout_marginTop="8dp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="@id/tvCardName"
-            app:layout_constraintTop_toBottomOf="@id/tvCardSet"
-            tools:text="Anzahl: x4" />
-
-        <!-- Button (rechts) -->
-        <ImageButton
-            android:id="@+id/btnAddToWishlist"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/ic_add_to_wishlist"
-            style="?attr/materialIconButtonStyle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:contentDescription="Zur eigenen Wunschliste hinzufügen"/>
-
-        <!-- Status-Badges (links unten) -->
-        <LinearLayout
-            android:id="@+id/statusBadges"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@id/tvQuantity"
+            android:layout_marginTop="16dp"
+            android:textStyle="italic"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvCardSet"
+            tools:text="Anzahl: x3"/>
+
+        <!-- Badges für Status (unten, zentriert) -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:gravity="start"
+            app:layout_constraintTop_toBottomOf="@+id/tvQuantity"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
 
             <TextView

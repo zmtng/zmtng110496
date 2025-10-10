@@ -38,7 +38,7 @@ import com.example.prototyp.externalWishlist.*
         ExternalWishlist::class,
         ExternalWishlistCard::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -65,7 +65,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "riftbound.db")
-                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
@@ -200,6 +200,15 @@ abstract class AppDatabase : RoomDatabase() {
                         FOREIGN KEY(`wishlistId`) REFERENCES `external_wishlists`(`id`) ON DELETE CASCADE
                     )
                 """.trimIndent())
+            }
+        }
+
+        val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE deck_cards ADD COLUMN color TEXT NOT NULL DEFAULT 'U'")
+                db.execSQL("ALTER TABLE wishlist ADD COLUMN color TEXT NOT NULL DEFAULT 'U'")
+                db.execSQL("ALTER TABLE external_collection_cards ADD COLUMN color TEXT NOT NULL DEFAULT 'U'")
+                db.execSQL("ALTER TABLE external_wishlist_cards ADD COLUMN color TEXT NOT NULL DEFAULT 'U'")
             }
         }
 

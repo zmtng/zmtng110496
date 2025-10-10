@@ -19,5 +19,6 @@ data class ExternalWishlistCard(
     val wishlistId: Int,
     val setCode: String,
     val cardNumber: Int,
-    var quantity: Int
+    var quantity: Int,
+    val color: String
 )

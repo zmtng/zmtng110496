@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
 import com.example.prototyp.AppDatabase
+import com.example.prototyp.MasterCardDao
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -24,7 +25,8 @@ import kotlinx.coroutines.launch
 class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
 
     private val viewModel: DeckViewModel by viewModels {
-        DeckViewModelFactory(AppDatabase.getInstance(requireContext()).deckDao())
+        val db = AppDatabase.getInstance(requireContext())
+        DeckViewModelFactory(db.deckDao(), db.masterCardDao())
     }
     private lateinit var deckAdapter: DeckAdapter
 
@@ -167,11 +169,11 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
     }
 }
 
-class DeckViewModelFactory(private val deckDao: DeckDao) : ViewModelProvider.Factory {
+class DeckViewModelFactory(private val deckDao: DeckDao, private val masterCardDao: MasterCardDao) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(DeckViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return DeckViewModel(deckDao) as T
+            return DeckViewModel(deckDao, masterCardDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

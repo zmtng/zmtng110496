@@ -36,16 +36,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:iconifiedByDefault="false"
-                app:queryHint="Nach Namen suchen..." />
+                app:queryHint="Kartennamen eingeben..." />
 
-            <ImageButton
-                android:id="@+id/btnCameraScan"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:src="@drawable/ic_camera"
-                android:contentDescription="Karte scannen"
-                style="@style/Widget.AppCompat.Button.Borderless"/>
+            <!-- Kamera-Scan-Button -->
 
             <!-- Horizontales Layout für die Filter-Spinner -->
             <LinearLayout

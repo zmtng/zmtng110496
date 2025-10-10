@@ -60,14 +60,14 @@ class DeckDetailViewModel(
     fun addCardToDeck(card: MasterCard) {
         _deckIdFlow.value?.let { currentDeckId ->
             viewModelScope.launch(Dispatchers.IO) {
-                deckDao.upsertCardInDeck(currentDeckId, card.setCode, card.cardNumber)
+                deckDao.upsertCardInDeck(currentDeckId, card.setCode, card.cardNumber, card.color)
             }
         }
     }
 
     fun addCardToWishlist(card: DeckDao.DeckCardDetail) {
         viewModelScope.launch(Dispatchers.IO) {
-            wishlistDao.upsertCard(card.setCode, card.cardNumber)
+            wishlistDao.upsertCard(card.setCode, card.cardNumber, card.color)
         }
     }
 

@@ -20,14 +20,13 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
-import com.example.prototyp.camera.*
+
 
 class AddCardToWishlistFragment : Fragment() {
 
     private var _binding: FragmentAddCardWithFiltersBinding? = null
     private val binding get() = _binding!!
 
-    private val cameraViewModel: CameraViewModel by activityViewModels()
 
     private val viewModel: WishlistViewModel by activityViewModels {
         val db = AppDatabase.getInstance(requireContext())
@@ -51,22 +50,6 @@ class AddCardToWishlistFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.toolbar.title = "Karte zur Wunschliste hinzufügen"
-
-        binding.btnCameraScan.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, CameraFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            cameraViewModel.scannedText.collect { text ->
-                text?.let {
-                    binding.searchView.setQuery(it, true)
-                    cameraViewModel.consumeScannedText()
-                }
-            }
-        }
 
         setupAdapter()
         setupFilters()

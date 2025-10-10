@@ -27,7 +27,7 @@ class HomeViewModel(
     private val masterDao: MasterCardDao,
     private val wishlistDao: WishlistDao,
     private val externalWishlistDao: ExternalWishlistDao
-    ) : ViewModel() {
+) : ViewModel() {
 
     private val _totalCollectionValue = MutableStateFlow<Double?>(null)
     val totalCollectionValue = _totalCollectionValue.asStateFlow()
@@ -59,7 +59,7 @@ class HomeViewModel(
     ) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val validatedCards = mutableListOf<Pair<String, Int>>() // Pair<setCode, cardNumber>
+                val validatedCards = mutableListOf<MasterCard>()
                 var notFoundCount = 0
 
                 val rows = context.contentResolver.openInputStream(uri)?.use {
@@ -70,8 +70,9 @@ class HomeViewModel(
                     val setCode = row["setCode"]
                     val cardNumber = row["cardNumber"]?.toIntOrNull()
                     if (setCode != null && cardNumber != null) {
-                        if (masterDao.getBySetAndNumber(setCode, cardNumber) != null) {
-                            validatedCards.add(Pair(setCode, cardNumber))
+                        val masterCard = masterDao.getBySetAndNumber(setCode, cardNumber)
+                        if (masterCard != null) {
+                            validatedCards.add(masterCard)
                         } else {
                             notFoundCount++
                         }
@@ -90,7 +91,7 @@ class HomeViewModel(
                 when (target) {
                     WishlistImportTarget.OWN_WISHLIST -> {
                         val entries = groupedCards.map { (card, qty) ->
-                            WishlistEntry(card.first, card.second, qty)
+                            WishlistEntry(card.setCode, card.cardNumber, qty, card.color)
                         }
                         wishlistDao.overrideWishlist(entries)
                         successMessage = "${entries.size} Einträge in deine Wunschliste importiert."
@@ -102,9 +103,8 @@ class HomeViewModel(
                         }
                         val externalWishlist = ExternalWishlist(name = externalWishlistName)
                         val cardEntries = groupedCards.map { (card, qty) ->
-                            ExternalWishlistCard(0, card.first, card.second, qty)
+                            ExternalWishlistCard(0, card.setCode, card.cardNumber, qty, card.color)
                         }
-                        // Wir brauchen das externalWishlistDao hier
                         externalWishlistDao.createWishlistWithCards(externalWishlist, cardEntries)
                         successMessage = "Externe Wunschliste '$externalWishlistName' mit ${cardEntries.size} Einträgen erstellt."
                     }
@@ -237,12 +237,13 @@ class HomeViewModel(
 
                 file.outputStream().use { outputStream ->
                     csvWriter().open(outputStream) {
-                        writeRow("setCode", "cardNumber", "quantity")
+                        writeRow("setCode", "cardNumber", "quantity", "color")
                         wishlist.forEach { entry ->
                             writeRow(
                                 entry.setCode,
                                 entry.cardNumber,
-                                entry.quantity
+                                entry.quantity,
+                                entry.color
                             )
                         }
                     }

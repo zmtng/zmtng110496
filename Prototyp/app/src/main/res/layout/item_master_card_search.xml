@@ -27,6 +27,7 @@
             android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end"
+            android:textColor="@color/collection_card_text"
             tools:text="Chemtech Enforcer" />
 
         <!-- NEU: Horizontales Layout für Set und Nummer -->
@@ -43,6 +44,7 @@
                 android:textColor="#000000"
                 android:maxLines="1"
                 android:ellipsize="end"
+                android:textColor="@color/collection_card_text"
                 tools:text="Origins" />
 
             <!-- NEU: TextView für die Kartennummer -->
@@ -53,6 +55,7 @@
                 android:textAppearance="?attr/textAppearanceBody2"
                 android:textColor="#000000"
                 android:textStyle="bold"
+                android:textColor="@color/collection_card_text"
                 android:layout_marginStart="8dp"
                 tools:text="#042" />
 

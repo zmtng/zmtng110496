@@ -38,7 +38,7 @@ import com.example.prototyp.externalWishlist.*
         ExternalWishlist::class,
         ExternalWishlistCard::class
     ],
-    version = 12,
+    version = 13, // Incremented version to 13
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -65,11 +65,11 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "riftbound.db")
-                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
+                .addMigrations(MIGRATION_3_4, MIGRATION_5_6, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13) // Added MIGRATION_12_13
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
-                        // Prepopulate direkt nach Neuerstellung
+                        // Prepopulate directly after creation
                         val appDb = getInstance(context)
                         CoroutineScope(Dispatchers.IO).launch {
                             try {
@@ -85,7 +85,7 @@ abstract class AppDatabase : RoomDatabase() {
 
                     override fun onOpen(db: SupportSQLiteDatabase) {
                         super.onOpen(db)
-                        // Fallback: Wenn master_cards leer ist erneut importieren
+                        // Fallback: If master_cards is empty, import again
                         val appDb = getInstance(context)
                         CoroutineScope(Dispatchers.IO).launch {
                             try {
@@ -151,15 +151,15 @@ abstract class AppDatabase : RoomDatabase() {
                     `setCode` TEXT NOT NULL,
                     `cardNumber` INTEGER NOT NULL,
                     `quantity` INTEGER NOT NULL,
+                     `color` TEXT NOT NULL DEFAULT 'U',
                     PRIMARY KEY(`setCode`, `cardNumber`)
                 )
             """)
             }
         }
-
         val MIGRATION_9_10 = object : Migration(9, 10) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                // SQL-Befehl zum Erstellen der neuen Tabelle für externe Sammlungen
+                // SQL-command to create the new table for external collections
                 database.execSQL("""
                     CREATE TABLE IF NOT EXISTS `external_collections` (
                         `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -174,13 +174,13 @@ abstract class AppDatabase : RoomDatabase() {
                         `cardNumber` INTEGER NOT NULL,
                         `quantity` INTEGER NOT NULL,
                         `price` REAL,
+                        `color` TEXT NOT NULL DEFAULT 'U',
                         PRIMARY KEY(`collectionId`, `setCode`, `cardNumber`),
                         FOREIGN KEY(`collectionId`) REFERENCES `external_collections`(`id`) ON DELETE CASCADE
                     )
                 """.trimIndent())
             }
         }
-
         val MIGRATION_10_11 = object : Migration(10, 11) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("""
@@ -196,6 +196,7 @@ abstract class AppDatabase : RoomDatabase() {
                         `setCode` TEXT NOT NULL,
                         `cardNumber` INTEGER NOT NULL,
                         `quantity` INTEGER NOT NULL,
+                         `color` TEXT NOT NULL DEFAULT 'U',
                         PRIMARY KEY(`wishlistId`, `setCode`, `cardNumber`),
                         FOREIGN KEY(`wishlistId`) REFERENCES `external_wishlists`(`id`) ON DELETE CASCADE
                     )
@@ -205,12 +206,18 @@ abstract class AppDatabase : RoomDatabase() {
 
         val MIGRATION_11_12 = object : Migration(11, 12) {
             override fun migrate(db: SupportSQLiteDatabase) {
+                // Add color column to deck_cards table with a default value
                 db.execSQL("ALTER TABLE deck_cards ADD COLUMN color TEXT NOT NULL DEFAULT 'U'")
-                db.execSQL("ALTER TABLE wishlist ADD COLUMN color TEXT NOT NULL DEFAULT 'U'")
-                db.execSQL("ALTER TABLE external_collection_cards ADD COLUMN color TEXT NOT NULL DEFAULT 'U'")
-                db.execSQL("ALTER TABLE external_wishlist_cards ADD COLUMN color TEXT NOT NULL DEFAULT 'U'")
             }
         }
+
+        // New migration to add the price column to the deck_cards table
+        val MIGRATION_12_13 = object : Migration(12, 13) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE deck_cards ADD COLUMN price REAL")
+            }
+        }
+
 
         private fun loadCardsFromAssets(context: Context, assetName: String): List<MasterCard> {
             context.assets.open(assetName).use { input ->
@@ -271,7 +278,7 @@ abstract class AppDatabase : RoomDatabase() {
                         val numberStr = get(iCardNo)
                         val cardName  = get(iCardName)
                         val cardNo    = numberStr.toIntOrNull() ?: return@forEach
-                        val color     = get(iColor).ifBlank { "U" } // optional mit Default
+                        val color     = get(iColor).ifBlank { "U" } // optional with Default
 
                         if (setCode.isBlank() || setName.isBlank() || cardName.isBlank()) return@forEach
 
@@ -290,3 +297,4 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
+

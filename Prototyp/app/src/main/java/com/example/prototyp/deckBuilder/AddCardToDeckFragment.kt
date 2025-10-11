@@ -25,16 +25,19 @@ class AddCardToDeckFragment : Fragment() {
     private var _binding: FragmentAddCardWithFiltersBinding? = null
     private val binding get() = _binding!!
 
+    // The camera view model is no longer needed here since the button was removed.
+    // private val cameraViewModel: CameraViewModel by activityViewModels()
 
     private val viewModel: DeckDetailViewModel by activityViewModels {
         val db = AppDatabase.getInstance(requireContext())
-        DeckDetailViewModelFactory(db.deckDao(), db.masterCardDao(), db.wishlistDao())
+        // CORRECTED: Added the missing db.cardDao()
+        DeckDetailViewModelFactory(db.deckDao(), db.masterCardDao(), db.wishlistDao(), db.cardDao())
     }
 
     private lateinit var searchAdapter: MasterCardSearchAdapter
     private val colorMap = mapOf("R" to "Rot", "B" to "Blau", "G" to "Grün", "Y" to "Gelb", "P" to "Lila", "O" to "Orange", "U" to "Grau", "M" to "Mehrfarbig")
 
-    // StateFlows für die Filter
+    // StateFlows for the filters
     private val searchQuery = MutableStateFlow("")
     private val colorFilter = MutableStateFlow("")
     private val setFilter = MutableStateFlow("")
@@ -48,6 +51,8 @@ class AddCardToDeckFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.toolbar.title = "Karte zum Deck hinzufügen"
+
+        // The camera button and its listener are removed.
 
         setupAdapter()
         setupFilters()
@@ -99,7 +104,7 @@ class AddCardToDeckFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             combine(searchQuery.debounce(300), colorFilter, setFilter) { query, color, set ->
                 if (query.isBlank() && color.isBlank() && set.isBlank()) {
-                    emptyList() // Leere Liste, wenn keine Filter aktiv sind
+                    emptyList() // Empty list when no filters are active
                 } else {
                     viewModel.searchMasterCards(query, color, set)
                 }
@@ -114,3 +119,4 @@ class AddCardToDeckFragment : Fragment() {
         _binding = null
     }
 }
+

@@ -12,8 +12,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
-import com.example.prototyp.data.db.CardDao
-import com.example.prototyp.deckBuilder.DeckDao
 import com.google.android.material.card.MaterialCardView
 
 class DeckCardAdapter(
@@ -28,12 +26,12 @@ class DeckCardAdapter(
         private val nameText: TextView = itemView.findViewById(R.id.tvCardName)
         private val setText: TextView = itemView.findViewById(R.id.tvCardSet)
         private val quantityText: TextView = itemView.findViewById(R.id.tvQuantity)
+        private val priceText: TextView = itemView.findViewById(R.id.tvCardPrice) // Added this line
 
         val addToWishlistButton: ImageButton = itemView.findViewById(R.id.btnAddToWishlist)
         val decrementButton: ImageButton = itemView.findViewById(R.id.btnDecrement)
         val incrementButton: ImageButton = itemView.findViewById(R.id.btnIncrement)
 
-        // Die bind-Funktion wird erweitert, um die Listener zu empfangen
         fun bind(
             card: DeckDao.DeckCardDetail,
             onIncrement: (DeckDao.DeckCardDetail) -> Unit,
@@ -44,6 +42,9 @@ class DeckCardAdapter(
             nameText.text = card.cardName
             setText.text = card.setName
             quantityText.text = "x${card.quantity}"
+
+            // Set the price text, formatted correctly
+            priceText.text = card.price?.let { String.format("Preis: %.2f €", it) } ?: "Preis: –"
 
             if (card.inCollection) {
                 statusIcon.setImageResource(R.drawable.ic_check_circle)
@@ -70,7 +71,6 @@ class DeckCardAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_deck_card, parent, false)
-
         return ViewHolder(view)
     }
 

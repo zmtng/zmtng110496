@@ -27,35 +27,48 @@
             app:layout_constraintBottom_toBottomOf="parent" />
 
         <TextView
-        android:id="@+id/tvCardName"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:textStyle="bold"
-        android:textAppearance="?attr/textAppearanceSubtitle1"
-        android:textColor="#000000"
-        app:layout_constraintStart_toEndOf="@id/ivStatus"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/quantityControls"
-        tools:text="Kartenname" />
+            android:id="@+id/tvCardName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:textColor="@color/collection_card_text"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/ivStatus"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/controlsLayout"
+            tools:text="Kartenname" />
 
         <TextView
             android:id="@+id/tvCardSet"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:textAppearance="?attr/textAppearanceBody2"
-            android:textColor="#000000"
+            android:textColor="@color/collection_card_text"
             app:layout_constraintStart_toStartOf="@id/tvCardName"
             app:layout_constraintTop_toBottomOf="@id/tvCardName"
-            app:layout_constraintEnd_toEndOf="@id/tvCardName"
-            tools:text="Set-Name" />
+            app:layout_constraintEnd_toStartOf="@+id/controlsLayout"
+            tools:text="Setname" />
+
+        <TextView
+            android:id="@+id/tvCardPrice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:textColor="@color/collection_card_text"
+            android:textStyle="italic"
+            app:layout_constraintStart_toStartOf="@id/tvCardSet"
+            app:layout_constraintTop_toBottomOf="@id/tvCardSet"
+            app:layout_constraintEnd_toEndOf="@id/tvCardSet"
+            tools:text="Preis: 1.23 €" />
+
 
         <LinearLayout
-            android:id="@+id/quantityControls"
+            android:id="@+id/controlsLayout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
@@ -66,6 +79,8 @@
                 android:layout_height="36dp"
                 android:src="@drawable/ic_add_to_wishlist"
                 app:tint="#000000"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Zur Wunschliste hinzufügen"
                 style="?attr/materialIconButtonStyle"
                 android:layout_marginEnd="8dp"/>
 
@@ -75,16 +90,20 @@
                 android:layout_height="36dp"
                 android:src="@drawable/outline_arrow_drop_down_24"
                 app:tint="#000000"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Menge verringern"
                 style="?attr/materialIconButtonStyle"/>
 
             <TextView
                 android:id="@+id/tvQuantity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="x1"
+                tools:text="x1"
                 android:textColor="#000000"
                 android:textSize="16sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"/>
 
             <ImageButton
                 android:id="@+id/btnIncrement"
@@ -92,8 +111,9 @@
                 android:layout_height="36dp"
                 android:src="@drawable/outline_arrow_drop_up_24"
                 app:tint="#000000"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Menge erhöhen"
                 style="?attr/materialIconButtonStyle"/>
         </LinearLayout>
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

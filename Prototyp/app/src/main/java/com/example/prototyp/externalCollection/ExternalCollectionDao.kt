@@ -20,7 +20,7 @@ interface ExternalCollectionDao {
     suspend fun insertCards(cards: List<ExternalCollectionCard>)
 
     data class CardDetail(
-        // Karten-Infos
+        // Die Reihenfolge hier ist entscheidend und muss zur Query passen
         val setCode: String,
         val cardNumber: Int,
         val quantity: Int,
@@ -28,15 +28,19 @@ interface ExternalCollectionDao {
         val cardName: String,
         val setName: String,
         val color: String,
-        // Status-Infos
         val inOwnCollection: Boolean,
         val onOwnWishlist: Boolean
     )
 
     @Query("""
         SELECT
-            ec.setCode, ec.cardNumber, ec.quantity, ec.price, ec.color,
-            m.cardName, m.setName,
+            ec.setCode, 
+            ec.cardNumber, 
+            ec.quantity, 
+            ec.price,
+            m.cardName, 
+            m.setName, 
+            ec.color,
             CASE WHEN own_c.quantity > 0 THEN 1 ELSE 0 END as inOwnCollection,
             CASE WHEN own_w.quantity > 0 THEN 1 ELSE 0 END as onOwnWishlist
         FROM external_collection_cards ec
@@ -57,8 +61,13 @@ interface ExternalCollectionDao {
 
     @Query("""
         SELECT
-            ec.setCode, ec.cardNumber, ec.quantity, ec.price, ec.color,
-            m.cardName, m.setName,
+            ec.setCode, 
+            ec.cardNumber, 
+            ec.quantity, 
+            ec.price,
+            m.cardName, 
+            m.setName, 
+            ec.color,
             CASE WHEN own_c.quantity > 0 THEN 1 ELSE 0 END as inOwnCollection,
             CASE WHEN own_w.quantity > 0 THEN 1 ELSE 0 END as onOwnWishlist
         FROM external_collection_cards ec
@@ -68,7 +77,7 @@ interface ExternalCollectionDao {
         WHERE ec.collectionId = :collectionId
           AND (:nameQuery = '' OR m.cardName LIKE '%' || :nameQuery || '%')
           AND (:colorFilter = '' OR ec.color = :colorFilter)
-          AND (:setFilter = '' OR m.setCode = :setFilter)
+          AND (:setFilter = '' OR ec.setCode = :setFilter)
         ORDER BY m.cardName ASC
     """)
     fun observeCollectionContents(
@@ -78,3 +87,4 @@ interface ExternalCollectionDao {
         setFilter: String
     ): Flow<List<CardDetail>>
 }
+

@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
 
     private val viewModel: DeckViewModel by viewModels {
+        // Factory-Aufruf angepasst
         val db = AppDatabase.getInstance(requireContext())
         DeckViewModelFactory(db.deckDao(), db.masterCardDao())
     }
@@ -169,7 +170,11 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
     }
 }
 
-class DeckViewModelFactory(private val deckDao: DeckDao, private val masterCardDao: MasterCardDao) : ViewModelProvider.Factory {
+// Factory angepasst, um auch masterCardDao zu akzeptieren
+class DeckViewModelFactory(
+    private val deckDao: DeckDao,
+    private val masterCardDao: MasterCardDao
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(DeckViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
@@ -178,3 +183,4 @@ class DeckViewModelFactory(private val deckDao: DeckDao, private val masterCardD
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+

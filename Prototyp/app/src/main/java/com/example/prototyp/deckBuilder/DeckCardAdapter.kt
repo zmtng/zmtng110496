@@ -23,7 +23,7 @@ class DeckCardAdapter(
 ) : ListAdapter<DeckDao.DeckCardDetail, DeckCardAdapter.ViewHolder>(DiffCallback()) {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val statusIcon: ImageView = itemView.findViewById(R.id.ivStatus)
+        val collectionQuantityText: TextView = itemView.findViewById(R.id.tvCollectionQuantity) //val statusIcon: ImageView = itemView.findViewById(R.id.ivStatus)
         val nameText: TextView = itemView.findViewById(R.id.tvCardName)
         val setText: TextView = itemView.findViewById(R.id.tvCardSet)
         val quantityText: TextView = itemView.findViewById(R.id.tvQuantity)
@@ -46,11 +46,14 @@ class DeckCardAdapter(
             quantityText.text = "x${card.quantity}"
             priceText.text = card.price?.let { String.format("Preis: %.2f €", it) } ?: "Preis: –"
 
-            if (card.inCollection) {
+
+            collectionQuantityText.text = "Im Besitz: ${card.collectionQuantity}"
+            collectionQuantityText.isVisible = card.collectionQuantity > 0
+            /*if (card.inCollection) {
                 statusIcon.setImageResource(R.drawable.ic_check_circle)
             } else {
                 statusIcon.setImageResource(R.drawable.ic_close_circle)
-            }
+            }*/
 
             addToWishlistButton.isActivated = card.onWishlist
             addToWishlistButton.setOnClickListener {

@@ -20,7 +20,7 @@ interface DeckDao {
         val setName: String,
         val color: String,
         val price: Double?,
-        val inCollection: Boolean,
+        val collectionQuantity: Int, //inCollection: Boolean,
         val onWishlist: Boolean
     )
 
@@ -35,7 +35,7 @@ interface DeckDao {
             m.setName AS setName,
             m.color AS color,
             dc.price AS price,
-            CASE WHEN c.quantity > 0 THEN 1 ELSE 0 END as inCollection,
+            COALESCE(c.quantity, 0) as collectionQuantity,
             CASE WHEN w.quantity > 0 THEN 1 ELSE 0 END as onWishlist
         FROM deck_cards dc
         JOIN master_cards m ON dc.setCode = m.setCode AND dc.cardNumber = m.cardNumber

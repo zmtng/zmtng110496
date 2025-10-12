@@ -20,7 +20,6 @@ interface ExternalCollectionDao {
     suspend fun insertCards(cards: List<ExternalCollectionCard>)
 
     data class CardDetail(
-        // The order here is crucial and must match the query
         val setCode: String,
         val cardNumber: Int,
         val quantity: Int,
@@ -28,21 +27,21 @@ interface ExternalCollectionDao {
         val cardName: String,
         val setName: String,
         val color: String,
-        val inOwnCollection: Boolean,
-        val onOwnWishlist: Boolean
+        val collectionQuantity: Int, // Formerly inOwnCollection
+        val wishlistQuantity: Int   // Formerly onOwnWishlist
     )
 
     @Query("""
         SELECT
-            ec.setCode, 
-            ec.cardNumber, 
-            ec.quantity, 
+            ec.setCode,
+            ec.cardNumber,
+            ec.quantity,
             ec.price,
-            m.cardName, 
-            m.setName, 
+            m.cardName,
+            m.setName,
             m.color,
-            CASE WHEN own_c.quantity > 0 THEN 1 ELSE 0 END as inOwnCollection,
-            CASE WHEN own_w.quantity > 0 THEN 1 ELSE 0 END as onOwnWishlist
+            COALESCE(own_c.quantity, 0) as collectionQuantity,
+            COALESCE(own_w.quantity, 0) as wishlistQuantity
         FROM external_collection_cards ec
         JOIN master_cards m ON ec.setCode = m.setCode AND ec.cardNumber = m.cardNumber
         LEFT JOIN collection own_c ON ec.setCode = own_c.setCode AND ec.cardNumber = own_c.cardNumber
@@ -68,8 +67,8 @@ interface ExternalCollectionDao {
             m.cardName, 
             m.setName, 
             m.color,
-            CASE WHEN own_c.quantity > 0 THEN 1 ELSE 0 END as inOwnCollection,
-            CASE WHEN own_w.quantity > 0 THEN 1 ELSE 0 END as onOwnWishlist
+            COALESCE(own_c.quantity, 0) as collectionQuantity,
+            COALESCE(own_w.quantity, 0) as wishlistQuantity
         FROM external_collection_cards ec
         JOIN master_cards m ON ec.setCode = m.setCode AND ec.cardNumber = m.cardNumber
         LEFT JOIN collection own_c ON ec.setCode = own_c.setCode AND ec.cardNumber = own_c.cardNumber

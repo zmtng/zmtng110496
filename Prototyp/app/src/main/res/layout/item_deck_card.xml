@@ -16,7 +16,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- GRADIENT BACKGROUND: This view will only be visible for 'M' cards -->
         <ImageView
             android:id="@+id/gradient_background"
             android:layout_width="0dp"
@@ -35,14 +34,22 @@
             android:padding="16dp"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ImageView
-                android:id="@+id/ivStatus"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
+            <TextView
+                android:id="@+id/tvCollectionQuantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/badge_background_green"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="4dp"
+                android:textColor="@android:color/black"
+                android:textSize="12sp"
+                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:src="@drawable/ic_check_circle" />
+                tools:text="Im Besitz: 3" />
 
             <TextView
                 android:id="@+id/tvCardName"
@@ -53,7 +60,7 @@
                 android:textColor="@color/collection_card_text"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/controlsLayout"
-                app:layout_constraintStart_toEndOf="@id/ivStatus"
+                app:layout_constraintStart_toEndOf="@id/tvCollectionQuantity"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Kartenname" />
 
@@ -79,7 +86,6 @@
                 app:layout_constraintStart_toStartOf="@id/tvCardSet"
                 app:layout_constraintTop_toBottomOf="@id/tvCardSet"
                 tools:text="Preis: 1.23 €" />
-
 
             <LinearLayout
                 android:id="@+id/controlsLayout"
@@ -136,4 +142,3 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
-

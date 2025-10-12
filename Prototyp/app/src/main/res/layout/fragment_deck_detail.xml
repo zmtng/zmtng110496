@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:background="?attr/colorSurface"
     tools:context=".deckBuilder.DeckDetailFragment">
 
@@ -75,10 +76,10 @@
         android:id="@+id/fabAddCardToDeck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
+        android:layout_marginBottom="80dp"
+        android:layout_marginRight="16dp"
         app:layout_anchor="@id/analysis_summary_bar"
-        app:layout_anchorGravity="top|end"
+        app:layout_anchorGravity="bottom|end"
         app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
         android:contentDescription="Karte zum Deck hinzufügen"
         app:srcCompat="@drawable/ic_add" />

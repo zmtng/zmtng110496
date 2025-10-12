@@ -29,13 +29,19 @@ class ExternalCollectionCardAdapter(
             binding.tvCardName.text = card.cardName
             binding.tvCardSet.text = "${card.setName} - #${card.cardNumber.toString().padStart(3, '0')}"
             binding.tvQuantity.text = "Anzahl: x${card.quantity}"
-            binding.badgeInCollection.isVisible = card.inOwnCollection
-            binding.badgeOnWishlist.isVisible = card.onOwnWishlist
-            binding.btnAddToWishlist.isVisible = !card.onOwnWishlist
+            //binding.badgeInCollection.isVisible = card.inOwnCollection
+            //binding.badgeOnWishlist.isVisible = card.onOwnWishlist
+
+            binding.tvCollectionQuantity.text = "In Sammlung: ${card.collectionQuantity}"
+            binding.tvWishlistQuantity.text = "Auf Wunschliste: ${card.wishlistQuantity}"
+
+            binding.tvCollectionQuantity.isVisible = card.collectionQuantity > 0
+            binding.tvWishlistQuantity.isVisible = card.wishlistQuantity > 0
+
+            val isOnOwnWishlist = card.wishlistQuantity > 0
+            binding.btnAddToWishlist.isVisible = !isOnOwnWishlist
             binding.btnAddToWishlist.setOnClickListener {
                 onAddToWishlistClick(card)
-                it.isVisible = false
-                binding.badgeOnWishlist.isVisible = true
             }
         }
     }

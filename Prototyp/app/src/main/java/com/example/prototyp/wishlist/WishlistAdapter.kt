@@ -33,6 +33,7 @@ class WishlistAdapter(
         val numberText: TextView = itemView.findViewById(R.id.tvCardNumber)
         // Reference to the new ImageView
         val gradientBackground: ImageView = itemView.findViewById(R.id.gradient_background)
+        val collectionQuantityText: TextView = itemView.findViewById(R.id.tvCollectionQuantity)
 
         fun bind(
             card: WishlistDao.WishlistCard,
@@ -52,6 +53,9 @@ class WishlistAdapter(
                 onLongClick(card)
                 true
             }
+
+            collectionQuantityText.text = "Im Besitz: ${card.collectionQuantity}"
+            collectionQuantityText.isVisible = card.collectionQuantity > 0
         }
     }
 

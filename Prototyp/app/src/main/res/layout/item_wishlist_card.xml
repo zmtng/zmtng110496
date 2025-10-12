@@ -16,7 +16,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- GRADIENT BACKGROUND: This view will only be visible for 'M' cards -->
         <ImageView
             android:id="@+id/gradient_background"
             android:layout_width="0dp"
@@ -35,7 +34,6 @@
             android:padding="16dp"
             app:layout_constraintTop_toTopOf="parent">
 
-            <!-- Zeile 1: Kartenname, Setname und Nummer -->
             <TextView
                 android:id="@+id/tvCardName"
                 android:layout_width="wrap_content"
@@ -70,16 +68,33 @@
                 app:layout_constraintStart_toEndOf="@id/tvCardSet"
                 tools:text="#001" />
 
-            <!-- Zeile 2: Controls -->
+            <TextView
+                android:id="@+id/tvCollectionQuantity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/badge_background_green"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="4dp"
+                android:textColor="@android:color/black"
+                android:textSize="12sp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvCardSet"
+                tools:text="Im Besitz: 1"
+                tools:visibility="visible" />
+
             <LinearLayout
                 android:id="@+id/quantityControls"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="12dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvCardSet">
+                app:layout_constraintTop_toBottomOf="@id/tvCollectionQuantity">
 
                 <ImageButton
                     android:id="@+id/btnDecrement"
@@ -117,4 +132,3 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
-

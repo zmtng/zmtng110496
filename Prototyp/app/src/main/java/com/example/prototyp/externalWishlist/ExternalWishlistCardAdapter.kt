@@ -19,7 +19,6 @@ class ExternalWishlistCardAdapter(
 ) : ListAdapter<ExternalWishlistDao.CardDetail, ExternalWishlistCardAdapter.ViewHolder>(DiffCallback()) {
 
     class ViewHolder(private val binding: ItemExternalCollectionCardBinding) : RecyclerView.ViewHolder(binding.root) {
-        // Reference to the new ImageView
         val gradientBackground: ImageView = binding.gradientBackground
 
         fun bind(
@@ -29,13 +28,19 @@ class ExternalWishlistCardAdapter(
             binding.tvCardName.text = card.cardName
             binding.tvCardSet.text = "${card.setName} - #${card.cardNumber.toString().padStart(3, '0')}"
             binding.tvQuantity.text = "Gesucht: x${card.quantity}"
-            binding.badgeInCollection.isVisible = card.inOwnCollection
-            binding.badgeOnWishlist.isVisible = card.onOwnWishlist
-            binding.btnAddToWishlist.isVisible = !card.onOwnWishlist
+
+            // ## KORREKTUR HIER ##
+            // The logic now uses the integer counts.
+            binding.tvCollectionQuantity.text = "In Sammlung: ${card.collectionQuantity}"
+            binding.tvWishlistQuantity.text = "Auf Wunschliste: ${card.wishlistQuantity}"
+
+            binding.tvCollectionQuantity.isVisible = card.collectionQuantity > 0
+            binding.tvWishlistQuantity.isVisible = card.wishlistQuantity > 0
+
+            val isOnOwnWishlist = card.wishlistQuantity > 0
+            binding.btnAddToWishlist.isVisible = !isOnOwnWishlist
             binding.btnAddToWishlist.setOnClickListener {
                 onAddToWishlistClick(card)
-                it.isVisible = false
-                binding.badgeOnWishlist.isVisible = true
             }
         }
     }
@@ -51,6 +56,12 @@ class ExternalWishlistCardAdapter(
         val card = getItem(position)
         holder.bind(card, onAddToWishlistClick)
         applyCardBackground(holder.itemView as MaterialCardView, holder.gradientBackground, card.color)
+    }
+
+    class DiffCallback : DiffUtil.ItemCallback<ExternalWishlistDao.CardDetail>() {
+        override fun areItemsTheSame(old: ExternalWishlistDao.CardDetail, new: ExternalWishlistDao.CardDetail) =
+            old.setCode == new.setCode && old.cardNumber == new.cardNumber
+        override fun areContentsTheSame(old: ExternalWishlistDao.CardDetail, new: ExternalWishlistDao.CardDetail) = old == new
     }
 
     private fun applyCardBackground(cardView: MaterialCardView, gradientView: ImageView, colorCode: String?) {
@@ -72,12 +83,6 @@ class ExternalWishlistCardAdapter(
             }
             cardView.setCardBackgroundColor(ContextCompat.getColor(context, colorRes))
         }
-    }
-
-    class DiffCallback : DiffUtil.ItemCallback<ExternalWishlistDao.CardDetail>() {
-        override fun areItemsTheSame(old: ExternalWishlistDao.CardDetail, new: ExternalWishlistDao.CardDetail) =
-            old.setCode == new.setCode && old.cardNumber == new.cardNumber
-        override fun areContentsTheSame(old: ExternalWishlistDao.CardDetail, new: ExternalWishlistDao.CardDetail) = old == new
     }
 }
 

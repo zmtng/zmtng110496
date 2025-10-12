@@ -17,15 +17,18 @@ interface WishlistDao {
         val quantity: Int,
         val cardName: String,
         val setName: String,
-        val color: String
+        val color: String,
+        val collectionQuantity: Int
     )
 
     @Query("""
         SELECT
             w.setCode, w.cardNumber, w.quantity,
-            m.cardName, m.setName, m.color 
+            m.cardName, m.setName, m.color,
+            COALESCE(c.quantity, 0) as collectionQuantity
         FROM wishlist w
         JOIN master_cards m ON w.setCode = m.setCode AND w.cardNumber = m.cardNumber
+        LEFT JOIN collection c ON w.setCode = c.setCode AND w.cardNumber = c.cardNumber
         WHERE 
             (:nameQuery = '' OR m.cardName LIKE '%' || :nameQuery || '%') AND
             (:colorFilter = '' OR m.color = :colorFilter) AND

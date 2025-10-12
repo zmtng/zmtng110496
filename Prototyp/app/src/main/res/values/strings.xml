@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Prototyp</string>
+    <string name="app_name">Riftbound Tracker</string>
     <string name="decrement">Menge verringern</string>
     <string name="increment">Menge erhöhen</string>
 </resources>

@@ -19,15 +19,14 @@ interface ExternalWishlistDao {
     suspend fun insertCards(cards: List<ExternalWishlistCard>)
 
     data class CardDetail(
-        // The order here is crucial and must match the query
         val setCode: String,
         val cardNumber: Int,
         val quantity: Int,
         val cardName: String,
         val setName: String,
         val color: String,
-        val inOwnCollection: Boolean,
-        val onOwnWishlist: Boolean
+        val collectionQuantity: Int,
+        val wishlistQuantity: Int
     )
 
     @Query("""
@@ -38,8 +37,8 @@ interface ExternalWishlistDao {
         m.cardName, 
         m.setName, 
         m.color,
-        CASE WHEN own_c.quantity > 0 THEN 1 ELSE 0 END as inOwnCollection,
-        CASE WHEN own_w.quantity > 0 THEN 1 ELSE 0 END as onOwnWishlist
+        COALESCE(own_c.quantity, 0) as collectionQuantity,
+        COALESCE(own_w.quantity, 0) as wishlistQuantity
     FROM external_wishlist_cards ewc
     JOIN master_cards m ON ewc.setCode = m.setCode AND ewc.cardNumber = m.cardNumber
     LEFT JOIN collection own_c ON ewc.setCode = own_c.setCode AND ewc.cardNumber = own_c.cardNumber

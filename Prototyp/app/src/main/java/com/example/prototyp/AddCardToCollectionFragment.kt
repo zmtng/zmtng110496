@@ -28,7 +28,9 @@ class AddCardToCollectionFragment : Fragment() {
     private val viewModel: CollectionViewModel by activityViewModels {
         CollectionViewModelFactory(
             AppDatabase.getInstance(requireContext()).cardDao(),
-            AppDatabase.getInstance(requireContext()).masterCardDao()
+            AppDatabase.getInstance(requireContext()).masterCardDao(),
+            AppDatabase.getInstance(requireContext()).priceHistoryDao(),
+            AppDatabase.getInstance(requireContext()).totalValueHistoryDao()
         )
     }
 

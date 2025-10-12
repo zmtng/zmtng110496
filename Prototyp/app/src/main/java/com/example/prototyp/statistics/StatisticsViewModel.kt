@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
+import com.github.mikephil.charting.data.Entry
+import kotlinx.coroutines.flow.map
 
 // Data class to hold the combined statistics for a single set
 data class SetCompletionStat(
@@ -28,7 +30,9 @@ data class SetCompletionStat(
 
 class StatisticsViewModel(
     private val cardDao: CardDao,
-    private val masterDao: MasterCardDao
+    private val masterDao: MasterCardDao,
+    private val priceHistoryDao: PriceHistoryDao,
+    private val totalValueHistoryDao: TotalValueHistoryDao
 ) : ViewModel() {
 
     // Flow that combines data from two DAOs to calculate set completion statistics
@@ -52,17 +56,26 @@ class StatisticsViewModel(
         cardDao.getTopValuableCards()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val valueHistoryChartData: StateFlow<List<Entry>> =
+        totalValueHistoryDao.getHistory().map { historyList ->
+            historyList.map { historyEntry ->
+                Entry(historyEntry.timestamp.toFloat(), historyEntry.totalValue.toFloat())
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
 }
 
 // Factory for creating StatisticsViewModel
 class StatisticsViewModelFactory(
     private val cardDao: CardDao,
-    private val masterDao: MasterCardDao
+    private val masterCardDao: MasterCardDao,
+    private val priceHistoryDao: PriceHistoryDao,
+    private val totalValueHistoryDao: TotalValueHistoryDao
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(StatisticsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return StatisticsViewModel(cardDao, masterDao) as T
+            return StatisticsViewModel(cardDao, masterCardDao, priceHistoryDao, totalValueHistoryDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

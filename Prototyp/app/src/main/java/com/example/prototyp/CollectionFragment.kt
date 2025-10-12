@@ -14,6 +14,8 @@ import androidx.lifecycle.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.databinding.FragmentCollectionBinding
+import com.example.prototyp.statistics.PriceHistoryDao
+import com.example.prototyp.statistics.TotalValueHistoryDao
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -25,7 +27,7 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
 
     private val viewModel: CollectionViewModel by viewModels {
         val db = AppDatabase.getInstance(requireContext())
-        CollectionViewModelFactory(db.cardDao(), db.masterCardDao())
+        CollectionViewModelFactory(db.cardDao(), db.masterCardDao(), db.priceHistoryDao(), db.totalValueHistoryDao() )
     }
     private lateinit var adapter: CardAdapter
     private val colorMap = mapOf("R" to "Rot", "B" to "Blau", "G" to "Grün", "Y" to "Gelb", "P" to "Lila", "O" to "Orange", "U" to "Grau", "M" to "Mehrfarbig")
@@ -218,12 +220,14 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
 
 class CollectionViewModelFactory(
     private val cardDao: CardDao,
-    private val masterDao: MasterCardDao
+    private val masterDao: MasterCardDao,
+    private val priceHistoryDao: PriceHistoryDao,
+    private val totalValueHistoryDao: TotalValueHistoryDao
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(CollectionViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return CollectionViewModel(cardDao, masterDao) as T
+            return CollectionViewModel(cardDao, masterDao, priceHistoryDao, totalValueHistoryDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

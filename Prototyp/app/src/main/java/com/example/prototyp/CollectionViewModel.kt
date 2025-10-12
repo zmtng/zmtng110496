@@ -4,6 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.prototyp.data.db.CardDao
+import com.example.prototyp.statistics.PriceHistory
+import com.example.prototyp.statistics.PriceHistoryDao
+import com.example.prototyp.statistics.TotalValueHistory
+import com.example.prototyp.statistics.TotalValueHistoryDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +24,9 @@ enum class SortOrder { BY_NAME, BY_NUMBER, BY_COLOR }
 
 class CollectionViewModel(
     private val cardDao: CardDao,
-    private val masterDao: MasterCardDao
+    private val masterDao: MasterCardDao,
+    private val priceHistoryDao: PriceHistoryDao,
+    private val totalValueHistoryDao: TotalValueHistoryDao
 ) : ViewModel() {
 
     private val _sortOrder = MutableStateFlow(SortOrder.BY_NAME)
@@ -109,6 +115,22 @@ class CollectionViewModel(
                 delay(500L)
             }
             _userMessage.value = "Preis-Update abgeschlossen!"
+
+            val updatedCollection = cardDao.getCollectionForExport()
+            val totalValue = updatedCollection.sumOf { (it.price ?: 0.0) * it.quantity }
+
+            if (totalValue > 0) {
+                val historyEntry = TotalValueHistory(
+                    timestamp = System.currentTimeMillis(),
+                    totalValue = totalValue
+                )
+                try {
+                    totalValueHistoryDao.insert(historyEntry)
+                    Log.d("CollectionViewModel", "Successfully inserted total value: $totalValue")
+                } catch (e: Exception) {
+                    Log.e("CollectionViewModel", "Failed to insert total value", e)
+                }
+            }
         }
     }
 
@@ -147,6 +169,15 @@ class CollectionViewModel(
                 val priceValue = priceText.replace("€", "").replace(",", ".").trim().toDoubleOrNull()
                 if (priceValue != null) {
                     cardDao.updatePrice(row.setCode, row.cardNumber, priceValue)
+                    val historyEntry = PriceHistory(
+                        setCode = row.setCode,
+                        cardNumber = row.cardNumber,
+                        price = priceValue,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    priceHistoryDao.insert(historyEntry)
+
+
                     if (showSuccessMessage) {
                         _userMessage.value = "Preis für '${row.cardName}' auf ${priceValue}€ aktualisiert."
                     }

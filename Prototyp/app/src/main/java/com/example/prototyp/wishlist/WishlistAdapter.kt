@@ -6,14 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
-import com.example.prototyp.data.db.CardDao
-import com.example.prototyp.wishlist.WishlistDao
 import com.google.android.material.card.MaterialCardView
 
 class WishlistAdapter(
@@ -30,8 +30,9 @@ class WishlistAdapter(
         val incrementButton: ImageButton = itemView.findViewById(R.id.btnIncrement)
         val decrementButton: ImageButton = itemView.findViewById(R.id.btnDecrement)
         val moveButton: Button = itemView.findViewById(R.id.btnMoveToCollection)
-
         val numberText: TextView = itemView.findViewById(R.id.tvCardNumber)
+        // Reference to the new ImageView
+        val gradientBackground: ImageView = itemView.findViewById(R.id.gradient_background)
 
         fun bind(
             card: WishlistDao.WishlistCard,
@@ -62,26 +63,27 @@ class WishlistAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val card = getItem(position)
         holder.bind(card, onIncrement, onDecrement, onMoveToCollection, onLongClick)
-        applyCardBackground(holder.itemView, card.color)
+        applyCardBackground(holder.itemView as MaterialCardView, holder.gradientBackground, card.color)
     }
 
-    private fun applyCardBackground(view: View, colorCode: String?) {
-        val cardView = view as? MaterialCardView ?: return
-        val context = view.context
-
-        when (colorCode?.trim()?.uppercase()) {
-            "M" -> {
-                cardView.setCardBackgroundColor(Color.TRANSPARENT)
-                cardView.setBackgroundResource(R.drawable.rainbow_gradient)
+    private fun applyCardBackground(cardView: MaterialCardView, gradientView: ImageView, colorCode: String?) {
+        val context = cardView.context
+        if (colorCode?.trim()?.uppercase() == "M") {
+            gradientView.isVisible = true
+            cardView.setCardBackgroundColor(Color.TRANSPARENT)
+        } else {
+            gradientView.isVisible = false
+            val colorRes = when (colorCode?.trim()?.uppercase()) {
+                "R" -> R.color.card_red
+                "B" -> R.color.card_blue
+                "G" -> R.color.card_green
+                "Y" -> R.color.card_yellow
+                "P" -> R.color.card_purple
+                "O" -> R.color.card_orange
+                "U" -> R.color.card_grey
+                else -> R.color.card_grey
             }
-            "R" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_red))
-            "B" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_blue))
-            "G" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_green))
-            "Y" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_yellow))
-            "P" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_purple))
-            "O" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_orange))
-            "U" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_grey))
-            else -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_grey))
+            cardView.setCardBackgroundColor(ContextCompat.getColor(context, colorRes))
         }
     }
 
@@ -92,3 +94,4 @@ class WishlistAdapter(
             old == new
     }
 }
+

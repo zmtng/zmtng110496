@@ -19,7 +19,7 @@ interface ExternalWishlistDao {
     suspend fun insertCards(cards: List<ExternalWishlistCard>)
 
     data class CardDetail(
-        // Die Reihenfolge hier ist entscheidend und muss zur Query passen
+        // The order here is crucial and must match the query
         val setCode: String,
         val cardNumber: Int,
         val quantity: Int,
@@ -37,7 +37,7 @@ interface ExternalWishlistDao {
         ewc.quantity,
         m.cardName, 
         m.setName, 
-        ewc.color,
+        m.color,
         CASE WHEN own_c.quantity > 0 THEN 1 ELSE 0 END as inOwnCollection,
         CASE WHEN own_w.quantity > 0 THEN 1 ELSE 0 END as onOwnWishlist
     FROM external_wishlist_cards ewc
@@ -46,7 +46,7 @@ interface ExternalWishlistDao {
     LEFT JOIN wishlist own_w ON ewc.setCode = own_w.setCode AND ewc.cardNumber = own_w.cardNumber
     WHERE ewc.wishlistId = :wishlistId
       AND (:nameQuery = '' OR m.cardName LIKE '%' || :nameQuery || '%')
-      AND (:colorFilter = '' OR ewc.color = :colorFilter)
+      AND (:colorFilter = '' OR m.color = :colorFilter)
       AND (:setFilter = '' OR ewc.setCode = :setFilter)
     ORDER BY m.cardName ASC
 """)

@@ -53,7 +53,7 @@ class ExternalCollectionOverviewViewModel(
                                 cardNumber = cardNumber,
                                 quantity = row["quantity"]?.toIntOrNull() ?: 1,
                                 price = row["price"]?.toDoubleOrNull(),
-                                color = masterCard.color
+
                             )
                             validatedCards.add(card)
                         } else {

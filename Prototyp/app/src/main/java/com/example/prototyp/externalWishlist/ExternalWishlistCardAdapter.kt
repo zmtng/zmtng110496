@@ -4,19 +4,24 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.R
-import com.example.prototyp.databinding.ItemExternalCollectionCardBinding // Layout wiederverwenden
+import com.example.prototyp.databinding.ItemExternalCollectionCardBinding
+import com.google.android.material.card.MaterialCardView
 
 class ExternalWishlistCardAdapter(
     private val onAddToWishlistClick: (ExternalWishlistDao.CardDetail) -> Unit
 ) : ListAdapter<ExternalWishlistDao.CardDetail, ExternalWishlistCardAdapter.ViewHolder>(DiffCallback()) {
 
     class ViewHolder(private val binding: ItemExternalCollectionCardBinding) : RecyclerView.ViewHolder(binding.root) {
+        // Reference to the new ImageView
+        val gradientBackground: ImageView = binding.gradientBackground
+
         fun bind(
             card: ExternalWishlistDao.CardDetail,
             onAddToWishlistClick: (ExternalWishlistDao.CardDetail) -> Unit
@@ -24,14 +29,12 @@ class ExternalWishlistCardAdapter(
             binding.tvCardName.text = card.cardName
             binding.tvCardSet.text = "${card.setName} - #${card.cardNumber.toString().padStart(3, '0')}"
             binding.tvQuantity.text = "Gesucht: x${card.quantity}"
-
             binding.badgeInCollection.isVisible = card.inOwnCollection
             binding.badgeOnWishlist.isVisible = card.onOwnWishlist
             binding.btnAddToWishlist.isVisible = !card.onOwnWishlist
-
             binding.btnAddToWishlist.setOnClickListener {
                 onAddToWishlistClick(card)
-                it.isVisible = false // Button ausblenden für sofortiges Feedback
+                it.isVisible = false
                 binding.badgeOnWishlist.isVisible = true
             }
         }
@@ -47,24 +50,28 @@ class ExternalWishlistCardAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val card = getItem(position)
         holder.bind(card, onAddToWishlistClick)
-        applyCardBackground(holder.itemView, card.color)
+        applyCardBackground(holder.itemView as MaterialCardView, holder.gradientBackground, card.color)
     }
 
-    private fun applyCardBackground(view: View, colorCode: String?) {
-        val cardView = view as? com.google.android.material.card.MaterialCardView ?: return
-        val context = view.context
-        val colorRes = when (colorCode?.trim()?.uppercase()) {
-            "M" -> R.drawable.rainbow_gradient
-            "R" -> R.color.card_red
-            "B" -> R.color.card_blue
-            "G" -> R.color.card_green
-            "Y" -> R.color.card_yellow
-            "P" -> R.color.card_purple
-            "O" -> R.color.card_orange
-            else -> R.color.card_grey
+    private fun applyCardBackground(cardView: MaterialCardView, gradientView: ImageView, colorCode: String?) {
+        val context = cardView.context
+        if (colorCode?.trim()?.uppercase() == "M") {
+            gradientView.isVisible = true
+            cardView.setCardBackgroundColor(Color.TRANSPARENT)
+        } else {
+            gradientView.isVisible = false
+            val colorRes = when (colorCode?.trim()?.uppercase()) {
+                "R" -> R.color.card_red
+                "B" -> R.color.card_blue
+                "G" -> R.color.card_green
+                "Y" -> R.color.card_yellow
+                "P" -> R.color.card_purple
+                "O" -> R.color.card_orange
+                "U" -> R.color.card_grey
+                else -> R.color.card_grey
+            }
+            cardView.setCardBackgroundColor(ContextCompat.getColor(context, colorRes))
         }
-        if(colorCode == "M") cardView.setBackgroundResource(colorRes)
-        else cardView.setCardBackgroundColor(ContextCompat.getColor(context, colorRes))
     }
 
     class DiffCallback : DiffUtil.ItemCallback<ExternalWishlistDao.CardDetail>() {
@@ -73,3 +80,4 @@ class ExternalWishlistCardAdapter(
         override fun areContentsTheSame(old: ExternalWishlistDao.CardDetail, new: ExternalWishlistDao.CardDetail) = old == new
     }
 }
+

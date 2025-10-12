@@ -6,6 +6,5 @@ import androidx.room.Entity
 data class WishlistEntry(
     val setCode: String,
     val cardNumber: Int,
-    var quantity: Int,
-    val color: String
+    var quantity: Int
 )

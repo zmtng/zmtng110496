@@ -311,4 +311,3 @@ class PieChartView @JvmOverloads constructor(
         }
     }
 }
-

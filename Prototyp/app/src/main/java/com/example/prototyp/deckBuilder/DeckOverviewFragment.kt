@@ -183,4 +183,3 @@ class DeckViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-

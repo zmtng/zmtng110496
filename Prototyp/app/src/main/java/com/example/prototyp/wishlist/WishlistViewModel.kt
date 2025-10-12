@@ -1,6 +1,5 @@
 package com.example.prototyp.wishlist
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.room.Transaction
@@ -12,7 +11,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.*
 
-private const val TAG = "WishlistViewModel"
 class WishlistViewModel(
     private val wishlistDao: WishlistDao,
     private val masterDao: MasterCardDao,
@@ -42,14 +40,8 @@ class WishlistViewModel(
     suspend fun getFilterSets(): List<String> = withContext(Dispatchers.IO) { masterDao.getDistinctSetCodes() }
 
     fun addCardToWishlist(card: MasterCard) {
-        Log.d(TAG, "addCardToWishlist aufgerufen für: ${card.cardName}")
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                wishlistDao.upsertCard(card.setCode, card.cardNumber, card.color)
-            } catch (e: Exception) {
-                // Logge den genauen Fehler, der vom DAO geworfen wird
-                Log.e(TAG, "Fehler beim Ausführen von upsertCard", e)
-            }
+            wishlistDao.upsertCard(card.setCode, card.cardNumber)
         }
     }
     fun incrementQuantity(card: WishlistDao.WishlistCard) {
@@ -67,17 +59,13 @@ class WishlistViewModel(
         }
     }
 
-
-
     @Transaction
     fun transferToCollection(card: WishlistDao.WishlistCard, quantity: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             wishlistDao.decrementOrDelete(card.setCode, card.cardNumber, quantity)
-
-            cardDao.upsertBySetAndNumber(card.setCode, card.cardNumber, quantity, card.color)
+            cardDao.upsertBySetAndNumber(card.setCode, card.cardNumber, quantity)
         }
     }
-
 
     suspend fun searchMasterCards(query: String, color: String, set: String): List<MasterCard> {
         return withContext(Dispatchers.IO) {

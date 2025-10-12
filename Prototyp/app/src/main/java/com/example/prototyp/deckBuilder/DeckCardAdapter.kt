@@ -8,6 +8,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -22,15 +23,16 @@ class DeckCardAdapter(
 ) : ListAdapter<DeckDao.DeckCardDetail, DeckCardAdapter.ViewHolder>(DiffCallback()) {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val statusIcon: ImageView = itemView.findViewById(R.id.ivStatus)
-        private val nameText: TextView = itemView.findViewById(R.id.tvCardName)
-        private val setText: TextView = itemView.findViewById(R.id.tvCardSet)
-        private val quantityText: TextView = itemView.findViewById(R.id.tvQuantity)
-        private val priceText: TextView = itemView.findViewById(R.id.tvCardPrice) // Added this line
-
+        val statusIcon: ImageView = itemView.findViewById(R.id.ivStatus)
+        val nameText: TextView = itemView.findViewById(R.id.tvCardName)
+        val setText: TextView = itemView.findViewById(R.id.tvCardSet)
+        val quantityText: TextView = itemView.findViewById(R.id.tvQuantity)
+        val priceText: TextView = itemView.findViewById(R.id.tvCardPrice)
         val addToWishlistButton: ImageButton = itemView.findViewById(R.id.btnAddToWishlist)
         val decrementButton: ImageButton = itemView.findViewById(R.id.btnDecrement)
         val incrementButton: ImageButton = itemView.findViewById(R.id.btnIncrement)
+        // Reference to the new ImageView
+        val gradientBackground: ImageView = itemView.findViewById(R.id.gradient_background)
 
         fun bind(
             card: DeckDao.DeckCardDetail,
@@ -42,8 +44,6 @@ class DeckCardAdapter(
             nameText.text = card.cardName
             setText.text = card.setName
             quantityText.text = "x${card.quantity}"
-
-            // Set the price text, formatted correctly
             priceText.text = card.price?.let { String.format("Preis: %.2f €", it) } ?: "Preis: –"
 
             if (card.inCollection) {
@@ -53,17 +53,14 @@ class DeckCardAdapter(
             }
 
             addToWishlistButton.isActivated = card.onWishlist
-
             addToWishlistButton.setOnClickListener {
                 onAddToWishlist(card)
                 it.isActivated = true
             }
-
             itemView.setOnLongClickListener {
                 onLongClick(card)
                 true
             }
-
             decrementButton.setOnClickListener { onDecrement(card) }
             incrementButton.setOnClickListener { onIncrement(card) }
         }
@@ -76,8 +73,8 @@ class DeckCardAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val card = getItem(position)
-        holder.bind(getItem(position), onIncrement, onDecrement, onAddToWishlist, onLongClick)
-        applyCardBackground(holder.itemView, card.color)
+        holder.bind(card, onIncrement, onDecrement, onAddToWishlist, onLongClick)
+        applyCardBackground(holder.itemView as MaterialCardView, holder.gradientBackground, card.color)
     }
 
     class DiffCallback : DiffUtil.ItemCallback<DeckDao.DeckCardDetail>() {
@@ -87,23 +84,25 @@ class DeckCardAdapter(
             old == new
     }
 
-    private fun applyCardBackground(view: View, colorCode: String?) {
-        val cardView = view as? MaterialCardView ?: return
-        val context = view.context
-
-        when (colorCode?.trim()?.uppercase()) {
-            "M" -> {
-                cardView.setCardBackgroundColor(Color.TRANSPARENT)
-                cardView.setBackgroundResource(R.drawable.rainbow_gradient)
+    private fun applyCardBackground(cardView: MaterialCardView, gradientView: ImageView, colorCode: String?) {
+        val context = cardView.context
+        if (colorCode?.trim()?.uppercase() == "M") {
+            gradientView.isVisible = true
+            cardView.setCardBackgroundColor(Color.TRANSPARENT)
+        } else {
+            gradientView.isVisible = false
+            val colorRes = when (colorCode?.trim()?.uppercase()) {
+                "R" -> R.color.card_red
+                "B" -> R.color.card_blue
+                "G" -> R.color.card_green
+                "Y" -> R.color.card_yellow
+                "P" -> R.color.card_purple
+                "O" -> R.color.card_orange
+                "U" -> R.color.card_grey
+                else -> R.color.card_grey
             }
-            "R" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_red))
-            "B" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_blue))
-            "G" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_green))
-            "Y" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_yellow))
-            "P" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_purple))
-            "O" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_orange))
-            "U" -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_grey))
-            else -> cardView.setCardBackgroundColor(ContextCompat.getColor(context, R.color.card_grey))
+            cardView.setCardBackgroundColor(ContextCompat.getColor(context, colorRes))
         }
     }
 }
+

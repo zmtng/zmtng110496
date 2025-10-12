@@ -1,15 +1,19 @@
 package com.example.prototyp
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.data.db.CardDao
+import com.google.android.material.card.MaterialCardView
 
 class CardAdapter(
     private val onIncrement: (CardDao.CollectionRowData) -> Unit,
@@ -26,6 +30,8 @@ class CardAdapter(
         val tvPrice: TextView = itemView.findViewById(R.id.cardPreis)
         val btnIncrement: ImageButton = itemView.findViewById(R.id.btnIncrement)
         val btnDecrement: ImageButton = itemView.findViewById(R.id.btnDecrement)
+        // Reference to the new ImageView
+        val gradientBackground: ImageView = itemView.findViewById(R.id.gradient_background)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -51,24 +57,27 @@ class CardAdapter(
             true
         }
 
-        applyCardBackground(h.itemView, row.color)
+        applyCardBackground(h.itemView as MaterialCardView, h.gradientBackground, row.color)
     }
 
-    private fun applyCardBackground(view: View, colorCode: String?) {
-        val context = view.context
-        when (colorCode?.trim()?.uppercase()) {
-            "M" -> {
-                view.setBackgroundResource(R.drawable.rainbow_gradient)
+    private fun applyCardBackground(cardView: MaterialCardView, gradientView: ImageView, colorCode: String?) {
+        val context = cardView.context
+        if (colorCode?.trim()?.uppercase() == "M") {
+            gradientView.isVisible = true
+            cardView.setCardBackgroundColor(Color.TRANSPARENT)
+        } else {
+            gradientView.isVisible = false
+            val colorRes = when (colorCode?.trim()?.uppercase()) {
+                "R" -> R.color.card_red
+                "B" -> R.color.card_blue
+                "G" -> R.color.card_green
+                "Y" -> R.color.card_yellow
+                "P" -> R.color.card_purple
+                "O" -> R.color.card_orange
+                "U" -> R.color.card_grey
+                else -> R.color.card_grey
             }
-
-            "R" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_red))
-            "B" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_blue))
-            "G" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_green))
-            "Y" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_yellow))
-            "P" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_purple))
-            "O" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_orange))
-            "U" -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_grey))
-            else -> view.setBackgroundColor(ContextCompat.getColor(context, R.color.card_grey)) // Fallback
+            cardView.setCardBackgroundColor(ContextCompat.getColor(context, colorRes))
         }
     }
 }
@@ -83,3 +92,4 @@ class CardDiffCallback : DiffUtil.ItemCallback<CardDao.CollectionRowData>() {
         return oldItem == newItem
     }
 }
+

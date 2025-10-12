@@ -20,7 +20,7 @@ interface ExternalCollectionDao {
     suspend fun insertCards(cards: List<ExternalCollectionCard>)
 
     data class CardDetail(
-        // Die Reihenfolge hier ist entscheidend und muss zur Query passen
+        // The order here is crucial and must match the query
         val setCode: String,
         val cardNumber: Int,
         val quantity: Int,
@@ -40,7 +40,7 @@ interface ExternalCollectionDao {
             ec.price,
             m.cardName, 
             m.setName, 
-            ec.color,
+            m.color,
             CASE WHEN own_c.quantity > 0 THEN 1 ELSE 0 END as inOwnCollection,
             CASE WHEN own_w.quantity > 0 THEN 1 ELSE 0 END as onOwnWishlist
         FROM external_collection_cards ec
@@ -67,7 +67,7 @@ interface ExternalCollectionDao {
             ec.price,
             m.cardName, 
             m.setName, 
-            ec.color,
+            m.color,
             CASE WHEN own_c.quantity > 0 THEN 1 ELSE 0 END as inOwnCollection,
             CASE WHEN own_w.quantity > 0 THEN 1 ELSE 0 END as onOwnWishlist
         FROM external_collection_cards ec
@@ -76,7 +76,7 @@ interface ExternalCollectionDao {
         LEFT JOIN wishlist own_w ON ec.setCode = own_w.setCode AND ec.cardNumber = own_w.cardNumber
         WHERE ec.collectionId = :collectionId
           AND (:nameQuery = '' OR m.cardName LIKE '%' || :nameQuery || '%')
-          AND (:colorFilter = '' OR ec.color = :colorFilter)
+          AND (:colorFilter = '' OR m.color = :colorFilter)
           AND (:setFilter = '' OR ec.setCode = :setFilter)
         ORDER BY m.cardName ASC
     """)

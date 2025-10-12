@@ -28,21 +28,18 @@ class CollectionViewModel(
     private val _colorFilter = MutableStateFlow<String?>(null)
     private val _setFilter = MutableStateFlow<String?>(null)
 
-    // --- Der neue, intelligente Datenfluss ---
     val collection: StateFlow<List<CardDao.CollectionRowData>> = combine(
-        cardDao.observeCollectionWithDetails(), // 1. Die Rohdaten von der DB
-        _sortOrder,                              // 2. Die aktuelle Sortierung
-        _searchQuery,                            // 3. Der aktuelle Suchtext
-        _colorFilter,                            // 4. Der gewählte Farbfilter
-        _setFilter                               // 5. Der gewählte Setfilter
+        cardDao.observeCollectionWithDetails(),
+        _sortOrder,
+        _searchQuery,
+        _colorFilter,
+        _setFilter
     ) { fullList, sort, query, color, set ->
-
         val filteredList = fullList.filter { item ->
             (query.isBlank() || item.cardName.contains(query, ignoreCase = true)) &&
                     (color == null || item.color == color) &&
                     (set == null || item.setName == set)
         }
-
         when (sort) {
             SortOrder.BY_NAME -> filteredList.sortedBy { it.cardName }
             SortOrder.BY_NUMBER -> filteredList.sortedWith(compareBy({ it.setCode }, { it.cardNumber }))
@@ -61,7 +58,6 @@ class CollectionViewModel(
     val userMessage = _userMessage.asStateFlow()
     fun onUserMessageShown() { _userMessage.value = null }
 
-
     fun updateNotes(setCode: String, cardNumber: Int, personalNotes: String?, generalNotes: String?) {
         viewModelScope.launch(Dispatchers.IO) {
             cardDao.updateNotes(setCode, cardNumber, personalNotes, generalNotes)
@@ -76,9 +72,7 @@ class CollectionViewModel(
 
     fun decrementQuantity(row: CardDao.CollectionRowData) {
         viewModelScope.launch(Dispatchers.IO) {
-
             cardDao.addQuantity(row.setCode, row.cardNumber, -1)
-
             val updatedEntry = cardDao.getByKey(row.setCode, row.cardNumber)
             if (updatedEntry == null || updatedEntry.quantity <= 0) {
                 cardDao.deleteByKey(row.setCode, row.cardNumber)
@@ -91,7 +85,7 @@ class CollectionViewModel(
             .replace("(Main Set)", "")
             .replace("Origins: ", "")
             .trim()
-            .lowercase() // Alles klein schreiben für eine einheitliche Basis
+            .lowercase()
             .replace("\\s+".toRegex(), "-")
             .replace(Regex("[^a-z0-9\\-]"), "")
         return cleanedText.split('-').joinToString("-") { part ->
@@ -108,15 +102,12 @@ class CollectionViewModel(
                 _userMessage.value = "Sammlung ist leer."
                 return@launch
             }
-
             _userMessage.value = "Starte Preis-Update für ${currentCollection.size} Karten..."
-
             for ((index, card) in currentCollection.withIndex()) {
                 _userMessage.value = "Prüfe Karte ${index + 1}/${currentCollection.size}: ${card.cardName}"
                 fetchPriceForCard(card, showSuccessMessage = false) {}
                 delay(500L)
             }
-
             _userMessage.value = "Preis-Update abgeschlossen!"
         }
     }
@@ -147,23 +138,18 @@ class CollectionViewModel(
                     }
                     return@launch
                 }
-
                 val doc = response.parse()
                 val priceText = doc.select("dt:contains(Preis-Trend) + dd").first()?.text()
-
                 if (priceText.isNullOrBlank()) {
                     if (showSuccessMessage) _userMessage.value = "Kein Trendpreis für '${row.cardName}' gefunden."
                     return@launch
                 }
-
                 val priceValue = priceText.replace("€", "").replace(",", ".").trim().toDoubleOrNull()
-
                 if (priceValue != null) {
                     cardDao.updatePrice(row.setCode, row.cardNumber, priceValue)
                     if (showSuccessMessage) {
                         _userMessage.value = "Preis für '${row.cardName}' auf ${priceValue}€ aktualisiert."
                     }
-
                     withContext(Dispatchers.Main) {
                         onSuccess(priceValue)
                     }
@@ -178,7 +164,7 @@ class CollectionViewModel(
     }
     fun addCardToCollection(card: MasterCard) {
         viewModelScope.launch(Dispatchers.IO) {
-            cardDao.upsertBySetAndNumber(card.setCode, card.cardNumber, 1, card.color)
+            cardDao.upsertBySetAndNumber(card.setCode, card.cardNumber, 1)
         }
     }
 
@@ -190,7 +176,8 @@ class CollectionViewModel(
 
     fun deleteCard(card: CardDao.CollectionRowData) {
         viewModelScope.launch(Dispatchers.IO) {
-            cardDao.deleteBySetAndNumber(card.setCode, card.cardNumber)
+            cardDao.deleteByKey(card.setCode, card.cardNumber)
         }
     }
 }
+

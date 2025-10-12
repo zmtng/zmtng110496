@@ -13,49 +13,51 @@ interface DeckDao {
     fun observeAllDecks(): Flow<List<Deck>>
 
     data class DeckCardDetail(
-        // Die Reihenfolge der Felder hier ist entscheidend!
         val setCode: String,
         val cardNumber: Int,
         val quantity: Int,
         val cardName: String,
         val setName: String,
         val color: String,
+        val price: Double?,
         val inCollection: Boolean,
-        val onWishlist: Boolean,
-        val price: Double?
+        val onWishlist: Boolean
     )
 
+    // Diese Abfrage ist der einzige Ort, an dem die Farbe benötigt wird, und sie holt sie
+    // immer korrekt aus der master_cards-Tabelle. Daran ändert sich nichts.
     @Query("""
         SELECT
-            dc.setCode, 
-            dc.cardNumber, 
-            dc.quantity,
-            m.cardName, 
-            m.setName,
-            dc.color, 
+            dc.setCode AS setCode,
+            dc.cardNumber AS cardNumber,
+            dc.quantity AS quantity,
+            m.cardName AS cardName,
+            m.setName AS setName,
+            m.color AS color,
+            dc.price AS price,
             CASE WHEN c.quantity > 0 THEN 1 ELSE 0 END as inCollection,
-            CASE WHEN w.quantity > 0 THEN 1 ELSE 0 END as onWishlist,
-            dc.price
+            CASE WHEN w.quantity > 0 THEN 1 ELSE 0 END as onWishlist
         FROM deck_cards dc
         JOIN master_cards m ON dc.setCode = m.setCode AND dc.cardNumber = m.cardNumber
         LEFT JOIN collection c ON dc.setCode = c.setCode AND dc.cardNumber = c.cardNumber
         LEFT JOIN wishlist w ON dc.setCode = w.setCode AND dc.cardNumber = w.cardNumber
         WHERE dc.deckId = :deckId
+        ORDER BY m.cardName ASC
     """)
     fun observeDeckContents(deckId: Int): Flow<List<DeckCardDetail>>
+
 
     @Delete
     suspend fun deleteDeck(deck: Deck)
 
     @Transaction
-    suspend fun upsertCardInDeck(deckId: Int, setCode: String, cardNumber: Int, color: String) {
+    suspend fun upsertCardInDeck(deckId: Int, setCode: String, cardNumber: Int) {
         val existing = getCardInDeck(deckId, setCode, cardNumber)
         if (existing == null) {
-            val newCard = DeckCard(deckId, setCode, cardNumber, 1, color, null)
-            insertCardInDeck(newCard)
+            // Der Farbparameter wird hier nicht mehr benötigt.
+            insertCardInDeck(DeckCard(deckId, setCode, cardNumber, 1, null))
         } else {
-            // Menge um 1 erhöhen
-            updateCardQuantity(deckId, setCode, cardNumber, existing.quantity + 1)
+            addQuantityInDeck(deckId, setCode, cardNumber, 1)
         }
     }
 
@@ -74,6 +76,7 @@ interface DeckDao {
     @Query("UPDATE deck_cards SET quantity = :quantity WHERE deckId = :deckId AND setCode = :setCode AND cardNumber = :cardNumber")
     suspend fun updateCardQuantity(deckId: Int, setCode: String, cardNumber: Int, quantity: Int)
 
+
     @Query("UPDATE deck_cards SET price = :price WHERE deckId = :deckId AND setCode = :setCode AND cardNumber = :cardNumber")
     suspend fun updateDeckCardPrice(deckId: Int, setCode: String, cardNumber: Int, price: Double)
 
@@ -87,4 +90,3 @@ interface DeckDao {
         insertDeckCards(cardsWithId)
     }
 }
-

@@ -20,6 +20,5 @@ data class ExternalCollectionCard(
     val setCode: String,
     val cardNumber: Int,
     var quantity: Int,
-    var price: Double?,
-    val color: String
+    var price: Double?
 )

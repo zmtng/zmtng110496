@@ -91,7 +91,7 @@ class HomeViewModel(
                 when (target) {
                     WishlistImportTarget.OWN_WISHLIST -> {
                         val entries = groupedCards.map { (card, qty) ->
-                            WishlistEntry(card.setCode, card.cardNumber, qty, card.color)
+                            WishlistEntry(card.setCode, card.cardNumber, qty)
                         }
                         wishlistDao.overrideWishlist(entries)
                         successMessage = "${entries.size} Einträge in deine Wunschliste importiert."
@@ -103,7 +103,7 @@ class HomeViewModel(
                         }
                         val externalWishlist = ExternalWishlist(name = externalWishlistName)
                         val cardEntries = groupedCards.map { (card, qty) ->
-                            ExternalWishlistCard(0, card.setCode, card.cardNumber, qty, card.color)
+                            ExternalWishlistCard(0, card.setCode, card.cardNumber, qty)
                         }
                         externalWishlistDao.createWishlistWithCards(externalWishlist, cardEntries)
                         successMessage = "Externe Wunschliste '$externalWishlistName' mit ${cardEntries.size} Einträgen erstellt."
@@ -147,7 +147,6 @@ class HomeViewModel(
                                 cardNumber = cardNumber,
                                 quantity = row["quantity"]?.toIntOrNull() ?: 1,
                                 price = row["price"]?.toDoubleOrNull(),
-                                color = masterCard.color, // Korrekte Farbe von der DB
                                 personalNotes = row["personalNotes"],
                                 generalNotes = row["generalNotes"]
                             )
@@ -200,7 +199,6 @@ class HomeViewModel(
                                 entry.cardNumber,
                                 entry.quantity,
                                 entry.price,
-                                entry.color,
                                 entry.personalNotes,
                                 entry.generalNotes
                             )
@@ -243,7 +241,6 @@ class HomeViewModel(
                                 entry.setCode,
                                 entry.cardNumber,
                                 entry.quantity,
-                                entry.color
                             )
                         }
                     }
@@ -263,3 +260,4 @@ class HomeViewModel(
         }
     }
 }
+

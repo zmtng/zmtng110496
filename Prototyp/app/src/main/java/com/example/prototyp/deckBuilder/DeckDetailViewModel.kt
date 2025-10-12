@@ -102,14 +102,15 @@ class DeckDetailViewModel(
     fun addCardToDeck(card: MasterCard) {
         _deckIdFlow.value?.let { currentDeckId ->
             viewModelScope.launch(Dispatchers.IO) {
-                deckDao.upsertCardInDeck(currentDeckId, card.setCode, card.cardNumber, card.color)
+                // Die Farbe wird hier nicht mehr übergeben.
+                deckDao.upsertCardInDeck(currentDeckId, card.setCode, card.cardNumber)
             }
         }
     }
 
     fun addCardToWishlist(card: DeckDao.DeckCardDetail) {
         viewModelScope.launch(Dispatchers.IO) {
-            wishlistDao.upsertCard(card.setCode, card.cardNumber, card.color)
+            wishlistDao.upsertCard(card.setCode, card.cardNumber)
         }
     }
 
@@ -203,4 +204,3 @@ class DeckDetailViewModel(
         }
     }
 }
-

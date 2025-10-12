@@ -22,24 +22,23 @@ interface WishlistDao {
 
     @Query("""
         SELECT
-            w.setCode, w.cardNumber, w.quantity, w.color,
-            m.cardName, m.setName
+            w.setCode, w.cardNumber, w.quantity,
+            m.cardName, m.setName, m.color 
         FROM wishlist w
         JOIN master_cards m ON w.setCode = m.setCode AND w.cardNumber = m.cardNumber
         WHERE 
             (:nameQuery = '' OR m.cardName LIKE '%' || :nameQuery || '%') AND
-            (:colorFilter = '' OR w.color = :colorFilter) AND
+            (:colorFilter = '' OR m.color = :colorFilter) AND
             (:setFilter = '' OR w.setCode = :setFilter)
         ORDER BY m.cardName ASC
     """)
     fun observeFilteredWishlist(nameQuery: String, colorFilter: String, setFilter: String): Flow<List<WishlistCard>>
 
     @Transaction
-    suspend fun upsertCard(setCode: String, cardNumber: Int, color: String) {
-        Log.d("WishlistDao", "Upsert wird versucht für: $setCode-$cardNumber")
+    suspend fun upsertCard(setCode: String, cardNumber: Int) {
         val existing = getEntry(setCode, cardNumber)
         if (existing == null) {
-            insertEntry(WishlistEntry(setCode, cardNumber, 1, color))
+            insertEntry(WishlistEntry(setCode, cardNumber, 1))
         } else {
             updateQuantity(setCode, cardNumber, existing.quantity + 1)
         }
@@ -84,3 +83,4 @@ interface WishlistDao {
     @Query("SELECT * FROM wishlist")
     suspend fun getWishlistForExport(): List<WishlistEntry>
 }
+

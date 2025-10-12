@@ -4,9 +4,15 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MasterCardDao {
+
+    data class SetCardCount(
+        val setName: String,
+        val count: Int
+    )
 
     @Query("SELECT COUNT(*) FROM master_cards")
     suspend fun count(): Int
@@ -72,6 +78,13 @@ interface MasterCardDao {
         ORDER BY cardName, setCode, cardNumber
     """)
     suspend fun search(q: String, color: String, set: String): List<MasterCard>
+
+    @Query("""
+        SELECT setName, COUNT(cardNumber) as count
+        FROM master_cards
+        GROUP BY setName
+    """)
+    fun getSetCardCounts(): Flow<List<SetCardCount>>
 
 
 }

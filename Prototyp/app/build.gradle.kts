@@ -55,7 +55,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.play.services.drive)
     kapt(libs.androidx.room.compiler)
-
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("org.jsoup:jsoup:1.17.2")
 
     implementation("androidx.fragment:fragment-ktx:1.7.0")

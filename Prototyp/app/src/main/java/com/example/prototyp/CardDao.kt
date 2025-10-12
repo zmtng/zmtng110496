@@ -22,6 +22,11 @@ interface CardDao {
         val setName: String   // from JOIN
     )
 
+    data class OwnedCardCount(
+        val setName: String,
+        val count: Int
+    )
+
     @Query("UPDATE collection SET price = :price WHERE setCode = :setCode AND cardNumber = :cardNumber")
     suspend fun updatePrice(setCode: String, cardNumber: Int, price: Double?)
 
@@ -98,6 +103,28 @@ interface CardDao {
 
     @Query("SELECT * FROM collection WHERE setCode = :setCode AND cardNumber = :cardNumber LIMIT 1")
     suspend fun getByKey(setCode: String, cardNumber: Int): CollectionEntry?
+
+    // --- STATISTIK
+
+    @Query("""
+        SELECT m.setName, COUNT(c.cardNumber) as count
+        FROM collection c
+        JOIN master_cards m ON c.setCode = m.setCode AND c.cardNumber = m.cardNumber
+        GROUP BY m.setName
+    """)
+    fun getOwnedUniqueCardCountsPerSet(): Flow<List<OwnedCardCount>>
+
+    @Query("""
+        SELECT
+            c.setCode, c.cardNumber, c.quantity, c.price, m.color, c.personalNotes, c.generalNotes,
+            m.cardName, m.setName
+        FROM collection c
+        JOIN master_cards m ON c.setCode = m.setCode AND c.cardNumber = m.cardNumber
+        WHERE c.price IS NOT NULL
+        ORDER BY c.price DESC
+        LIMIT 5
+    """)
+    fun getTopValuableCards(): Flow<List<CollectionRowData>>
 
 }
 

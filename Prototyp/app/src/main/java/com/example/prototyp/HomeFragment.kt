@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import com.example.prototyp.externalCollection.*
 import com.example.prototyp.externalWishlist.ExternalWishlistDao
 import com.example.prototyp.externalWishlist.ExternalWishlistOverviewFragment
+import com.example.prototyp.statistics.StatisticsFragment
 import com.example.prototyp.wishlist.WishlistDao
 
 
@@ -135,6 +136,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.cardCalculateValue.setOnClickListener {
             viewModel.updateTotalValue()
             Toast.makeText(requireContext(), "Gesamtwert wird berechnet...", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.cardStatistics.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, StatisticsFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
         binding.cardExport.setOnClickListener {

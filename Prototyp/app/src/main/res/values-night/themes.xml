@@ -1,9 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Basis-Theme im Dark-Mode -->
-    <style name="Theme.Riftbound" parent="Theme.Material3.Dark.NoActionBar">
+    <style name="Theme.RiftboundTracker" parent="Theme.Material3.Dark.NoActionBar">
 
-        <!-- Statusbar Icons hell -->
-        <item name="android:windowLightStatusBar">false</item>
+        <item name="colorPrimary">@color/magic_cyan</item>
+        <item name="colorOnPrimary">@color/dark_space_start</item> <item name="colorSurface">@color/dark_surface</item>
+        <item name="colorOnSurface">@color/light_parchment</item>
 
+        <item name="android:colorBackground">@color/dark_space_end</item>
+        <item name="colorOnBackground">@color/light_parchment</item>
+
+        <item name="android:windowBackground">@drawable/fragment_background_gradient</item>
+
+        <item name="android:statusBarColor">@color/dark_space_start</item>
+        <item name="android:navigationBarColor">@color/dark_space_end</item>
     </style>
 </resources>

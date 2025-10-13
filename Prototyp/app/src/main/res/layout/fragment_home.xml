@@ -25,11 +25,12 @@
                 android:id="@+id/heroImage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+
                 android:contentDescription="@string/app_name"
-                android:layout_marginBottom="60dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/unnamed"
-                app:layout_collapseMode="parallax" />
+
+                android:src="@drawable/img"
+                app:layout_collapseMode="parallax"
+                tools:src="@drawable/img" />
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -66,12 +67,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Aktueller Gesamtwert"
+                        android:layout_gravity="center"
                         android:textAppearance="?attr/textAppearanceBody2"
                         android:textColor="?android:attr/textColorSecondary" />
                     <TextView
                         android:id="@+id/tvTotalValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center"
                         android:textAppearance="?attr/textAppearanceHeadline4"
                         android:textStyle="bold"
                         tools:text="123,45 €" />
@@ -295,20 +298,6 @@
                     <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
                         <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_wishlist_export" app:tint="?attr/colorPrimary"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Wunschliste exportieren" android:textStyle="bold" android:gravity="center"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardToggleTheme"
-                    android:layout_width="0dp"
-                    android:layout_height="120dp"
-                    android:layout_columnWeight="1"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardCornerRadius="16dp">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="8dp">
-                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_dark_mode" app:tint="?attr/colorPrimary"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Theme wechseln" android:textStyle="bold" android:gravity="center"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

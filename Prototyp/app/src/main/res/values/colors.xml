@@ -1,11 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="card_red">#E57373</color>    <!-- Sanftes Rot -->
-    <color name="card_blue">#64B5F6</color>   <!-- Freundliches Blau -->
-    <color name="card_green">#81C784</color>  <!-- Ruhiges Grün -->
-    <color name="card_yellow">#FFF176</color> <!-- Warmes Gelb -->
-    <color name="card_purple">#9575CD</color> <!-- Sanftes Lila -->
-    <color name="card_orange">#FFB74D</color> <!-- Warmes Orange -->
-    <color name="card_grey">#90A4AE</color>   <!-- Ausgewogenes Grau -->
-
+    <color name="dark_space_start">#0D111C</color> <color name="vibrant_space_start">#1C3A5E</color> <color name="dark_space_end">#000000</color>   <color name="magic_cyan">#38B6FF</color>     <color name="light_parchment">#E0E0E0</color> <color name="dark_surface">#1A1F2B</color>    <color name="gold_accent">#FFC107</color>      <color name="card_red">#D32F2F</color>
+    <color name="card_blue">#1976D2</color>
+    <color name="card_green">#388E3C</color>
+    <color name="card_yellow">#FBC02D</color>
+    <color name="card_purple">#7B1FA2</color>
+    <color name="card_orange">#F57C00</color>
+    <color name="card_grey">#455A64</color>
     <color name="collection_card_text">#000000</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 </resources>

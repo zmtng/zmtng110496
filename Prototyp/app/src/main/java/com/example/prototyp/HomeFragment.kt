@@ -21,7 +21,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.databinding.FragmentHomeBinding
 import com.example.prototyp.deckBuilder.DeckOverviewFragment
-import com.example.prototyp.prefs.ThemePrefs
 import com.example.prototyp.wishlist.WishlistFragment
 import com.example.prototyp.AppDatabase
 import kotlinx.coroutines.flow.collectLatest
@@ -171,17 +170,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.cardImport.setOnClickListener {
             importType = ImportType.COLLECTION
             importLauncher.launch("*/*")
-        }
-
-        binding.cardToggleTheme.setOnClickListener {
-            val themePrefs = ThemePrefs(requireContext())
-            val newNightMode = if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES) {
-                AppCompatDelegate.MODE_NIGHT_NO
-            } else {
-                AppCompatDelegate.MODE_NIGHT_YES
-            }
-            themePrefs.theme = newNightMode
-            AppCompatDelegate.setDefaultNightMode(newNightMode)
         }
     }
 

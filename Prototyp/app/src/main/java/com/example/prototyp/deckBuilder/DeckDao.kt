@@ -15,36 +15,34 @@ interface DeckDao {
     data class DeckCardDetail(
         val setCode: String,
         val cardNumber: Int,
-        val quantity: Int,
         val cardName: String,
         val setName: String,
         val color: String,
         val price: Double?,
-        val collectionQuantity: Int, //inCollection: Boolean,
-        val onWishlist: Boolean
+        val collectionQuantity: Int,
+        val quantityInDeck: Int,     // Umbenannt von 'quantity'
+        val wishlistQuantity: Int    // 'onWishlist' entfernt, da nicht von SQL geliefert
     )
 
-    // Diese Abfrage ist der einzige Ort, an dem die Farbe benötigt wird, und sie holt sie
-    // immer korrekt aus der master_cards-Tabelle. Daran ändert sich nichts.
     @Query("""
-        SELECT
-            dc.setCode AS setCode,
-            dc.cardNumber AS cardNumber,
-            dc.quantity AS quantity,
-            m.cardName AS cardName,
-            m.setName AS setName,
-            m.color AS color,
-            dc.price AS price,
-            COALESCE(c.quantity, 0) as collectionQuantity,
-            CASE WHEN w.quantity > 0 THEN 1 ELSE 0 END as onWishlist
-        FROM deck_cards dc
-        JOIN master_cards m ON dc.setCode = m.setCode AND dc.cardNumber = m.cardNumber
-        LEFT JOIN collection c ON dc.setCode = c.setCode AND dc.cardNumber = c.cardNumber
-        LEFT JOIN wishlist w ON dc.setCode = w.setCode AND dc.cardNumber = w.cardNumber
-        WHERE dc.deckId = :deckId
-        ORDER BY m.cardName ASC
-    """)
-    fun observeDeckContents(deckId: Int): Flow<List<DeckCardDetail>>
+    SELECT
+        dc.setCode,
+        dc.cardNumber,
+        m.cardName,
+        m.setName,
+        m.color,
+        dc.quantity as quantityInDeck,
+        c.price,
+        COALESCE(c.quantity, 0) as collectionQuantity,
+        COALESCE(w.quantity, 0) as wishlistQuantity  -- Korrekter Alias!
+    FROM deck_cards dc
+    JOIN master_cards m ON dc.setCode = m.setCode AND dc.cardNumber = m.cardNumber
+    LEFT JOIN collection c ON dc.setCode = c.setCode AND dc.cardNumber = c.cardNumber
+    LEFT JOIN wishlist w ON dc.setCode = w.setCode AND dc.cardNumber = w.cardNumber
+    WHERE dc.deckId = :deckId
+    ORDER BY m.cardName ASC
+""")
+    fun observeDeckContentsWithDetails(deckId: Int): Flow<List<DeckCardDetail>>
 
 
     @Delete

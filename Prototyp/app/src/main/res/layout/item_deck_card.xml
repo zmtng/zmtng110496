@@ -69,22 +69,49 @@
                 app:layout_constraintTop_toBottomOf="@id/tvCardSet"
                 tools:text="Preis: 1.23 €" />
 
-            <TextView
-                android:id="@+id/tvCollectionQuantity"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/pillsLayout"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/badge_background_green"
-                android:paddingStart="8dp"
-                android:paddingTop="4dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="4dp"
-                android:textColor="@android:color/black"
-                android:textSize="12sp"
-                android:textStyle="bold"
+                android:orientation="horizontal"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvCardPrice"
-                tools:text="Im Besitz: 3" />
+                app:layout_constraintEnd_toStartOf="@+id/controlsLayout"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvCollectionQuantity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/badge_background_green"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="4dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    tools:text="Im Besitz: 3" />
+
+                <TextView
+                    android:id="@+id/tvWishlistQuantity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/badge_background_yellow"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="4dp"
+                    android:textColor="@android:color/black"
+                    android:textStyle="bold"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    tools:text="Wunschliste: 1"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/controlsLayout"

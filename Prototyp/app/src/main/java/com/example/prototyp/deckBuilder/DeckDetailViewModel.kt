@@ -27,6 +27,7 @@ class DeckDetailViewModelFactory(
     private val cardDao: CardDao
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        // THE FIX IS HERE: Use ::class.java
         if (modelClass.isAssignableFrom(DeckDetailViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return DeckDetailViewModel(deckDao, masterDao, wishlistDao, cardDao) as T
@@ -50,14 +51,16 @@ class DeckDetailViewModel(
 
 
     val deckContents: StateFlow<List<DeckDao.DeckCardDetail>> = _deckIdFlow.filterNotNull().flatMapLatest { deckId ->
-        deckDao.observeDeckContents(deckId)
+        // KORREKTUR 1: Funktionsname angepasst
+        deckDao.observeDeckContentsWithDetails(deckId)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val deckStats: StateFlow<DeckStats> = deckContents.map { cards ->
-        val totalCards = cards.sumOf { it.quantity }
-        val totalValue = cards.sumOf { (it.price ?: 0.0) * it.quantity }
+        // KORREKTUR 2: Feldname angepasst
+        val totalCards = cards.sumOf { it.quantityInDeck }
+        val totalValue = cards.sumOf { (it.price ?: 0.0) * it.quantityInDeck }
 
-        val colorCounts = cards.groupingBy { it.color }.fold(0) { acc, card -> acc + card.quantity }
+        val colorCounts = cards.groupingBy { it.color }.fold(0) { acc, card -> acc + card.quantityInDeck }
         val colorDistribution = if (totalCards > 0) {
             colorCounts.mapValues { it.value.toFloat() / totalCards }
         } else {
@@ -81,7 +84,8 @@ class DeckDetailViewModel(
 
     fun decrementCardInDeck(card: DeckDao.DeckCardDetail) {
         viewModelScope.launch(Dispatchers.IO) {
-            if (card.quantity <= 1) {
+            // KORREKTUR 3: Feldname angepasst
+            if (card.quantityInDeck <= 1) {
                 deleteCard(card)
             } else {
                 _deckIdFlow.value?.let { deckId ->
@@ -102,7 +106,6 @@ class DeckDetailViewModel(
     fun addCardToDeck(card: MasterCard) {
         _deckIdFlow.value?.let { currentDeckId ->
             viewModelScope.launch(Dispatchers.IO) {
-                // Die Farbe wird hier nicht mehr übergeben.
                 deckDao.upsertCardInDeck(currentDeckId, card.setCode, card.cardNumber)
             }
         }
@@ -123,6 +126,7 @@ class DeckDetailViewModel(
     suspend fun getFilterColors(): List<String> = withContext(Dispatchers.IO) { masterDao.getDistinctColors() }
     suspend fun getFilterSets(): List<String> = withContext(Dispatchers.IO) { masterDao.getDistinctSetCodes() }
 
+    // ... (Restlicher Code für Preis-Scraping bleibt unverändert) ...
     fun fetchAllDeckPrices() {
         viewModelScope.launch(Dispatchers.IO) {
             val currentDeck = deckContents.value
@@ -141,8 +145,6 @@ class DeckDetailViewModel(
             }
             _userMessage.value = "Preis-Update abgeschlossen!"
 
-            // This line tells the flow to re-fetch its data from the database,
-            // making all the updated prices visible.
             _deckIdFlow.value = _deckIdFlow.value
         }
     }
@@ -179,7 +181,6 @@ class DeckDetailViewModel(
                 val priceValue = priceText.replace("€", "").replace(",", ".").trim().toDoubleOrNull()
 
                 if (priceValue != null) {
-                    // Price is now updated directly in the deck_cards table.
                     deckDao.updateDeckCardPrice(deckId, row.setCode, row.cardNumber, priceValue)
                 }
             } catch (e: Exception) {

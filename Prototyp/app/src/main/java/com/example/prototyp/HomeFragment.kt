@@ -257,20 +257,29 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 "Willkommen beim Riftbound TCG Manager!\n\n" +
                         "Hier findest du eine Übersicht aller wichtigen Funktionen:\n\n" +
                         "--- ÜBERSICHT ---\n\n" +
-                        "• Wert berechnen: Tippe auf diese Kachel, um die aktuellen Preise (Preis-Trend von Cardmarket) für alle Karten deiner Sammlung abzurufen und den Gesamtwert zu ermitteln.\n\n" +
+                        "• Wert berechnen: Ruft die aktuellen Preise (Preis-Trend von Cardmarket) für alle Karten deiner Sammlung ab und zeigt den Gesamtwert an.\n\n" +
+                        "• Import & Export: Importiere oder exportiere deine Sammlung und Wunschliste als CSV-Datei. Ideal für Backups oder den Austausch mit Freunden.\n\n" +
                         "--- SAMMLUNG ---\n\n" +
-                        "• Karten hinzufügen: Nutze den Plus-Button (+) unten rechts, um neue Karten über die Suchfunktion zu deiner Sammlung hinzuzufügen.\n\n" +
-                        "• Preise aktualisieren: Mit dem Aktualisieren-Button (Pfeil im Kreis) links unten kannst du die Preise für deine gesamte Sammlung auf den neuesten Stand bringen.\n\n" +
-                        "• Notizen erfassen: Tippe eine Karte in der Sammlungsliste an, um persönliche Notizen hinzuzufügen oder zu bearbeiten.\n\n" +
+                        "• Karten hinzufügen: Nutze den Plus-Button (+), um neue Karten über die Suchfunktion zu deiner Sammlung hinzuzufügen.\n\n" +
+                        "• Preise aktualisieren: Mit dem Aktualisieren-Button (Pfeil im Kreis) kannst du die Preise für deine gesamte Sammlung auf den neuesten Stand bringen.\n\n" +
+                        "• Notizen & Details: Tippe eine Karte in der Liste an, um persönliche Notizen hinzuzufügen oder den Einzelpreis der Karte manuell abzurufen.\n\n" +
                         "--- DECKS ---\n\n" +
-                        "• Deck erstellen: Erstelle mit dem Plus-Button (+) eigene Decks von Grund auf.\n\n" +
-                        "• Deck importieren: Nutze den Import-Button (Pfeil nach unten), um Decks direkt aus 'Piltover\'s Archive' zu importieren. Exportiere dazu dein Deck auf der Webseite als \"TTS-Code\" und füge diesen hier ein.\n\n" +
-                        "• Sammlungs-Status: In der Deckansicht zeigt das Hand-Symbol, ob du eine Karte besitzt (grün) oder nicht (rot).\n\n" +
-                        "• Zur Wunschliste: Mit dem Stern-Symbol kannst du eine fehlende Karte direkt auf deine Wunschliste setzen. Ein ausgefüllter, gelber Stern bedeutet, die Karte ist bereits auf der Liste.\n\n" +
+                        "• Deck erstellen & Importieren: Erstelle eigene Decks von Grund auf oder importiere sie direkt aus 'Piltover's Archive' über den TTS-Code.\n\n" +
+                        "• Status-Anzeige: In der Deckansicht siehst du auf einen Blick, wie viele Exemplare einer Karte du besitzt (grüne Pille) und ob sie auf deiner Wunschliste steht (gelbe Pille).\n\n" +
+                        "• Zur Wunschliste: Mit dem Stern-Symbol kannst du eine fehlende Karte direkt auf deine Wunschliste setzen.\n\n" +
                         "--- WUNSCHLISTE ---\n\n" +
-                        "• In Sammlung übertragen: Tippe auf den 'In Sammlung'-Button bei einer Karte in der Wunschliste, um sie in deine Sammlung zu verschieben.\n\n" +
+                        "• In Sammlung übertragen: Tippe auf den 'In Sammlung'-Button, um eine Karte von deiner Wunschliste in deine Sammlung zu verschieben.\n\n" +
+                        "--- EXTERNE LISTEN ---\n\n" +
+                        "• Sammlungen & Wunschlisten importieren: Unter 'Externe Sammlungen' und 'Externe Wunschlisten' kannst du Listen von Freunden als CSV importieren, um sie anzusehen und zu vergleichen.\n\n" +
+                        "--- TRADE-FINDER ---\n\n" +
+                        "• Tauschgeschäfte finden: Dieses mächtige Werkzeug vergleicht deine Listen mit den importierten Listen deiner Freunde und zeigt dir potenzielle Tauschmöglichkeiten an:\n" +
+                        "  - 'Sie haben, was du willst': Vergleicht eine externe Sammlung mit deiner Wunschliste.\n" +
+                        "  - 'Du hast, was sie wollen': Vergleicht eine externe Wunschliste mit deiner Sammlung.\n\n" +
+                        "--- STATISTIKEN ---\n\n" +
+                        "• Wertentwicklung: Verfolge den Gesamtwert deiner Sammlung über die Zeit in einem Liniendiagramm.\n\n" +
+                        "• Sammlungs-Analyse: Erhalte Einblicke in deine Sammlung mit Diagrammen zur Farb- und Set-Verteilung sowie einer Liste deiner wertvollsten Karten.\n\n" +
                         "--- ALLGEMEIN ---\n\n" +
-                        "• Löschen: Du kannst fast alles (Karten in Listen, Decks in der Übersicht) durch langes Gedrückthalten und eine anschließende Bestätigung dauerhaft löschen."
+                        "• Löschen: Du kannst fast alles (Karten in Listen, Decks, externe Listen) durch langes Gedrückthalten und eine anschließende Bestätigung dauerhaft löschen."
             )
             .setPositiveButton("Verstanden", null)
             .show()

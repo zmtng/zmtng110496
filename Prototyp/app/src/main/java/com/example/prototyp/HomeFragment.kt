@@ -1,11 +1,14 @@
 package com.example.prototyp
 
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,8 +32,10 @@ import kotlinx.coroutines.launch
 import com.example.prototyp.externalCollection.*
 import com.example.prototyp.externalWishlist.ExternalWishlistDao
 import com.example.prototyp.externalWishlist.ExternalWishlistOverviewFragment
+import com.example.prototyp.statistics.SetCompletionStat
 import com.example.prototyp.statistics.StatisticsFragment
 import com.example.prototyp.wishlist.WishlistDao
+import kotlin.math.abs
 
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
@@ -80,6 +85,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     }
                 }
                 launch {
+                    viewModel.setCompletionStats.collectLatest { stats ->
+                        updateCompletionProgressBar(stats)
+                    }
+                }
+                launch {
                     viewModel.totalCollectionValue.collectLatest { value ->
                         if (value != null) {
                             binding.tvTotalValue.text = String.format("%.2f €", value)
@@ -90,6 +100,61 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 }
             }
         }
+    }
+
+    private fun updateCompletionProgressBar(stats: List<SetCompletionStat>) {
+        // Container leeren, bevor er neu befüllt wird
+        binding.completionProgressBarContainer.removeAllViews()
+
+        if (stats.isEmpty()) return
+
+        // Gesamtzahlen berechnen
+        val totalOwned = stats.sumOf { it.ownedUniqueCards }
+        val totalPossible = stats.sumOf { it.totalCardsInSet }
+        val totalPercentage = if (totalPossible > 0) (totalOwned.toFloat() / totalPossible) * 100 else 0f
+
+        // Text aktualisieren
+        binding.tvTotalCompletionPercentage.text = "$totalOwned / $totalPossible Karten (${String.format("%.1f", totalPercentage)}%)"
+
+        // Für jedes Set einen farbigen Balken-Teil erstellen
+        stats.forEach { stat ->
+            if (stat.ownedUniqueCards > 0) {
+                val segment = View(requireContext())
+
+                val params = LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    stat.ownedUniqueCards.toFloat()
+                )
+
+                segment.layoutParams = params
+                segment.setBackgroundColor(getColorForSet(stat.setName))
+                binding.completionProgressBarContainer.addView(segment)
+            }
+        }
+
+        // Einen grauen Balken für den fehlenden Rest hinzufügen
+        val remainingCards = totalPossible - totalOwned
+        if (remainingCards > 0) {
+            val remainingSegment = View(requireContext())
+
+            val params = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                remainingCards.toFloat() // This is the weight
+            )
+
+            remainingSegment.layoutParams = params
+            remainingSegment.setBackgroundColor(Color.LTGRAY)
+            binding.completionProgressBarContainer.addView(remainingSegment)
+        }
+    }
+
+    private fun getColorForSet(setName: String): Int {
+        val hue = abs(setName.hashCode()) % 360f // Farbton (0-359)
+        val saturation = 0.7f // Sättigung (0-1)
+        val value = 0.9f // Helligkeit (0-1)
+        return Color.HSVToColor(floatArrayOf(hue, saturation, value))
     }
 
     private fun setupClickListeners() {

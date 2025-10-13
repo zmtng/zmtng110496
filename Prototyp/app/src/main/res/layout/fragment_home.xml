@@ -81,6 +81,54 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="16dp">
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Gesamtfortschritt Sammlung"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"/>
+
+                    <TextView
+                        android:id="@+id/tvTotalCompletionPercentage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?android:attr/textColorSecondary"
+                        tools:text="150 / 300 Karten (50.0%)"/>
+
+                    <LinearLayout
+                        android:id="@+id/completionProgressBarContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="12dp"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:background="@drawable/progress_bar_background"
+                        android:clipToPadding="false"
+                        android:clipChildren="false"/>
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- ### ERSTE REIHE ### -->
             <LinearLayout
                 android:layout_width="match_parent"

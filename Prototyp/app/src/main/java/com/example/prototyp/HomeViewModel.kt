@@ -11,13 +11,18 @@ import com.example.prototyp.CollectionEntry
 import com.example.prototyp.externalWishlist.ExternalWishlist
 import com.example.prototyp.externalWishlist.ExternalWishlistCard
 import com.example.prototyp.externalWishlist.ExternalWishlistDao
+import com.example.prototyp.statistics.SetCompletionStat
 import com.example.prototyp.wishlist.WishlistDao
 import com.example.prototyp.wishlist.WishlistEntry
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -48,6 +53,21 @@ class HomeViewModel(
             _totalCollectionValue.value = totalValue
         }
     }
+
+    val setCompletionStats: StateFlow<List<SetCompletionStat>> = combine(
+        masterDao.getSetCardCounts(), // Gesamtanzahl Karten pro Set
+        cardDao.getOwnedUniqueCardCountsPerSet() // Anzahl deiner einzigartigen Karten pro Set
+    ) { totalCounts, ownedCounts ->
+        val ownedMap = ownedCounts.associate { it.setName to it.count }
+        totalCounts.map { totalCount ->
+            val owned = ownedMap[totalCount.setName] ?: 0
+            SetCompletionStat(
+                setName = totalCount.setName,
+                ownedUniqueCards = owned,
+                totalCardsInSet = totalCount.count
+            )
+        }.sortedBy { it.setName } // Alphabetisch nach Set-Namen sortieren
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     enum class WishlistImportTarget { OWN_WISHLIST, EXTERNAL_WISHLIST }
 

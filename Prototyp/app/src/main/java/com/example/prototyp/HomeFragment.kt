@@ -132,6 +132,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 .commit()
         }
 
+        binding.cardTradeFinder.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, com.example.prototyp.trade.TradeSelectionFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         binding.cardCalculateValue.setOnClickListener {
             viewModel.updateTotalValue()
             Toast.makeText(requireContext(), "Gesamtwert wird berechnet...", Toast.LENGTH_SHORT).show()

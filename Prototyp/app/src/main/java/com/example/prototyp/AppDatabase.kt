@@ -20,6 +20,7 @@ import com.example.prototyp.wishlist.WishlistDao
 import com.example.prototyp.wishlist.WishlistEntry
 import com.example.prototyp.externalWishlist.*
 import com.example.prototyp.statistics.*
+import com.example.prototyp.trade.TradeDao
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @Database(
@@ -51,6 +52,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun priceHistoryDao(): PriceHistoryDao
 
     abstract fun totalValueHistoryDao(): TotalValueHistoryDao
+
+    abstract fun tradeDao(): TradeDao
 
     companion object {
         val isReady = MutableStateFlow(false)

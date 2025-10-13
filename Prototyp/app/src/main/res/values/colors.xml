@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="dark_space_start">#0D111C</color> <color name="vibrant_space_start">#1C3A5E</color> <color name="dark_space_end">#000000</color>   <color name="magic_cyan">#38B6FF</color>     <color name="light_parchment">#E0E0E0</color> <color name="dark_surface">#1A1F2B</color>    <color name="gold_accent">#FFC107</color>      <color name="card_red">#D32F2F</color>
-    <color name="card_blue">#1976D2</color>
-    <color name="card_green">#388E3C</color>
-    <color name="card_yellow">#FBC02D</color>
-    <color name="card_purple">#7B1FA2</color>
-    <color name="card_orange">#F57C00</color>
+    <color name="dark_space_start">#0D111C</color>
+    <color name="vibrant_space_start">#1C3A5E</color>
+    <color name="dark_space_end">#000000</color>
+    <color name="magic_cyan">#38B6FF</color>
+    <color name="light_parchment">#E0E0E0</color>
+    <color name="dark_surface">#1A1F2B</color>
+    <color name="gold_accent">#FFC107</color>
+    <color name="card_red">#c51a23</color>
+    <color name="card_blue">#22709a</color>
+    <color name="card_green">#2b733a</color>
+    <color name="card_yellow">#d8b136</color>
+    <color name="card_purple">#5b3b7f</color>
+    <color name="card_orange">#d16027</color>
     <color name="card_grey">#455A64</color>
     <color name="collection_card_text">#000000</color>
 

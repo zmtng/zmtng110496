@@ -236,7 +236,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         binding.cardImportWishlist.setOnClickListener {
             importType = ImportType.WISHLIST
-            importLauncher.launch("text/csv")
+            importLauncher.launch("*/*")
         }
 
         binding.cardImport.setOnClickListener {

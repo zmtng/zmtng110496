@@ -5,15 +5,11 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -25,9 +21,7 @@ import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.databinding.FragmentHomeBinding
 import com.example.prototyp.deckBuilder.DeckOverviewFragment
 import com.example.prototyp.wishlist.WishlistFragment
-import com.example.prototyp.AppDatabase
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import com.example.prototyp.externalCollection.*
 import com.example.prototyp.externalWishlist.ExternalWishlistDao
@@ -36,6 +30,10 @@ import com.example.prototyp.statistics.SetCompletionStat
 import com.example.prototyp.statistics.StatisticsFragment
 import com.example.prototyp.wishlist.WishlistDao
 import kotlin.math.abs
+
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
@@ -66,13 +64,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
+    private lateinit var dashboardAdapter: DashboardAdapter
+
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
+        setupDashboard()
         setupClickListeners()
+
+        viewModel.loadDashboardItems(requireContext())
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -84,6 +87,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         }
                     }
                 }
+
+                launch {
+                    viewModel.dashboardItems.collectLatest { items ->
+                        dashboardAdapter.submitList(items)
+                    }
+                }
+
                 launch {
                     viewModel.setCompletionStats.collectLatest { stats ->
                         updateCompletionProgressBar(stats)
@@ -100,6 +110,55 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 }
             }
         }
+    }
+
+    private fun setupDashboard() {
+        dashboardAdapter = DashboardAdapter { item ->
+            // --- HIER DIE NEUE LOGIK ---
+            if (item.destination != null) {
+                // FALL 1: Die Kachel hat ein Ziel -> navigiere zum Fragment
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, item.destination.newInstance())
+                    .addToBackStack(null)
+                    .commit()
+            } else {
+                // FALL 2: Die Kachel ist eine Aktion -> führe die Aktion aus
+                when (item.id) {
+                    "calculate_value" -> {
+                        viewModel.updateTotalValue()
+                        // Die Toast-Nachricht wird automatisch vom ViewModel angezeigt
+                    }
+                    "info" -> {
+                        showInfoDialog()
+                    }
+                }
+            }
+        }
+
+        binding.rvDashboard.apply {
+            adapter = dashboardAdapter
+            // Wir verwenden ein GridLayoutManager für die 3-spaltige Ansicht
+            layoutManager = GridLayoutManager(requireContext(), 3)
+        }
+
+        // ItemTouchHelper für Drag & Drop
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.START or ItemTouchHelper.END, 0
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val fromPosition = viewHolder.adapterPosition
+                val toPosition = target.adapterPosition
+                viewModel.onDashboardItemsMoved(fromPosition, toPosition)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+        })
+        itemTouchHelper.attachToRecyclerView(binding.rvDashboard)
     }
 
     private fun updateCompletionProgressBar(stats: List<SetCompletionStat>) {
@@ -158,69 +217,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupClickListeners() {
-        binding.cardCollection.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, CollectionFragment())
-                .addToBackStack(null)
-                .commit()
-        }
 
-        binding.cardDecks.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, DeckOverviewFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        binding.cardLifeCounter.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, com.example.prototyp.gametools.LifeCounterFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        binding.cardInfo.setOnClickListener {
-            showInfoDialog()
-        }
-
-        binding.cardExternalWishlist.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, ExternalWishlistOverviewFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        binding.cardExternal.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, ExternalCollectionOverviewFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        binding.cardWishlist.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, WishlistFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        binding.cardTradeFinder.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, com.example.prototyp.trade.TradeSelectionFragment())
-                .addToBackStack(null)
-                .commit()
-        }
-
-        binding.cardCalculateValue.setOnClickListener {
-            viewModel.updateTotalValue()
-            Toast.makeText(requireContext(), "Gesamtwert wird berechnet...", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.cardStatistics.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, StatisticsFragment())
-                .addToBackStack(null)
-                .commit()
+        binding.fabSaveLayout.setOnClickListener {
+            viewModel.saveDashboardOrder(requireContext())
         }
 
         binding.cardExport.setOnClickListener {

@@ -67,17 +67,15 @@ dependencies {
     // Material3/Compat je nach Setup:
     implementation("com.google.android.material:material:1.12.0")
 
-    // CameraX
-    val camerax_version = "1.5.0"
-    implementation("androidx.camera:camera-core:${camerax_version}")
-    implementation("androidx.camera:camera-camera2:${camerax_version}")
-    implementation("androidx.camera:camera-lifecycle:${camerax_version}")
-    implementation("androidx.camera:camera-view:${camerax_version}")
-// ML Kit Text Recognition (on-device)
-    implementation("com.google.mlkit:text-recognition:16.0.0")
-
     // Tests
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Retrofit für Netzwerk-Anfragen
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+
+// Moshi für JSON-Verarbeitung (Parsing)
+    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
 }

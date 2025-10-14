@@ -26,19 +26,24 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <com.google.android.material.button.MaterialButton
+            <ImageButton
                 android:id="@+id/btn_might_minus"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_remove"
+                app:tint="@android:color/white"
+                android:scaleType="centerInside" />
 
-                app:icon="@drawable/ic_remove" />
-
-            <com.google.android.material.button.MaterialButton
+            <ImageButton
                 android:id="@+id/btn_might_plus"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="8dp"
-                app:icon="@drawable/ic_add" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_add"
+                app:tint="@android:color/white"
+                android:scaleType="centerInside" />
         </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

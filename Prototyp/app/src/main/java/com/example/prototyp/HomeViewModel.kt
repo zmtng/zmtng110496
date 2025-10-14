@@ -7,7 +7,13 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.prototyp.data.db.CardDao
-import com.example.prototyp.CollectionEntry
+import com.example.prototyp.deckBuilder.DeckOverviewFragment
+import com.example.prototyp.externalCollection.ExternalCollectionOverviewFragment
+import com.example.prototyp.externalWishlist.ExternalWishlistOverviewFragment
+import com.example.prototyp.gametools.LifeCounterFragment
+import com.example.prototyp.statistics.StatisticsFragment
+import com.example.prototyp.trade.TradeSelectionFragment
+import com.example.prototyp.wishlist.WishlistFragment
 import com.example.prototyp.externalWishlist.ExternalWishlist
 import com.example.prototyp.externalWishlist.ExternalWishlistCard
 import com.example.prototyp.externalWishlist.ExternalWishlistDao
@@ -26,6 +32,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.Collections
 
 class HomeViewModel(
     private val cardDao: CardDao,
@@ -42,6 +49,55 @@ class HomeViewModel(
 
     fun onUserMessageShown() {
         _userMessage.value = null
+    }
+
+    private val _dashboardItems = MutableStateFlow<List<DashboardItem>>(emptyList())
+    val dashboardItems = _dashboardItems.asStateFlow()
+
+    // Die Standard-Reihenfolge und Definition aller Kacheln
+    private val allItemsMap = listOf(
+        DashboardItem("collection", "Sammlung", R.drawable.ic_collection, CollectionFragment::class.java),
+        DashboardItem("decks", "Decks", R.drawable.ic_decks, DeckOverviewFragment::class.java),
+        DashboardItem("wishlist", "Wunschliste", R.drawable.ic_wishlist, WishlistFragment::class.java),
+        DashboardItem("ext_collection", "Ext. Sammlungen", R.drawable.ic_external, ExternalCollectionOverviewFragment::class.java),
+        DashboardItem("ext_wishlist", "Ext. Wunschlisten", R.drawable.ic_external, ExternalWishlistOverviewFragment::class.java),
+        DashboardItem("statistics", "Statistiken", R.drawable.ic_pie_chart, StatisticsFragment::class.java),
+        DashboardItem("trade_finder", "Trade-Finder", R.drawable.ic_trade, TradeSelectionFragment::class.java),
+        DashboardItem("life_counter", "Life Counter", R.drawable.ic_heart, LifeCounterFragment::class.java),
+        DashboardItem("calculate_value", "Wert berechnen", R.drawable.ic_calculate, null),
+        DashboardItem("info", "Hilfe", R.drawable.ic_info, null)
+    ).associateBy { it.id }
+
+    fun loadDashboardItems(context: Context) {
+        viewModelScope.launch {
+            val prefs = context.getSharedPreferences("dashboard_prefs", Context.MODE_PRIVATE)
+            val savedOrder = prefs.getString("item_order", null)
+
+            val sortedList = if (savedOrder == null) {
+                // Wenn keine Reihenfolge gespeichert ist, nimm die Standardreihenfolge
+                allItemsMap.values.toList()
+            } else {
+                // Ansonsten, sortiere die Items basierend auf der gespeicherten ID-Liste
+                val orderedIds = savedOrder.split(",")
+                orderedIds.mapNotNull { allItemsMap[it] }
+            }
+            _dashboardItems.value = sortedList
+        }
+    }
+
+    fun onDashboardItemsMoved(fromPosition: Int, toPosition: Int) {
+        val currentList = _dashboardItems.value.toMutableList()
+        Collections.swap(currentList, fromPosition, toPosition)
+        _dashboardItems.value = currentList
+    }
+
+    fun saveDashboardOrder(context: Context) {
+        viewModelScope.launch {
+            val currentOrderIds = _dashboardItems.value.joinToString(",") { it.id }
+            val prefs = context.getSharedPreferences("dashboard_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putString("item_order", currentOrderIds).apply()
+            _userMessage.value = "Layout gespeichert!"
+        }
     }
 
     fun updateTotalValue() {

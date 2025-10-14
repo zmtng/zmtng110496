@@ -172,6 +172,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 .commit()
         }
 
+        binding.cardLifeCounter.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, com.example.prototyp.gametools.LifeCounterFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         binding.cardInfo.setOnClickListener {
             showInfoDialog()
         }

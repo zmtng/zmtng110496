@@ -73,7 +73,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding = FragmentHomeBinding.bind(view)
 
         setupDashboard()
-        setupClickListeners()
 
         viewModel.loadDashboardItems(requireContext())
 
@@ -114,22 +113,39 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun setupDashboard() {
         dashboardAdapter = DashboardAdapter { item ->
-            // --- HIER DIE NEUE LOGIK ---
+            // Klick-Logik für alle Kacheln
             if (item.destination != null) {
-                // FALL 1: Die Kachel hat ein Ziel -> navigiere zum Fragment
+                // Navigation zu einem Fragment
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragmentContainer, item.destination.newInstance())
                     .addToBackStack(null)
                     .commit()
             } else {
-                // FALL 2: Die Kachel ist eine Aktion -> führe die Aktion aus
+                // Ausführung einer Aktion
                 when (item.id) {
-                    "calculate_value" -> {
-                        viewModel.updateTotalValue()
-                        // Die Toast-Nachricht wird automatisch vom ViewModel angezeigt
+                    "calculate_value" -> viewModel.updateTotalValue()
+                    "info" -> showInfoDialog()
+                    "import_collection" -> {
+                        importType = ImportType.COLLECTION
+                        importLauncher.launch("*/*")
                     }
-                    "info" -> {
-                        showInfoDialog()
+                    "export_collection" -> {
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            viewModel.createCollectionCsvForSharing(requireContext())?.let { uri ->
+                                shareCsv(uri, "Sammlung teilen via...")
+                            }
+                        }
+                    }
+                    "import_wishlist" -> {
+                        importType = ImportType.WISHLIST
+                        importLauncher.launch("*/*")
+                    }
+                    "export_wishlist" -> {
+                        viewLifecycleOwner.lifecycleScope.launch {
+                            viewModel.createWishlistCsvForSharing(requireContext())?.let { uri ->
+                                shareCsv(uri, "Wunschliste teilen via...")
+                            }
+                        }
                     }
                 }
             }
@@ -137,11 +153,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         binding.rvDashboard.apply {
             adapter = dashboardAdapter
-            // Wir verwenden ein GridLayoutManager für die 3-spaltige Ansicht
             layoutManager = GridLayoutManager(requireContext(), 3)
         }
 
-        // ItemTouchHelper für Drag & Drop
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
             ItemTouchHelper.UP or ItemTouchHelper.DOWN or ItemTouchHelper.START or ItemTouchHelper.END, 0
         ) {
@@ -152,11 +166,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             ): Boolean {
                 val fromPosition = viewHolder.adapterPosition
                 val toPosition = target.adapterPosition
+
                 viewModel.onDashboardItemsMoved(fromPosition, toPosition)
+
                 return true
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+
+                viewModel.saveDashboardOrder(requireContext())
+            }
         })
         itemTouchHelper.attachToRecyclerView(binding.rvDashboard)
     }
@@ -214,41 +236,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val saturation = 0.7f // Sättigung (0-1)
         val value = 0.9f // Helligkeit (0-1)
         return Color.HSVToColor(floatArrayOf(hue, saturation, value))
-    }
-
-    private fun setupClickListeners() {
-
-        binding.fabSaveLayout.setOnClickListener {
-            viewModel.saveDashboardOrder(requireContext())
-        }
-
-        binding.cardExport.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch {
-                val fileUri = viewModel.createCollectionCsvForSharing(requireContext())
-                if (fileUri != null) {
-                    shareCsv(fileUri, "Sammlung teilen via...")
-                }
-            }
-        }
-
-        binding.cardExportWishlist.setOnClickListener {
-            viewLifecycleOwner.lifecycleScope.launch {
-                val fileUri = viewModel.createWishlistCsvForSharing(requireContext())
-                if (fileUri != null) {
-                    shareCsv(fileUri, "Wunschliste teilen via...")
-                }
-            }
-        }
-
-        binding.cardImportWishlist.setOnClickListener {
-            importType = ImportType.WISHLIST
-            importLauncher.launch("*/*")
-        }
-
-        binding.cardImport.setOnClickListener {
-            importType = ImportType.COLLECTION
-            importLauncher.launch("*/*")
-        }
     }
 
     override fun onDestroyView() {

@@ -32,7 +32,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.util.Collections
 
 class HomeViewModel(
     private val cardDao: CardDao,
@@ -65,7 +64,11 @@ class HomeViewModel(
         DashboardItem("trade_finder", "Trade-Finder", R.drawable.ic_trade, TradeSelectionFragment::class.java),
         DashboardItem("life_counter", "Life Counter", R.drawable.ic_heart, LifeCounterFragment::class.java),
         DashboardItem("calculate_value", "Wert berechnen", R.drawable.ic_calculate, null),
-        DashboardItem("info", "Hilfe", R.drawable.ic_info, null)
+        DashboardItem("info", "Hilfe", R.drawable.ic_info, null),
+        DashboardItem("import_collection", "Sammlung import.", R.drawable.ic_import, null),
+        DashboardItem("export_collection", "Sammlung export.", R.drawable.ic_export, null),
+        DashboardItem("import_wishlist", "Wunschliste import.", R.drawable.ic_wishlist_import, null),
+        DashboardItem("export_wishlist", "Wunschliste export.", R.drawable.ic_wishlist_export, null)
     ).associateBy { it.id }
 
     fun loadDashboardItems(context: Context) {
@@ -87,16 +90,18 @@ class HomeViewModel(
 
     fun onDashboardItemsMoved(fromPosition: Int, toPosition: Int) {
         val currentList = _dashboardItems.value.toMutableList()
-        Collections.swap(currentList, fromPosition, toPosition)
+        val movedItem = currentList.removeAt(fromPosition)
+        currentList.add(toPosition, movedItem)
         _dashboardItems.value = currentList
     }
 
     fun saveDashboardOrder(context: Context) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) { // Wichtig für Performance
             val currentOrderIds = _dashboardItems.value.joinToString(",") { it.id }
-            val prefs = context.getSharedPreferences("dashboard_prefs", Context.MODE_PRIVATE)
-            prefs.edit().putString("item_order", currentOrderIds).apply()
-            _userMessage.value = "Layout gespeichert!"
+            context.getSharedPreferences("dashboard_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putString("item_order", currentOrderIds)
+                .apply()
         }
     }
 

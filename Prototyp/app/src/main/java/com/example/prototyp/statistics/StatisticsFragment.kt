@@ -108,18 +108,16 @@ class StatisticsFragment : Fragment() {
             valueTextColor = Color.WHITE
             setCircleColor(Color.CYAN)
             circleHoleColor = Color.CYAN
-            setDrawValues(false) // Do not show values above the points
+            setDrawValues(false)
             lineWidth = 2f
             circleRadius = 4f
-            mode = LineDataSet.Mode.CUBIC_BEZIER // Make the line smooth
+            mode = LineDataSet.Mode.STEPPED
         }
 
-        // Create a LineData object from the DataSet
         val lineData = LineData(dataSet)
 
-        // Assign the data to the chart and refresh it
         binding.valueHistoryChart.data = lineData
-        binding.valueHistoryChart.invalidate() // Redraw the chart
+        binding.valueHistoryChart.invalidate()
     }
 
     private fun observeViewModel() {
@@ -131,8 +129,7 @@ class StatisticsFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.topValuableCards.collectLatest { cards ->
                 val top5 = cards.take(5)
-                // The title visibility should be handled in the XML, but this is a safeguard
-                // binding.tvTopValuableCardsTitle.visibility = if (top5.isEmpty()) View.GONE else View.VISIBLE
+
                 valuableCardAdapter.submitList(top5)
             }
         }

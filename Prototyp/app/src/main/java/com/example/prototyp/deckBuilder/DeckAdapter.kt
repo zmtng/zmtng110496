@@ -13,19 +13,22 @@ import com.example.prototyp.R
 class DeckAdapter(
     private val onDeckClick: (Deck) -> Unit,
     private val onDeckLongClick: (Deck) -> Unit
-) : ListAdapter<Deck, DeckAdapter.DeckViewHolder>(DeckDiffCallback()) {
+) : ListAdapter<DeckDao.DeckWithCardCount, DeckAdapter.DeckViewHolder>(DeckDiffCallback()) { // MODIFIED: ListAdapter now uses DeckWithCardCount
 
     class DeckViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: TextView = itemView.findViewById(R.id.deckName)
+        private val cardCountTextView: TextView = itemView.findViewById(R.id.deckCardCount)
 
         fun bind(
-            deck: Deck,
+            deckWithCount: DeckDao.DeckWithCardCount,
             onDeckClick: (Deck) -> Unit,
             onDeckLongClick: (Deck) -> Unit
         ) {
+            val deck = deckWithCount.deck
             nameTextView.text = deck.name
-            itemView.setOnClickListener { onDeckClick(deck) }
+            cardCountTextView.text = "${deckWithCount.cardCount} Karten"
 
+            itemView.setOnClickListener { onDeckClick(deck) }
             itemView.setOnLongClickListener {
                 onDeckLongClick(deck)
                 true
@@ -35,7 +38,7 @@ class DeckAdapter(
                 val color = Color.parseColor(deck.colorHex)
                 (itemView as? com.google.android.material.card.MaterialCardView)?.setCardBackgroundColor(color)
             } catch (e: IllegalArgumentException) {
-                // Fallback, falls der Hex-Code ungültig ist
+                // Fallback for invalid hex code
             }
         }
     }
@@ -50,12 +53,13 @@ class DeckAdapter(
     }
 }
 
-class DeckDiffCallback : DiffUtil.ItemCallback<Deck>() {
-    override fun areItemsTheSame(oldItem: Deck, newItem: Deck): Boolean {
-        return oldItem.id == newItem.id
+class DeckDiffCallback : DiffUtil.ItemCallback<DeckDao.DeckWithCardCount>() {
+    override fun areItemsTheSame(oldItem: DeckDao.DeckWithCardCount, newItem: DeckDao.DeckWithCardCount): Boolean {
+        return oldItem.deck.id == newItem.deck.id
     }
 
-    override fun areContentsTheSame(oldItem: Deck, newItem: Deck): Boolean {
+    override fun areContentsTheSame(oldItem: DeckDao.DeckWithCardCount, newItem: DeckDao.DeckWithCardCount): Boolean {
         return oldItem == newItem
     }
 }
+

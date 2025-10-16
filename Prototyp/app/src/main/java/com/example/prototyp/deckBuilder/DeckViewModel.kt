@@ -14,7 +14,7 @@ class DeckViewModel(
     private val masterCardDao: MasterCardDao
 ) : ViewModel() {
 
-    val allDecks = deckDao.observeAllDecks()
+    val allDecks = deckDao.observeAllDecksWithCardCount()
 
     fun createDeck(name: String, colorHex: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -52,7 +52,6 @@ class DeckViewModel(
                 .mapNotNull { (cardKey, quantity) ->
                     val masterCard = masterCardMap[cardKey]
                     if (masterCard != null) {
-                        // Da du die 'color' Spalte entfernt hast, wird sie hier auch nicht mehr benötigt.
                         DeckCard(
                             deckId = 0,
                             setCode = cardKey.first,

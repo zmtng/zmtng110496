@@ -4,11 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     android:background="?attr/colorSurface"
+    android:fitsSystemWindows="true"
     tools:context=".deckBuilder.DeckDetailFragment">
 
-    <!-- Main content area -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -23,17 +22,17 @@
             android:padding="8dp"
             tools:listitem="@layout/item_deck_card" />
 
-        <!-- Clickable summary bar at the bottom -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/analysis_summary_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardCornerRadius="12dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="4dp">
 
             <LinearLayout
@@ -43,26 +42,38 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_pie_chart"
-                    app:tint="?attr/colorOnSurfaceVariant"
-                    android:layout_marginEnd="16dp"/>
+                <com.example.prototyp.deckBuilder.PieChartView
+                    android:id="@+id/miniPieChart"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="16dp" />
 
-                <TextView
-                    android:id="@+id/tvTotalCards"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textAppearance="?attr/textAppearanceBody2"
-                    tools:text="Karten: 60" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Deck-Analyse"
+                        android:textAppearance="?attr/textAppearanceTitleSmall" />
+
+                    <TextView
+                        android:id="@+id/tvTotalCards"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBody2"
+                        android:textColor="?android:attr/textColorSecondary"
+                        tools:text="60 Karten" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/tvDeckValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?attr/textAppearanceBody1"
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
                     android:textStyle="bold"
                     tools:text="123,45 €" />
 
@@ -71,31 +82,15 @@
 
     </LinearLayout>
 
-    <!-- Floating Action Button -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddCardToDeck"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="80dp"
-        android:layout_marginRight="16dp"
-        app:layout_anchor="@id/analysis_summary_bar"
-        app:layout_anchorGravity="bottom|end"
-        app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+        android:layout_margin="16dp"
         android:contentDescription="Karte zum Deck hinzufügen"
+        app:layout_anchor="@id/analysis_summary_bar"
+        app:layout_anchorGravity="top|end"
         app:srcCompat="@drawable/ic_add" />
 
-
-    <!-- The Bottom Sheet that will slide up -->
-    <FrameLayout
-        android:id="@+id/bottom_sheet_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-        app:behavior_hideable="true"
-        app:behavior_peekHeight="0dp">
-
-        <include layout="@layout/bottom_sheet_deck_analysis" />
-
-    </FrameLayout>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+

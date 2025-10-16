@@ -9,8 +9,17 @@ interface DeckDao {
     @Insert
     suspend fun insertDeck(deck: Deck): Long
 
-    @Query("SELECT * FROM decks ORDER BY name ASC")
-    fun observeAllDecks(): Flow<List<Deck>>
+    data class DeckWithCardCount(
+        @Embedded val deck: Deck,
+        val cardCount: Int
+    )
+
+    @Query("""
+        SELECT d.*, (SELECT SUM(dc.quantity) FROM deck_cards dc WHERE dc.deckId = d.id) as cardCount
+        FROM decks d
+        ORDER BY d.name ASC
+    """)
+    fun observeAllDecksWithCardCount(): Flow<List<DeckWithCardCount>>
 
     data class DeckCardDetail(
         val setCode: String,
@@ -20,8 +29,8 @@ interface DeckDao {
         val color: String,
         val price: Double?,
         val collectionQuantity: Int,
-        val quantityInDeck: Int,     // Umbenannt von 'quantity'
-        val wishlistQuantity: Int    // 'onWishlist' entfernt, da nicht von SQL geliefert
+        val quantityInDeck: Int,
+        val wishlistQuantity: Int
     )
 
     @Query("""
@@ -32,9 +41,9 @@ interface DeckDao {
         m.setName,
         m.color,
         dc.quantity as quantityInDeck,
-        c.price,
+        dc.price, 
         COALESCE(c.quantity, 0) as collectionQuantity,
-        COALESCE(w.quantity, 0) as wishlistQuantity  -- Korrekter Alias!
+        COALESCE(w.quantity, 0) as wishlistQuantity
     FROM deck_cards dc
     JOIN master_cards m ON dc.setCode = m.setCode AND dc.cardNumber = m.cardNumber
     LEFT JOIN collection c ON dc.setCode = c.setCode AND dc.cardNumber = c.cardNumber
@@ -52,7 +61,6 @@ interface DeckDao {
     suspend fun upsertCardInDeck(deckId: Int, setCode: String, cardNumber: Int) {
         val existing = getCardInDeck(deckId, setCode, cardNumber)
         if (existing == null) {
-            // Der Farbparameter wird hier nicht mehr benötigt.
             insertCardInDeck(DeckCard(deckId, setCode, cardNumber, 1, null))
         } else {
             addQuantityInDeck(deckId, setCode, cardNumber, 1)
@@ -88,3 +96,4 @@ interface DeckDao {
         insertDeckCards(cardsWithId)
     }
 }
+

@@ -27,7 +27,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.prototyp.AppDatabase
 import com.example.prototyp.R
 import com.example.prototyp.databinding.FragmentDeckDetailBinding
-import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -53,13 +53,11 @@ class DeckDetailFragment : Fragment() {
         return binding.root
     }
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.setDeckId(deckId)
 
         setupRecyclerView()
-        setupBottomSheet()
         setupClickListeners()
         observeViewModel()
     }
@@ -82,15 +80,6 @@ class DeckDetailFragment : Fragment() {
         binding.rvDeckCards.layoutManager = LinearLayoutManager(requireContext())
     }
 
-    private fun setupBottomSheet() {
-        val bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheetContainer)
-        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-
-        binding.analysisSummaryBar.setOnClickListener {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-        }
-    }
-
     private fun setupClickListeners() {
         binding.fabAddCardToDeck.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -99,9 +88,8 @@ class DeckDetailFragment : Fragment() {
                 .commit()
         }
 
-        // Find the button inside the included layout
-        binding.bottomSheetContainer.findViewById<ImageButton>(R.id.btnUpdatePrices).setOnClickListener {
-            viewModel.fetchAllDeckPrices()
+        binding.analysisSummaryBar.setOnClickListener {
+            showAnalysisDialog()
         }
     }
 
@@ -113,21 +101,9 @@ class DeckDetailFragment : Fragment() {
         }
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.deckStats.collectLatest { stats ->
-                // Update summary bar
-                binding.tvTotalCards.text = "Karten: ${stats.totalCards}"
+                binding.tvTotalCards.text = "${stats.totalCards} Karten"
                 binding.tvDeckValue.text = String.format("%.2f €", stats.totalValue)
-
-                // Find views inside the bottom sheet
-                val bottomSheetView = binding.bottomSheetContainer
-                val pieChart = bottomSheetView.findViewById<PieChartView>(R.id.pieChart)
-                val tvDeckValueDetail = bottomSheetView.findViewById<TextView>(R.id.tvDeckValueDetail)
-                val tvTotalCardsDetail = bottomSheetView.findViewById<TextView>(R.id.tvTotalCardsDetail)
-
-                // Update views inside the bottom sheet
-                tvDeckValueDetail.text = "Gesamtwert: ${String.format("%.2f €", stats.totalValue)}"
-                tvTotalCardsDetail.text = "Gesamtkarten: ${stats.totalCards}"
-                pieChart.setData(stats.colorDistribution)
-                updateLegend(stats.colorDistribution)
+                binding.miniPieChart.setData(stats.colorDistribution)
             }
         }
         viewLifecycleOwner.lifecycleScope.launch {
@@ -140,11 +116,41 @@ class DeckDetailFragment : Fragment() {
         }
     }
 
-    private fun updateLegend(distribution: Map<String, Float>) {
-        val legendLayout = binding.bottomSheetContainer.findViewById<LinearLayout>(R.id.legendLayout)
+    private fun showAnalysisDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_deck_analysis, null)
+        val stats = viewModel.deckStats.value
+
+        // Find views inside the dialog
+        val pieChart = dialogView.findViewById<PieChartView>(R.id.pieChart)
+        val tvDeckValueDetail = dialogView.findViewById<TextView>(R.id.tvDeckValueDetail)
+        val tvTotalCardsDetail = dialogView.findViewById<TextView>(R.id.tvTotalCardsDetail)
+        val legendLayout = dialogView.findViewById<LinearLayout>(R.id.legendLayout)
+        val btnUpdatePrices = dialogView.findViewById<ImageButton>(R.id.btnUpdatePrices)
+
+        // Populate views
+        tvDeckValueDetail.text = "Gesamtwert: ${String.format("%.2f €", stats.totalValue)}"
+        tvTotalCardsDetail.text = "Gesamtkarten: ${stats.totalCards}"
+        pieChart.setData(stats.colorDistribution)
+        updateLegend(legendLayout, stats.colorDistribution)
+
+        // Create and show dialog
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .setNegativeButton("Schließen", null)
+            .create()
+
+        // Set listener for the button inside the dialog
+        btnUpdatePrices.setOnClickListener {
+            viewModel.fetchAllDeckPrices()
+            dialog.dismiss() // Close the dialog after starting the update
+        }
+
+        dialog.show()
+    }
+
+    private fun updateLegend(legendLayout: LinearLayout, distribution: Map<String, Float>) {
         legendLayout.removeAllViews()
 
-        // Get the resolved color for text from the current theme
         val typedValue = TypedValue()
         requireContext().theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true)
         val textColor = typedValue.data
@@ -258,7 +264,7 @@ class PieChartView @JvmOverloads constructor(
 
         val width = width.toFloat()
         val height = height.toFloat()
-        val radius = (width.coerceAtMost(height) / 2) * 0.85f
+        val radius = (width.coerceAtMost(height) / 2)
         val centerX = width / 2
         val centerY = height / 2
 
@@ -266,31 +272,18 @@ class PieChartView @JvmOverloads constructor(
 
         var startAngle = -90f
 
-        val colors = data.keys.map { colorCode ->
-            val resourceId = getColorResource(colorCode)
-            if (colorCode == "M" || resourceId == 0) Color.GRAY else ContextCompat.getColor(context, resourceId)
-        }.toIntArray()
-
-        // Special handling for rainbow gradient
-        if (data.containsKey("M")) {
-            val rainbowColors = intArrayOf(Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.RED)
-            paint.shader = SweepGradient(centerX, centerY, rainbowColors, null)
-        }
-
-
-        for ((colorCode, percentage) in data) {
+        data.entries.sortedBy { it.key }.forEach { (colorCode, percentage) ->
             val sweepAngle = percentage * 360f
-
             val resourceId = getColorResource(colorCode)
 
             if (colorCode == "M") {
-                val rainbowColors = intArrayOf(Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.RED)
+                val rainbowColors =
+                    intArrayOf(Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE, Color.MAGENTA, Color.RED)
                 paint.shader = SweepGradient(centerX, centerY, rainbowColors, null)
             } else {
                 paint.shader = null
                 paint.color = if (resourceId != 0) ContextCompat.getColor(context, resourceId) else Color.GRAY
             }
-
 
             canvas.drawArc(rect, startAngle, sweepAngle, true, paint)
             startAngle += sweepAngle
@@ -311,3 +304,4 @@ class PieChartView @JvmOverloads constructor(
         }
     }
 }
+

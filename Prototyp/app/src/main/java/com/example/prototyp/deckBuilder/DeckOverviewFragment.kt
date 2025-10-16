@@ -25,7 +25,6 @@ import kotlinx.coroutines.launch
 class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
 
     private val viewModel: DeckViewModel by viewModels {
-        // Factory-Aufruf angepasst
         val db = AppDatabase.getInstance(requireContext())
         DeckViewModelFactory(db.deckDao(), db.masterCardDao())
     }
@@ -62,8 +61,8 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
         rvDecks.layoutManager = GridLayoutManager(requireContext(), 2)
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.allDecks.collectLatest { decks ->
-                deckAdapter.submitList(decks)
+            viewModel.allDecks.collectLatest { decksWithCount ->
+                deckAdapter.submitList(decksWithCount)
             }
         }
 
@@ -138,7 +137,7 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
                 val layerDrawable = android.graphics.drawable.LayerDrawable(layers)
 
                 val inset = (3 * resources.displayMetrics.density).toInt()
-                layerDrawable.setLayerInset(0, inset, inset, inset, inset) // index 0 = colorCircle
+                layerDrawable.setLayerInset(0, inset, inset, inset, inset)
 
                 background = layerDrawable
                 setOnClickListener {
@@ -170,7 +169,6 @@ class DeckOverviewFragment : Fragment(R.layout.fragment_deck_overview) {
     }
 }
 
-// Factory angepasst, um auch masterCardDao zu akzeptieren
 class DeckViewModelFactory(
     private val deckDao: DeckDao,
     private val masterCardDao: MasterCardDao
@@ -183,3 +181,4 @@ class DeckViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+

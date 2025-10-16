@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp">
+    android:paddingTop="16dp"
+    android:paddingHorizontal="8dp">
 
+    <!-- Header Section -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
         android:layout_marginBottom="16dp">
 
         <TextView
-            android:id="@+id/dialogTitle"
-            android:layout_width="wrap_content"
+            android:id="@+id/dialogCardName"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Notizen bearbeiten"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"/>
+            android:layout_toStartOf="@+id/colorIndicator"
+            android:layout_centerVertical="true"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            tools:text="Kartenname ist sehr lang" />
 
         <View
             android:id="@+id/colorIndicator"
@@ -26,66 +30,100 @@
             android:layout_height="24dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/circle_shape" /> </RelativeLayout>
+            android:layout_marginStart="16dp"
+            android:background="@drawable/circle_shape" />
+    </RelativeLayout>
 
-    <TextView
-        android:id="@+id/dialogCardName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:text="Kartenname: [Platzhalter]"
-        android:layout_marginBottom="4dp"/>
-
-    <TextView
-        android:id="@+id/dialogCardDetails"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Typ: [Typ] | Seltenheit: [Seltenheit] | Edition: [Edition]"
-        android:layout_marginBottom="4dp"/>
-
-    <TextView
-        android:id="@+id/dialogCardValueCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Wert: [Wert]€ | Anzahl: [Anzahl]"
-        android:layout_marginBottom="24dp"/>
-
-    <TextView
-        android:id="@+id/textView"
+    <!-- Details Section -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Persönliche Notizen:" />
+        android:paddingHorizontal="16dp"
+        android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/editTextPersonalNotes"
+        <TextView
+            android:id="@+id/dialogCardDetails"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:textColor="?android:attr/textColorSecondary"
+            tools:text="Setname - #001" />
+
+        <TextView
+            android:id="@+id/dialogCardValueCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textAppearance="?attr/textAppearanceBody2"
+            tools:text="Wert: 12,34€ | Anzahl: 5" />
+
+    </LinearLayout>
+
+    <!-- Notes Section -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textMultiLine"
-        android:minLines="3"
-        android:gravity="top"/>
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="8dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="?attr/colorOutline">
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Allgemeine Notizen:" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <EditText
-        android:id="@+id/editTextGeneralNotes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textMultiLine"
-        android:minLines="3" />
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layout_personal_notes"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:hintEnabled="true">
 
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextPersonalNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:hint="Persönliche Notizen"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:minLines="3" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layout_general_notes"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:hintEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/editTextGeneralNotes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:hint="Allgemeine Notizen"
+                    android:inputType="textMultiLine|textCapSentences"
+                    android:minLines="3" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Action Button Section -->
     <Button
         android:id="@+id/btnFetchPrice"
+        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="8dp"
         android:text="Preis von Cardmarket abrufen"
-        style="?attr/materialButtonOutlinedStyle" />
+        app:icon="@drawable/ic_refresh" />
 
 </LinearLayout>

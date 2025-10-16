@@ -18,6 +18,7 @@ import com.example.prototyp.externalWishlist.ExternalWishlist
 import com.example.prototyp.externalWishlist.ExternalWishlistCard
 import com.example.prototyp.externalWishlist.ExternalWishlistDao
 import com.example.prototyp.statistics.SetCompletionStat
+import com.example.prototyp.statistics.TotalValueHistoryDao
 import com.example.prototyp.wishlist.WishlistDao
 import com.example.prototyp.wishlist.WishlistEntry
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
@@ -33,11 +34,19 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 
+data class HomeOverviewStats(
+    val totalCollectionValue: Double = 0.0,
+    val valueChange: Double = 0.0,
+    val totalWishlistValue: Double = 0.0,
+    val setCompletionStats: List<SetCompletionStat> = emptyList()
+)
+
 class HomeViewModel(
     private val cardDao: CardDao,
     private val masterDao: MasterCardDao,
     private val wishlistDao: WishlistDao,
-    private val externalWishlistDao: ExternalWishlistDao
+    private val externalWishlistDao: ExternalWishlistDao,
+    private val totalValueHistoryDao: TotalValueHistoryDao
 ) : ViewModel() {
 
     private val _totalCollectionValue = MutableStateFlow<Double?>(null)
@@ -49,6 +58,48 @@ class HomeViewModel(
     fun onUserMessageShown() {
         _userMessage.value = null
     }
+
+    val overviewStats: StateFlow<HomeOverviewStats> = combine(
+        cardDao.observeCollectionWithDetails(),
+        wishlistDao.observeWishlistWithDetails(),
+        totalValueHistoryDao.getHistory(),
+        masterDao.getSetCardCounts(),
+        cardDao.getOwnedUniqueCardCountsPerSet()
+    ) { collection, wishlist, history, totalSetCounts, ownedSetCounts ->
+
+        // 1. Sammlungswert berechnen
+        val totalCollectionValue = collection.sumOf { (it.price ?: 0.0) * it.quantity }
+
+        // 2. Wertveränderung berechnen
+        val valueChange = if (history.size >= 2) {
+            val latest = history.last().totalValue
+            val previous = history[history.size - 2].totalValue
+            latest - previous
+        } else {
+            0.0
+        }
+
+        // 3. Wunschlisten-Wert berechnen
+        val totalWishlistValue = wishlist.sumOf { (it.price ?: 0.0) * it.quantity }
+
+        // 4. Set-Fortschritt berechnen
+        val ownedMap = ownedSetCounts.associate { it.setName to it.count }
+        val setCompletionStats = totalSetCounts.map { totalCount ->
+            val owned = ownedMap[totalCount.setName] ?: 0
+            SetCompletionStat(
+                setName = totalCount.setName,
+                ownedUniqueCards = owned,
+                totalCardsInSet = totalCount.count
+            )
+        }
+
+        HomeOverviewStats(
+            totalCollectionValue = totalCollectionValue,
+            valueChange = valueChange,
+            totalWishlistValue = totalWishlistValue,
+            setCompletionStats = setCompletionStats
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeOverviewStats())
 
     private val _dashboardItems = MutableStateFlow<List<DashboardItem>>(emptyList())
     val dashboardItems = _dashboardItems.asStateFlow()

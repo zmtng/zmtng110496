@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardElevation="2dp"
+    app:cardCornerRadius="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Meine Übersicht"
+            android:textAppearance="?attr/textAppearanceTitleMedium"/>
+
+        <!-- 1. Sektion: Sammlungswert -->
+        <TextView
+            android:id="@+id/tvTotalValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:textAppearance="?attr/textAppearanceHeadline4"
+            android:textStyle="bold"
+            tools:text="1.234,56 €" />
+
+        <TextView
+            android:id="@+id/tvTotalValueChange"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            tools:text="+14,20 € (letzte 24h)" />
+
+        <!-- 2. Sektion: Fortschritt & Wunschliste (GridLayout) -->
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:columnCount="2">
+
+            <!-- Fortschritt (links) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sammlung"
+                    android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                <TextView
+                    android:id="@+id/tvTotalCompletionPercentage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    tools:text="150 / 300"/>
+            </LinearLayout>
+
+            <!-- Wunschliste (rechts) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Wunschliste"
+                    android:textAppearance="?attr/textAppearanceLabelLarge"/>
+                <TextView
+                    android:id="@+id/tvWishlistValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    tools:text="120,50 €"/>
+            </LinearLayout>
+
+        </GridLayout>
+
+        <!-- 3. Sektion: Fortschritts-Balken -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Set-Fortschritt"
+            android:textAppearance="?attr/textAppearanceTitleSmall"/>
+
+        <LinearLayout
+            android:id="@+id/completionProgressBarContainer"
+            android:layout_width="match_parent"
+            android:layout_height="12dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/progress_bar_background"
+            android:clipToPadding="false"
+            android:clipChildren="false"/>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

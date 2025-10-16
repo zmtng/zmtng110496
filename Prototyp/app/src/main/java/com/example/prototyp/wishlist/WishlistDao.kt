@@ -21,6 +21,28 @@ interface WishlistDao {
         val collectionQuantity: Int
     )
 
+    data class WishlistRowData(
+        val setCode: String,
+        val cardNumber: Int,
+        val quantity: Int,
+        val cardName: String,
+        val setName: String,
+        val color: String,
+        val price: Double?
+    )
+
+    @Query("""
+        SELECT
+            w.setCode, w.cardNumber, w.quantity,
+            m.cardName, m.setName, m.color,
+            c.price
+        FROM wishlist w
+        JOIN master_cards m ON w.setCode = m.setCode AND w.cardNumber = m.cardNumber
+        LEFT JOIN collection c ON w.setCode = c.setCode AND w.cardNumber = c.cardNumber
+        ORDER BY m.cardName ASC
+    """)
+    fun observeWishlistWithDetails(): Flow<List<WishlistRowData>>
+
     @Query("""
         SELECT
             w.setCode, w.cardNumber, w.quantity,

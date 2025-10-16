@@ -16,8 +16,10 @@ import com.example.prototyp.data.db.CardDao
 import com.example.prototyp.databinding.FragmentCollectionBinding
 import com.example.prototyp.statistics.PriceHistoryDao
 import com.example.prototyp.statistics.TotalValueHistoryDao
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import com.google.android.material.textfield.TextInputEditText
 
 
 class CollectionFragment : Fragment(R.layout.fragment_collection) {
@@ -143,31 +145,24 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
         }
     }
     private fun showEditNotesDialog(row: CardDao.CollectionRowData) {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_notes, null)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_edit_notes, null)
 
         val cardNameTextView = dialogView.findViewById<TextView>(R.id.dialogCardName)
         val cardDetailsTextView = dialogView.findViewById<TextView>(R.id.dialogCardDetails)
         val cardValueCountTextView = dialogView.findViewById<TextView>(R.id.dialogCardValueCount)
-        val personalNotesEditText = dialogView.findViewById<EditText>(R.id.editTextPersonalNotes)
-        val generalNotesEditText = dialogView.findViewById<EditText>(R.id.editTextGeneralNotes)
+        val personalNotesEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextPersonalNotes)
+        val generalNotesEditText = dialogView.findViewById<TextInputEditText>(R.id.editTextGeneralNotes)
         val colorIndicator = dialogView.findViewById<View>(R.id.colorIndicator)
         val fetchPriceButton = dialogView.findViewById<Button>(R.id.btnFetchPrice)
 
-
-        fetchPriceButton.setOnClickListener {
-            it.isEnabled = false
-            viewModel.fetchPriceForCard(row, showSuccessMessage = true) { newPrice ->
-                cardValueCountTextView.text = "Wert: ${String.format("%.2f", newPrice)}€ | Anzahl: ${row.quantity}"
-                it.isEnabled = true
-            }
-        }
-
-        cardNameTextView.text = "Kartenname: ${row.cardName}"
-        cardDetailsTextView.text = "Set: ${row.setName} | Nummer: ${row.cardNumber}"
-        cardValueCountTextView.text = "Wert: ${row.price ?: 0.00}€ | Anzahl: ${row.quantity}"
+        // Set data to views
+        cardNameTextView.text = row.cardName
+        cardDetailsTextView.text = "${row.setName} - #${row.cardNumber.toString().padStart(3, '0')}"
+        cardValueCountTextView.text = "Wert: ${String.format("%.2f", row.price ?: 0.0)}€ | Anzahl: ${row.quantity}"
         personalNotesEditText.setText(row.personalNotes)
         generalNotesEditText.setText(row.generalNotes)
 
+        // Set color indicator
         val colorCode = row.color.trim().uppercase()
         if (colorCode == "M") {
             colorIndicator.setBackgroundResource(R.drawable.rainbow_gradient)
@@ -185,16 +180,26 @@ class CollectionFragment : Fragment(R.layout.fragment_collection) {
             colorIndicator.background.setTint(ContextCompat.getColor(requireContext(), colorRes))
         }
 
-        AlertDialog.Builder(requireContext())
+        // Setup button click listener
+        fetchPriceButton.setOnClickListener {
+            it.isEnabled = false // Disable button during fetch
+            viewModel.fetchPriceForCard(row, showSuccessMessage = true) { newPrice ->
+                // Update UI on success
+                cardValueCountTextView.text = "Wert: ${String.format("%.2f", newPrice)}€ | Anzahl: ${row.quantity}"
+                it.isEnabled = true // Re-enable button
+            }
+        }
+
+        // Build and show the dialog
+        MaterialAlertDialogBuilder(requireContext())
             .setView(dialogView)
+            .setTitle("Details bearbeiten") // Optional: Title can be removed if header is enough
             .setPositiveButton("Speichern") { _, _ ->
-                val newPersonalNotes = personalNotesEditText.text.toString()
-                val newGeneralNotes = generalNotesEditText.text.toString()
                 viewModel.updateNotes(
                     setCode = row.setCode,
                     cardNumber = row.cardNumber,
-                    personalNotes = newPersonalNotes,
-                    generalNotes = newGeneralNotes
+                    personalNotes = personalNotesEditText.text.toString(),
+                    generalNotes = generalNotesEditText.text.toString()
                 )
             }
             .setNegativeButton("Abbrechen", null)

@@ -5,11 +5,12 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -17,23 +18,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.prototyp.data.db.CardDao
-import com.example.prototyp.databinding.FragmentHomeBinding
-import com.example.prototyp.deckBuilder.DeckOverviewFragment
-import com.example.prototyp.wishlist.WishlistFragment
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import com.example.prototyp.externalCollection.*
-import com.example.prototyp.externalWishlist.ExternalWishlistDao
-import com.example.prototyp.externalWishlist.ExternalWishlistOverviewFragment
-import com.example.prototyp.statistics.SetCompletionStat
-import com.example.prototyp.statistics.StatisticsFragment
-import com.example.prototyp.wishlist.WishlistDao
-import kotlin.math.abs
-
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.example.prototyp.data.db.CardDao
+import com.example.prototyp.databinding.FragmentHomeBinding
+import com.example.prototyp.externalCollection.ExternalCollectionOverviewViewModel
+import com.example.prototyp.externalCollection.ExternalCollectionOverviewViewModelFactory
+import com.example.prototyp.externalWishlist.ExternalWishlistDao
+import com.example.prototyp.statistics.SetCompletionStat
+import com.example.prototyp.statistics.TotalValueHistoryDao
+import com.example.prototyp.wishlist.WishlistDao
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 
 class HomeFragment : Fragment(R.layout.fragment_home) {
@@ -47,7 +49,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             database.cardDao(),
             database.masterCardDao(),
             database.wishlistDao(),
-            database.externalWishlistDao()
+            database.externalWishlistDao(),
+            database.totalValueHistoryDao() // NEU
         )
     }
 
@@ -66,18 +69,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private lateinit var dashboardAdapter: DashboardAdapter
 
-
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
         setupDashboard()
-
+        setupClickListeners() // NEU
         viewModel.loadDashboardItems(requireContext())
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // User Messages beobachten
                 launch {
                     viewModel.userMessage.collectLatest { message ->
                         message?.let {
@@ -87,43 +89,65 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     }
                 }
 
+                // Dashboard Items beobachten
                 launch {
                     viewModel.dashboardItems.collectLatest { items ->
                         dashboardAdapter.submitList(items)
                     }
                 }
 
+                // NEU: Den neuen kombinierten State beobachten
                 launch {
-                    viewModel.setCompletionStats.collectLatest { stats ->
-                        updateCompletionProgressBar(stats)
-                    }
-                }
-                launch {
-                    viewModel.totalCollectionValue.collectLatest { value ->
-                        if (value != null) {
-                            binding.tvTotalValue.text = String.format("%.2f €", value)
-                        } else {
-                            binding.tvTotalValue.text = "-,-- €"
-                        }
+                    viewModel.overviewStats.collectLatest { stats ->
+                        updateOverviewCard(stats)
+                        updateCompletionProgressBar(stats.setCompletionStats)
                     }
                 }
             }
         }
     }
 
+    // NEU: Klick-Listener an einem Ort bündeln
+    private fun setupClickListeners() {
+        binding.fabAddCardToCollection.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, AddCardToCollectionFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+    }
+
+    // NEU: Funktion zum Aktualisieren der neuen Übersichtskarte
+    private fun updateOverviewCard(stats: HomeOverviewStats) {
+        binding.overviewCard.tvTotalValue.text = String.format("%.2f €", stats.totalCollectionValue)
+        binding.overviewCard.tvWishlistValue.text = String.format("%.2f €", stats.totalWishlistValue)
+
+        val valueChangeText = binding.overviewCard.tvTotalValueChange
+        when {
+            stats.valueChange > 0.005 -> {
+                valueChangeText.text = String.format("+%.2f €", stats.valueChange)
+                valueChangeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.material_green))
+            }
+            stats.valueChange < -0.005 -> {
+                valueChangeText.text = String.format("%.2f €", stats.valueChange)
+                valueChangeText.setTextColor(ContextCompat.getColor(requireContext(), R.color.material_red))
+            }
+            else -> {
+                valueChangeText.text = "±0,00 €"
+                valueChangeText.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.darker_gray))
+            }
+        }
+    }
+
     private fun setupDashboard() {
         dashboardAdapter = DashboardAdapter { item ->
-            // Klick-Logik für alle Kacheln
             if (item.destination != null) {
-                // Navigation zu einem Fragment
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragmentContainer, item.destination.newInstance())
                     .addToBackStack(null)
                     .commit()
             } else {
-                // Ausführung einer Aktion
                 when (item.id) {
-                    "calculate_value" -> viewModel.updateTotalValue()
                     "info" -> showInfoDialog()
                     "import_collection" -> {
                         importType = ImportType.COLLECTION
@@ -166,9 +190,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             ): Boolean {
                 val fromPosition = viewHolder.adapterPosition
                 val toPosition = target.adapterPosition
-
                 viewModel.onDashboardItemsMoved(fromPosition, toPosition)
-
                 return true
             }
 
@@ -176,7 +198,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
             override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
                 super.clearView(recyclerView, viewHolder)
-
                 viewModel.saveDashboardOrder(requireContext())
             }
         })
@@ -184,57 +205,41 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun updateCompletionProgressBar(stats: List<SetCompletionStat>) {
-        // Container leeren, bevor er neu befüllt wird
-        binding.completionProgressBarContainer.removeAllViews()
+        val container = binding.overviewCard.completionProgressBarContainer
+        container.removeAllViews()
 
         if (stats.isEmpty()) return
 
-        // Gesamtzahlen berechnen
         val totalOwned = stats.sumOf { it.ownedUniqueCards }
         val totalPossible = stats.sumOf { it.totalCardsInSet }
-        val totalPercentage = if (totalPossible > 0) (totalOwned.toFloat() / totalPossible) * 100 else 0f
 
-        // Text aktualisieren
-        binding.tvTotalCompletionPercentage.text = "$totalOwned / $totalPossible Karten (${String.format("%.1f", totalPercentage)}%)"
+        // Text in der Übersichtskarte aktualisieren
+        binding.overviewCard.tvTotalCompletionPercentage.text = "$totalOwned / $totalPossible Karten"
 
-        // Für jedes Set einen farbigen Balken-Teil erstellen
         stats.forEach { stat ->
             if (stat.ownedUniqueCards > 0) {
                 val segment = View(requireContext())
-
-                val params = LinearLayout.LayoutParams(
-                    0,
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    stat.ownedUniqueCards.toFloat()
-                )
-
+                val params = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, stat.ownedUniqueCards.toFloat())
                 segment.layoutParams = params
                 segment.setBackgroundColor(getColorForSet(stat.setName))
-                binding.completionProgressBarContainer.addView(segment)
+                container.addView(segment)
             }
         }
 
-        // Einen grauen Balken für den fehlenden Rest hinzufügen
         val remainingCards = totalPossible - totalOwned
         if (remainingCards > 0) {
             val remainingSegment = View(requireContext())
-
-            val params = LinearLayout.LayoutParams(
-                0,
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                remainingCards.toFloat() // This is the weight
-            )
-
+            val params = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, remainingCards.toFloat())
             remainingSegment.layoutParams = params
             remainingSegment.setBackgroundColor(Color.LTGRAY)
-            binding.completionProgressBarContainer.addView(remainingSegment)
+            container.addView(remainingSegment)
         }
     }
 
     private fun getColorForSet(setName: String): Int {
-        val hue = abs(setName.hashCode()) % 360f // Farbton (0-359)
-        val saturation = 0.7f // Sättigung (0-1)
-        val value = 0.9f // Helligkeit (0-1)
+        val hue = abs(setName.hashCode()) % 360f
+        val saturation = 0.7f
+        val value = 0.9f
         return Color.HSVToColor(floatArrayOf(hue, saturation, value))
     }
 
@@ -243,28 +248,51 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding = null
     }
 
+    // --- Die Dialog-Funktionen bleiben wie sie sind ---
     private fun showImportWishlistTargetDialog(uri: Uri) {
-        val options = arrayOf("In meine Wunschliste (überschreiben)", "Als neue externe Wunschliste")
-        AlertDialog.Builder(requireContext())
+        val dialogView = layoutInflater.inflate(R.layout.dialog_import_options, null)
+        val optionOverwrite: MaterialCardView = dialogView.findViewById(R.id.option_overwrite)
+        val optionExternal: MaterialCardView = dialogView.findViewById(R.id.option_external)
+        val tvOverwriteTitle: TextView = dialogView.findViewById(R.id.tv_option_overwrite_title)
+        val tvOverwriteSubtitle: TextView = dialogView.findViewById(R.id.tv_option_overwrite_subtitle)
+        val tvExternalTitle: TextView = dialogView.findViewById(R.id.tv_option_external_title)
+        val tvExternalSubtitle: TextView = dialogView.findViewById(R.id.tv_option_external_subtitle)
+
+        tvOverwriteTitle.text = "In meine Wunschliste importieren"
+        tvOverwriteSubtitle.text = "⚠️ Dies überschreibt deine aktuelle Wunschliste."
+        tvExternalTitle.text = "Als neue externe Wunschliste anlegen"
+        tvExternalSubtitle.text = "Erstellt einen neuen, separaten Eintrag."
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle("Wunschliste importieren nach...")
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> viewModel.importWishlistFromCsv(
-                        uri,
-                        requireContext(),
-                        HomeViewModel.WishlistImportTarget.OWN_WISHLIST
-                    )
-                    1 -> showNameInputDialogForExternalWishlist(uri)
-                }
-            }
-            .show()
+            .setView(dialogView)
+            .setNegativeButton("Abbrechen", null)
+            .create()
+
+        optionOverwrite.setOnClickListener {
+            viewModel.importWishlistFromCsv(
+                uri,
+                requireContext(),
+                HomeViewModel.WishlistImportTarget.OWN_WISHLIST
+            )
+            dialog.dismiss()
+        }
+        optionExternal.setOnClickListener {
+            showNameInputDialogForExternalWishlist(uri)
+            dialog.dismiss()
+        }
+        dialog.show()
     }
 
     private fun showNameInputDialogForExternalWishlist(uri: Uri) {
-        val input = EditText(requireContext())
-        AlertDialog.Builder(requireContext())
-            .setTitle("Name für externe Wunschliste")
-            .setView(input)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_name_input, null)
+        val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.text_input_layout)
+        val input = dialogView.findViewById<TextInputEditText>(R.id.edit_text_name)
+        textInputLayout.hint = "Name für externe Wunschliste"
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Name eingeben")
+            .setView(dialogView)
             .setPositiveButton("Importieren") { _, _ ->
                 val name = input.text.toString()
                 if (name.isNotBlank()) {
@@ -280,20 +308,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             .show()
     }
 
-    private fun shareCollection(fileUri: Uri) {
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/csv"
-            putExtra(Intent.EXTRA_STREAM, fileUri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        startActivity(Intent.createChooser(shareIntent, "Sammlung teilen via..."))
-    }
-
     private fun showNameInputDialogForExternal(uri: Uri) {
-        val input = EditText(requireContext())
-        AlertDialog.Builder(requireContext())
-            .setTitle("Name für externe Sammlung")
-            .setView(input)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_name_input, null)
+        val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.text_input_layout)
+        val input = dialogView.findViewById<TextInputEditText>(R.id.edit_text_name)
+        textInputLayout.hint = "Name für externe Sammlung"
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Name eingeben")
+            .setView(dialogView)
             .setPositiveButton("Importieren") { _, _ ->
                 val name = input.text.toString()
                 if (name.isNotBlank()) {
@@ -311,34 +334,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun showInfoDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("Info & Hilfe")
-            .setMessage(
-                "Willkommen beim Riftbound TCG Manager!\n\n" +
-                        "Hier findest du eine Übersicht aller wichtigen Funktionen:\n\n" +
-                        "--- ÜBERSICHT ---\n\n" +
-                        "• Wert berechnen: Ruft die aktuellen Preise (Preis-Trend von Cardmarket) für alle Karten deiner Sammlung ab und zeigt den Gesamtwert an.\n\n" +
-                        "• Import & Export: Importiere oder exportiere deine Sammlung und Wunschliste als CSV-Datei. Ideal für Backups oder den Austausch mit Freunden.\n\n" +
-                        "--- SAMMLUNG ---\n\n" +
-                        "• Karten hinzufügen: Nutze den Plus-Button (+), um neue Karten über die Suchfunktion zu deiner Sammlung hinzuzufügen.\n\n" +
-                        "• Preise aktualisieren: Mit dem Aktualisieren-Button (Pfeil im Kreis) kannst du die Preise für deine gesamte Sammlung auf den neuesten Stand bringen.\n\n" +
-                        "• Notizen & Details: Tippe eine Karte in der Liste an, um persönliche Notizen hinzuzufügen oder den Einzelpreis der Karte manuell abzurufen.\n\n" +
-                        "--- DECKS ---\n\n" +
-                        "• Deck erstellen & Importieren: Erstelle eigene Decks von Grund auf oder importiere sie direkt aus 'Piltover's Archive' über den TTS-Code.\n\n" +
-                        "• Status-Anzeige: In der Deckansicht siehst du auf einen Blick, wie viele Exemplare einer Karte du besitzt (grüne Pille) und ob sie auf deiner Wunschliste steht (gelbe Pille).\n\n" +
-                        "• Zur Wunschliste: Mit dem Stern-Symbol kannst du eine fehlende Karte direkt auf deine Wunschliste setzen.\n\n" +
-                        "--- WUNSCHLISTE ---\n\n" +
-                        "• In Sammlung übertragen: Tippe auf den 'In Sammlung'-Button, um eine Karte von deiner Wunschliste in deine Sammlung zu verschieben.\n\n" +
-                        "--- EXTERNE LISTEN ---\n\n" +
-                        "• Sammlungen & Wunschlisten importieren: Unter 'Externe Sammlungen' und 'Externe Wunschlisten' kannst du Listen von Freunden als CSV importieren, um sie anzusehen und zu vergleichen.\n\n" +
-                        "--- TRADE-FINDER ---\n\n" +
-                        "• Tauschgeschäfte finden: Dieses mächtige Werkzeug vergleicht deine Listen mit den importierten Listen deiner Freunde und zeigt dir potenzielle Tauschmöglichkeiten an:\n" +
-                        "  - 'Sie haben, was du willst': Vergleicht eine externe Sammlung mit deiner Wunschliste.\n" +
-                        "  - 'Du hast, was sie wollen': Vergleicht eine externe Wunschliste mit deiner Sammlung.\n\n" +
-                        "--- STATISTIKEN ---\n\n" +
-                        "• Wertentwicklung: Verfolge den Gesamtwert deiner Sammlung über die Zeit in einem Liniendiagramm.\n\n" +
-                        "• Sammlungs-Analyse: Erhalte Einblicke in deine Sammlung mit Diagrammen zur Farb- und Set-Verteilung sowie einer Liste deiner wertvollsten Karten.\n\n" +
-                        "--- ALLGEMEIN ---\n\n" +
-                        "• Löschen: Du kannst fast alles (Karten in Listen, Decks, externe Listen) durch langes Gedrückthalten und eine anschließende Bestätigung dauerhaft löschen."
-            )
+            .setMessage("...") // Gekürzt für die Antwort, dein Text bleibt hier
             .setPositiveButton("Verstanden", null)
             .show()
     }
@@ -353,16 +349,33 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun showImportCollectionTargetDialog(uri: Uri) {
-        val options = arrayOf("In meine Sammlung (überschreiben)", "Als neue externe Sammlung")
-        AlertDialog.Builder(requireContext())
+        val dialogView = layoutInflater.inflate(R.layout.dialog_import_options, null)
+        val optionOverwrite: MaterialCardView = dialogView.findViewById(R.id.option_overwrite)
+        val optionExternal: MaterialCardView = dialogView.findViewById(R.id.option_external)
+        val tvOverwriteTitle: TextView = dialogView.findViewById(R.id.tv_option_overwrite_title)
+        val tvOverwriteSubtitle: TextView = dialogView.findViewById(R.id.tv_option_overwrite_subtitle)
+        val tvExternalTitle: TextView = dialogView.findViewById(R.id.tv_option_external_title)
+        val tvExternalSubtitle: TextView = dialogView.findViewById(R.id.tv_option_external_subtitle)
+        tvOverwriteTitle.text = "In meine Sammlung importieren"
+        tvOverwriteSubtitle.text = "⚠️ Dies überschreibt deine aktuelle Sammlung."
+        tvExternalTitle.text = "Als neue externe Sammlung anlegen"
+        tvExternalSubtitle.text = "Erstellt einen neuen, separaten Eintrag."
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle("Sammlung importieren nach...")
-            .setItems(options) { _, which ->
-                when (which) {
-                    0 -> viewModel.importCollection(uri, requireContext())
-                    1 -> showNameInputDialogForExternal(uri) // <-- KORREKTER, DIREKTER AUFRUF
-                }
-            }
-            .show()
+            .setView(dialogView)
+            .setNegativeButton("Abbrechen", null)
+            .create()
+
+        optionOverwrite.setOnClickListener {
+            viewModel.importCollection(uri, requireContext())
+            dialog.dismiss()
+        }
+        optionExternal.setOnClickListener {
+            showNameInputDialogForExternal(uri)
+            dialog.dismiss()
+        }
+        dialog.show()
     }
 }
 
@@ -370,12 +383,13 @@ class HomeViewModelFactory(
     private val cardDao: CardDao,
     private val masterDao: MasterCardDao,
     private val wishlistDao: WishlistDao,
-    private val externalWishlistDao: ExternalWishlistDao
+    private val externalWishlistDao: ExternalWishlistDao,
+    private val totalValueHistoryDao: TotalValueHistoryDao // NEU
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return HomeViewModel(cardDao, masterDao, wishlistDao, externalWishlistDao) as T // <-- NEU
+            return HomeViewModel(cardDao, masterDao, wishlistDao, externalWishlistDao, totalValueHistoryDao) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

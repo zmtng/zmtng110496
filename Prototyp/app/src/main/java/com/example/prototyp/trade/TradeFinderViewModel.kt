@@ -14,17 +14,16 @@ class TradeFinderViewModel(
     private val externalWishlistDao: ExternalWishlistDao
 ) : ViewModel() {
 
-    // Flows für die Listen der verfügbaren externen Sammlungen/Wunschlisten
+
     val allExternalCollections: Flow<List<ExternalCollection>> = externalCollectionDao.observeAllCollections()
     val allExternalWishlists: Flow<List<ExternalWishlist>> = externalWishlistDao.observeAllWishlists()
 
-    // Funktion zur Abfrage der Tauschgeschäfte
-    fun getYouHave(wishlistId: Int): Flow<List<TradeDao.TradeCard>> {
-        return tradeDao.findYouHaveWhatTheyWant(wishlistId)
+    fun getYouHave(wishlistId: Int): Flow<List<TradeDao.TradeResult>> {
+        return tradeDao.findWhatYouHaveThatTheyWant(wishlistId)
     }
 
-    fun getTheyHave(collectionId: Int): Flow<List<TradeDao.TradeCard>> {
-        return tradeDao.findTheyHaveWhatYouWant(collectionId)
+    fun getTheyHave(collectionId: Int): Flow<List<TradeDao.TradeResult>> {
+        return tradeDao.findWhatTheyHaveThatYouWant(collectionId)
     }
 }
 

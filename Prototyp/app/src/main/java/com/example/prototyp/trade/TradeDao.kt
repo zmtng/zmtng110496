@@ -7,48 +7,61 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TradeDao {
 
-    // Datenklasse für ein einheitliches Ergebnis
-    data class TradeCard(
+    data class TradeResult(
         val setCode: String,
         val cardNumber: Int,
         val cardName: String,
         val setName: String,
         val color: String,
-        val yourQuantity: Int,   // Deine Anzahl (aus Sammlung oder Wunschliste)
-        val theirQuantity: Int // Ihre Anzahl (aus Sammlung oder Wunschliste)
+        val theirQuantity: Int, // How many they have / want
+        val yourQuantity: Int    // How many you have / want
     )
 
-    /**
-     * Findet Karten, die du in deiner Sammlung hast und die auf der
-     * externen Wunschliste stehen ("Du hast, was sie wollen").
-     */
     @Query("""
         SELECT
-            m.setCode, m.cardNumber, m.cardName, m.setName, m.color,
-            own_c.quantity AS yourQuantity,
-            ext_w.quantity AS theirQuantity
-        FROM collection own_c
-        JOIN external_wishlist_cards ext_w ON own_c.setCode = ext_w.setCode AND own_c.cardNumber = ext_w.cardNumber
-        JOIN master_cards m ON own_c.setCode = m.setCode AND own_c.cardNumber = m.cardNumber
-        WHERE ext_w.wishlistId = :externalWishlistId
-        ORDER BY m.cardName ASC
+            m.setCode,
+            m.cardNumber,
+            m.cardName,
+            m.setName,
+            m.color,
+            ec.quantity AS theirQuantity,
+            w.quantity AS yourQuantity
+        FROM external_collection_cards ec
+        JOIN wishlist w ON ec.setCode = w.setCode AND ec.cardNumber = w.cardNumber
+        JOIN master_cards m ON ec.setCode = m.setCode AND ec.cardNumber = m.cardNumber
+        WHERE ec.collectionId = :externalCollectionId
     """)
-    fun findYouHaveWhatTheyWant(externalWishlistId: Int): Flow<List<TradeCard>>
+    fun findWhatTheyHaveThatYouWant(externalCollectionId: Int): Flow<List<TradeResult>>
 
-    /**
-     * Findet Karten, die auf deiner Wunschliste stehen und die in der
-     * externen Sammlung vorhanden sind ("Sie haben, was du willst").
-     */
     @Query("""
         SELECT
-            m.setCode, m.cardNumber, m.cardName, m.setName, m.color,
-            own_w.quantity AS yourQuantity,
-            ext_c.quantity AS theirQuantity
-        FROM wishlist own_w
-        JOIN external_collection_cards ext_c ON own_w.setCode = ext_c.setCode AND own_w.cardNumber = ext_c.cardNumber
-        JOIN master_cards m ON own_w.setCode = m.setCode AND own_w.cardNumber = m.cardNumber
-        WHERE ext_c.collectionId = :externalCollectionId
-        ORDER BY m.cardName ASC
+            m.setCode,
+            m.cardNumber,
+            m.cardName,
+            m.setName,
+            m.color,
+            ewc.quantity AS theirQuantity,
+            c.quantity AS yourQuantity
+        FROM external_wishlist_cards ewc
+        JOIN collection c ON ewc.setCode = c.setCode AND ewc.cardNumber = c.cardNumber
+        JOIN master_cards m ON ewc.setCode = m.setCode AND ewc.cardNumber = m.cardNumber
+        WHERE ewc.wishlistId = :externalWishlistId
     """)
-    fun findTheyHaveWhatYouWant(externalCollectionId: Int): Flow<List<TradeCard>>
+    fun findWhatYouHaveThatTheyWant(externalWishlistId: Int): Flow<List<TradeResult>>
+
+    @Query("""
+        SELECT
+            m.setCode,
+            m.cardNumber,
+            m.cardName,
+            m.setName,
+            m.color,
+            ewc.quantity AS theirQuantity,
+            dc.quantity AS yourQuantity
+        FROM external_wishlist_cards ewc
+        JOIN deck_cards dc ON ewc.setCode = dc.setCode AND ewc.cardNumber = dc.cardNumber
+        JOIN master_cards m ON ewc.setCode = m.setCode AND ewc.cardNumber = m.cardNumber
+        WHERE ewc.wishlistId = :externalWishlistId AND dc.deckId = :deckId
+    """)
+    fun findWhatYouHaveInDeckThatTheyWant(externalWishlistId: Int, deckId: Int): Flow<List<TradeResult>>
 }

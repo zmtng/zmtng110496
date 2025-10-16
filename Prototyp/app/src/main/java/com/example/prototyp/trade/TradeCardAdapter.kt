@@ -7,18 +7,25 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.prototyp.databinding.ItemTradeCardBinding
 
-// Der Konstruktor ist jetzt leer
-class TradeCardAdapter : ListAdapter<TradeDao.TradeCard, TradeCardAdapter.ViewHolder>(DiffCallback()) {
-
-    // Die Vorlage ist jetzt eine öffentliche Variable
-    var quantityTextTemplate: String = ""
+class TradeCardAdapter : ListAdapter<TradeDao.TradeResult, TradeCardAdapter.ViewHolder>(DiffCallback()) {
 
     class ViewHolder(private val binding: ItemTradeCardBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(card: TradeDao.TradeCard, template: String) {
-            binding.tvCardName.text = card.cardName
-            binding.tvCardSet.text = "${card.setName} - #${card.cardNumber.toString().padStart(3, '0')}"
-            binding.tvTradeQuantities.text = String.format(template, card.yourQuantity, card.theirQuantity)
+        fun bind(tradeResult: TradeDao.TradeResult, tradeType: String) {
+            binding.tvCardName.text = tradeResult.cardName
+            binding.tvCardSet.text = "${tradeResult.setName} - #${tradeResult.cardNumber.toString().padStart(3, '0')}"
+
+            binding.tvTradeQuantities.text = when (tradeType) {
+                "WANT" -> "Sie haben: ${tradeResult.theirQuantity} / Du willst: ${tradeResult.yourQuantity}"
+                "OFFER_COLLECTION", "OFFER_DECK" -> "Sie wollen: ${tradeResult.theirQuantity} / Du hast: ${tradeResult.yourQuantity}"
+                else -> ""
+            }
         }
+    }
+
+    private var tradeType: String = "WANT"
+
+    fun setTradeType(type: String) {
+        tradeType = type
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -27,13 +34,16 @@ class TradeCardAdapter : ListAdapter<TradeDao.TradeCard, TradeCardAdapter.ViewHo
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        // Hier wird jetzt die öffentliche Variable der Klasse verwendet
-        holder.bind(getItem(position), quantityTextTemplate)
+        holder.bind(getItem(position), tradeType)
     }
 
-    class DiffCallback : DiffUtil.ItemCallback<TradeDao.TradeCard>() {
-        override fun areItemsTheSame(old: TradeDao.TradeCard, new: TradeDao.TradeCard) =
-            old.setCode == new.setCode && old.cardNumber == new.cardNumber
-        override fun areContentsTheSame(old: TradeDao.TradeCard, new: TradeDao.TradeCard) = old == new
+    class DiffCallback : DiffUtil.ItemCallback<TradeDao.TradeResult>() {
+        override fun areItemsTheSame(oldItem: TradeDao.TradeResult, newItem: TradeDao.TradeResult): Boolean {
+            return oldItem.setCode == newItem.setCode && oldItem.cardNumber == newItem.cardNumber
+        }
+
+        override fun areContentsTheSame(oldItem: TradeDao.TradeResult, newItem: TradeDao.TradeResult): Boolean {
+            return oldItem == newItem
+        }
     }
 }

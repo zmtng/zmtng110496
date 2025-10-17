@@ -51,6 +51,10 @@
                     android:paddingEnd="8dp"
                     android:text="Name"
                     android:textColor="@color/collection_card_text"
+                    android:shadowColor="#000000"
+                    android:shadowDx="0.0"
+                    android:shadowDy="0.0"
+                    android:shadowRadius="2.0"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -104,6 +108,10 @@
                     android:paddingEnd="12dp"
                     android:text="Preis"
                     android:textColor="@color/collection_card_text"
+                    android:shadowColor="#000000"
+                    android:shadowDx="0.0"
+                    android:shadowDy="0.0"
+                    android:shadowRadius="2.0"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -113,6 +121,10 @@
                     android:layout_height="wrap_content"
                     android:text="In Sammlung:"
                     android:textColor="@color/collection_card_text"
+                    android:shadowColor="#000000"
+                    android:shadowDx="0.0"
+                    android:shadowDy="0.0"
+                    android:shadowRadius="2.0"
                     android:textSize="13sp" />
 
                 <TextView
@@ -123,6 +135,10 @@
                     android:paddingEnd="12dp"
                     android:text="0"
                     android:textColor="@color/collection_card_text"
+                    android:shadowColor="#000000"
+                    android:shadowDx="0.0"
+                    android:shadowDy="0.0"
+                    android:shadowRadius="2.0"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 

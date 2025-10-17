@@ -20,7 +20,11 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textColor="?attr/colorOnSecondaryContainer"
+            android:textColor="@color/white"
+            android:shadowColor="#000000"
+            android:shadowDx="0.0"
+            android:shadowDy="0.0"
+            android:shadowRadius="2.0"
             tools:text="Deck Name" />
 
         <LinearLayout
@@ -42,7 +46,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSecondaryContainer"
+                android:textColor="@color/white"
+                android:shadowColor="#000000"
+                android:shadowDx="0.0"
+                android:shadowDy="0.0"
+                android:shadowRadius="2.0"
                 android:alpha="0.7"
                 tools:text="0 Karten" />
         </LinearLayout>

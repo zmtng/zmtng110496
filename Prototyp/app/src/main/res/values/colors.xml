@@ -14,7 +14,7 @@
     <color name="card_purple">#5b3b7f</color>
     <color name="card_orange">#d16027</color>
     <color name="card_grey">#455A64</color>
-    <color name="collection_card_text">#000000</color>
+    <color name="collection_card_text">#FFFFFF</color>
     <color name="material_green">#4CAF50</color>
     <color name="material_red">#F44336</color>
     <color name="black">#FF000000</color>

@@ -26,6 +26,10 @@ class LifeCounterViewModel : ViewModel() {
     private val _p2MightRight = MutableStateFlow(0)
     val p2MightRight = _p2MightRight.asStateFlow()
 
+    // Zustand für die Sichtbarkeit der "Might"-Zähler
+    private val _mightCountersVisible = MutableStateFlow(false)
+    val mightCountersVisible = _mightCountersVisible.asStateFlow()
+
     // Funktionen zur Lebenspunkte-Änderung
     fun incrementP1Life() { _p1Life.value++ }
     fun decrementP1Life() { _p1Life.value-- }
@@ -42,6 +46,11 @@ class LifeCounterViewModel : ViewModel() {
     fun incrementP2MightRight() { _p2MightRight.value++ }
     fun decrementP2MightRight() { if (_p2MightRight.value > 0) _p2MightRight.value-- }
 
+    // Funktion zum Umschalten der Sichtbarkeit
+    fun toggleMightCountersVisibility() {
+        _mightCountersVisible.value = !_mightCountersVisible.value
+    }
+
     // Reset-Funktion
     fun reset() {
         _p1Life.value = STARTING_LIFE
@@ -50,5 +59,6 @@ class LifeCounterViewModel : ViewModel() {
         _p1MightRight.value = 0
         _p2MightLeft.value = 0
         _p2MightRight.value = 0
+        _mightCountersVisible.value = false // Zähler beim Reset ausblenden
     }
 }

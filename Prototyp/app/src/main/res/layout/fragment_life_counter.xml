@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorSurface"
-    tools:context=".game_tools.LifeCounterFragment">
+    android:fitsSystemWindows="true"
+    tools:context=".gametools.LifeCounterFragment">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_center"
@@ -14,6 +14,7 @@
         android:orientation="horizontal"
         app:layout_constraintGuide_percent="0.5" />
 
+    <!-- Spieler 1 Bereich (um 180 Grad gedreht) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/player1_area"
         android:layout_width="0dp"
@@ -24,64 +25,108 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_vertical_p1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
+        <!-- Klickbarer Bereich für Minus -->
+        <FrameLayout
+            android:id="@+id/btn_p1_life_minus_area"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackground"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/guideline_vertical_p1" />
+
+        <!-- Klickbarer Bereich für Plus -->
+        <FrameLayout
+            android:id="@+id/btn_p1_life_plus_area"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackground"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/guideline_vertical_p1"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <TextView
             android:id="@+id/tv_p1_life"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="96sp"
+            android:textSize="120sp"
             android:textStyle="bold"
-            tools:text="30"
-            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="20"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/p1_life_buttons"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <LinearLayout
-            android:id="@+id/p1_life_buttons"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/tv_p1_life"
-            app:layout_constraintBottom_toBottomOf="parent"
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_remove"
+            app:tint="?attr/colorOnSurface"
+            android:alpha="0.1"
+            android:layout_marginStart="32dp"
+            android:layout_marginBottom="24dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:importantForAccessibility="no" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_p1_life_minus"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/ic_remove" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_p1_life_plus"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/ic_baseline_add_24" />
-        </LinearLayout>
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_baseline_add_24"
+            app:tint="?attr/colorOnSurface"
+            android:alpha="0.1"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:importantForAccessibility="no" />
 
         <include layout="@layout/view_might_counter"
             android:id="@+id/might_p1_left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="16dp"/>
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"/>
 
         <include layout="@layout/view_might_counter"
             android:id="@+id/might_p1_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- Trennlinie -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="?attr/colorOutlineVariant"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/guideline_center"
+        app:layout_constraintBottom_toBottomOf="@id/guideline_center"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"/>
+
+    <!-- Spieler 2 Bereich -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/player2_area"
         android:layout_width="0dp"
@@ -91,73 +136,119 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_vertical_p2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
+        <!-- Klickbarer Bereich für Minus -->
+        <FrameLayout
+            android:id="@+id/btn_p2_life_minus_area"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackground"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/guideline_vertical_p2" />
+
+        <!-- Klickbarer Bereich für Plus -->
+        <FrameLayout
+            android:id="@+id/btn_p2_life_plus_area"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="?attr/selectableItemBackground"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/guideline_vertical_p2"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <TextView
             android:id="@+id/tv_p2_life"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="96sp"
+            android:textSize="120sp"
             android:textStyle="bold"
-            tools:text="30"
-            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="20"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/p2_life_buttons"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-        <LinearLayout
-            android:id="@+id/p2_life_buttons"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintTop_toBottomOf="@id/tv_p2_life"
-            app:layout_constraintBottom_toBottomOf="parent"
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_remove"
+            app:tint="?attr/colorOnSurface"
+            android:alpha="0.1"
+            android:layout_marginStart="32dp"
+            android:layout_marginBottom="24dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:importantForAccessibility="no"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_p2_life_minus"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/ic_remove" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_p2_life_plus"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:icon="@drawable/ic_baseline_add_24" />
-        </LinearLayout>
-
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_baseline_add_24"
+            app:tint="?attr/colorOnSurface"
+            android:alpha="0.1"
+            android:layout_marginEnd="32dp"
+            android:layout_marginBottom="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:importantForAccessibility="no"/>
 
         <include layout="@layout/view_might_counter"
             android:id="@+id/might_p2_left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="16dp"/>
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"/>
 
         <include layout="@layout/view_might_counter"
             android:id="@+id/might_p2_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginEnd="16dp"/>
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btn_reset"
-        style="@style/Widget.Material3.Button.IconButton.Filled"
+    <!-- Zentrale Steuerungselemente -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:icon="@drawable/ic_refresh"
+        android:orientation="horizontal"
         app:layout_constraintTop_toTopOf="@id/guideline_center"
         app:layout_constraintBottom_toBottomOf="@id/guideline_center"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_toggle_might"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Might"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_reset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:icon="@drawable/ic_refresh"
+            tools:ignore="SpeakableTextPresentCheck" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

@@ -18,7 +18,8 @@ interface WishlistDao {
         val cardName: String,
         val setName: String,
         val color: String,
-        val collectionQuantity: Int
+        val collectionQuantity: Int,
+        val price: Double?
     )
 
     data class WishlistRowData(
@@ -35,10 +36,9 @@ interface WishlistDao {
         SELECT
             w.setCode, w.cardNumber, w.quantity,
             m.cardName, m.setName, m.color,
-            c.price
+            w.price 
         FROM wishlist w
         JOIN master_cards m ON w.setCode = m.setCode AND w.cardNumber = m.cardNumber
-        LEFT JOIN collection c ON w.setCode = c.setCode AND w.cardNumber = c.cardNumber
         ORDER BY m.cardName ASC
     """)
     fun observeWishlistWithDetails(): Flow<List<WishlistRowData>>
@@ -47,7 +47,8 @@ interface WishlistDao {
         SELECT
             w.setCode, w.cardNumber, w.quantity,
             m.cardName, m.setName, m.color,
-            COALESCE(c.quantity, 0) as collectionQuantity
+            COALESCE(c.quantity, 0) as collectionQuantity,
+            w.price
         FROM wishlist w
         JOIN master_cards m ON w.setCode = m.setCode AND w.cardNumber = m.cardNumber
         LEFT JOIN collection c ON w.setCode = c.setCode AND w.cardNumber = c.cardNumber
@@ -59,11 +60,14 @@ interface WishlistDao {
     """)
     fun observeFilteredWishlist(nameQuery: String, colorFilter: String, setFilter: String): Flow<List<WishlistCard>>
 
+    @Query("UPDATE wishlist SET price = :price WHERE setCode = :setCode AND cardNumber = :cardNumber")
+    suspend fun updatePrice(setCode: String, cardNumber: Int, price: Double?)
+
     @Transaction
     suspend fun upsertCard(setCode: String, cardNumber: Int) {
         val existing = getEntry(setCode, cardNumber)
         if (existing == null) {
-            insertEntry(WishlistEntry(setCode, cardNumber, 1))
+            insertEntry(WishlistEntry(setCode, cardNumber, 1, null))
         } else {
             updateQuantity(setCode, cardNumber, existing.quantity + 1)
         }

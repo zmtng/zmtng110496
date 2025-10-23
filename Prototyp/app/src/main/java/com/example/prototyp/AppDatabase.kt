@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
         PriceHistory::class,
         TotalValueHistory::class
     ],
-    version = 18, // Version updated
+    version = 19, // Version updated
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -67,7 +67,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "riftbound.db")
-                .addMigrations(MIGRATION_16_17, MIGRATION_17_18) // New migration added
+                .addMigrations(MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19)
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
@@ -94,7 +94,7 @@ abstract class AppDatabase : RoomDatabase() {
                         }
                     }
                 })
-                .fallbackToDestructiveMigration()
+                //.fallbackToDestructiveMigration()
                 .build()
         }
 
@@ -122,6 +122,12 @@ abstract class AppDatabase : RoomDatabase() {
                         `totalValue` REAL NOT NULL
                     )
                 """)
+            }
+        }
+
+        val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `wishlist` ADD COLUMN `price` REAL DEFAULT NULL")
             }
         }
 

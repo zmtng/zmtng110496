@@ -73,6 +73,15 @@
             android:clipToPadding="false"/>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabUpdateWishlistPrices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:layout_margin="16dp"
+            android:contentDescription="Wunschlistenpreise aktualisieren"
+            app:srcCompat="@drawable/ic_update" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabAddCardToWishlist"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

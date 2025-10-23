@@ -76,6 +76,11 @@ class WishlistFragment : Fragment(R.layout.fragment_wishlist) {
                 .addToBackStack(null)
                 .commit()
         }
+
+        binding.fabUpdateWishlistPrices.setOnClickListener {
+            viewModel.fetchAllPrices()
+            Toast.makeText(requireContext(), "Starte Preis-Update...", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupObservers() {

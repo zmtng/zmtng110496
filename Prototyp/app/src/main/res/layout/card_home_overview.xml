@@ -39,6 +39,14 @@
             android:textAppearance="?attr/textAppearanceBodyMedium"
             tools:text="+14,20 € (letzte 24h)" />
 
+        <TextView
+            android:id="@+id/tvTotalInfoText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:text="vgl. letzte Preisabfrage" />
+
         <!-- 2. Sektion: Fortschritt & Wunschliste (GridLayout) -->
         <GridLayout
             android:layout_width="match_parent"
@@ -65,6 +73,13 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     tools:text="150 / 300"/>
+
+                <TextView
+                    android:id="@+id/tvTotalCardCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    tools:text="500 Karten (Gesamt)"/>
             </LinearLayout>
 
             <!-- Wunschliste (rechts) -->

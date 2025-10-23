@@ -50,7 +50,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             database.masterCardDao(),
             database.wishlistDao(),
             database.externalWishlistDao(),
-            database.totalValueHistoryDao() // NEU
+            database.totalValueHistoryDao()
         )
     }
 
@@ -96,7 +96,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     }
                 }
 
-                // NEU: Den neuen kombinierten State beobachten
+                // Den neuen kombinierten State beobachten
                 launch {
                     viewModel.overviewStats.collectLatest { stats ->
                         updateOverviewCard(stats)
@@ -107,7 +107,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    // NEU: Klick-Listener an einem Ort bündeln
+    // Klick-Listener an einem Ort bündeln
     private fun setupClickListeners() {
         binding.fabAddCardToCollection.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -117,10 +117,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    // NEU: Funktion zum Aktualisieren der neuen Übersichtskarte
+    // Funktion zum Aktualisieren der neuen Übersichtskarte
     private fun updateOverviewCard(stats: HomeOverviewStats) {
         binding.overviewCard.tvTotalValue.text = String.format("%.2f €", stats.totalCollectionValue)
         binding.overviewCard.tvWishlistValue.text = String.format("%.2f €", stats.totalWishlistValue)
+        binding.overviewCard.tvTotalCardCount.text = "${stats.totalCardCount} Karten (Gesamt)"
 
         val valueChangeText = binding.overviewCard.tvTotalValueChange
         when {
@@ -214,7 +215,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val totalPossible = stats.sumOf { it.totalCardsInSet }
 
         // Text in der Übersichtskarte aktualisieren
-        binding.overviewCard.tvTotalCompletionPercentage.text = "$totalOwned / $totalPossible Karten"
+        binding.overviewCard.tvTotalCompletionPercentage.text = "$totalOwned / $totalPossible Uniques"
 
         stats.forEach { stat ->
             if (stat.ownedUniqueCards > 0) {

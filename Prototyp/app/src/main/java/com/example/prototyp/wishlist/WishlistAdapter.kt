@@ -34,6 +34,7 @@ class WishlistAdapter(
         // Reference to the new ImageView
         val gradientBackground: ImageView = itemView.findViewById(R.id.gradient_background)
         val collectionQuantityText: TextView = itemView.findViewById(R.id.tvCollectionQuantity)
+        val priceText: TextView = itemView.findViewById(R.id.tvCardPrice)
 
         fun bind(
             card: WishlistDao.WishlistCard,
@@ -46,6 +47,7 @@ class WishlistAdapter(
             setText.text = card.setName
             numberText.text = "#${card.cardNumber.toString().padStart(3, '0')}"
             quantityText.text = "x${card.quantity}"
+            priceText.text = card.price?.let { String.format("%.2f €", it) } ?: "–"
             incrementButton.setOnClickListener { onIncrement(card) }
             decrementButton.setOnClickListener { onDecrement(card) }
             moveButton.setOnClickListener { onMoveToCollection(card) }

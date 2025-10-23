@@ -110,9 +110,9 @@ class CollectionViewModel(
             }
             _userMessage.value = "Starte Preis-Update für ${currentCollection.size} Karten..."
             for ((index, card) in currentCollection.withIndex()) {
-                _userMessage.value = "Prüfe Karte ${index + 1}/${currentCollection.size}: ${card.cardName}"
+                //_userMessage.value = "Prüfe Karte ${index + 1}/${currentCollection.size}: ${card.cardName}"
                 fetchPriceForCard(card, showSuccessMessage = false) {}
-                delay(500L)
+                delay(100L)
             }
             _userMessage.value = "Preis-Update abgeschlossen!"
 

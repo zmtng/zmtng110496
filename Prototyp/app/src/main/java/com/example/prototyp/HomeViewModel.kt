@@ -33,12 +33,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.Calendar
 
 data class HomeOverviewStats(
     val totalCollectionValue: Double = 0.0,
     val valueChange: Double = 0.0,
     val totalWishlistValue: Double = 0.0,
-    val setCompletionStats: List<SetCompletionStat> = emptyList()
+    val setCompletionStats: List<SetCompletionStat> = emptyList(),
+    val totalCardCount: Int = 0
 )
 
 class HomeViewModel(
@@ -70,13 +72,34 @@ class HomeViewModel(
         // 1. Sammlungswert berechnen
         val totalCollectionValue = collection.sumOf { (it.price ?: 0.0) * it.quantity }
 
-        // 2. Wertveränderung berechnen
-        val valueChange = if (history.size >= 2) {
-            val latest = history.last().totalValue
-            val previous = history[history.size - 2].totalValue
-            latest - previous
+        val totalCardCount = collection.sumOf { it.quantity }
+
+        val valueChange: Double
+        if (history.isNotEmpty()) {
+            val latestEntry = history.last()
+            val latestValue = latestEntry.totalValue
+
+            // Finde den Start des Tages des letzten Eintrags
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = latestEntry.timestamp
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val startOfLatestEntryDayTimestamp = calendar.timeInMillis
+
+            // Finde den letzten Eintrag *vor* dem Start dieses Tages
+            val previousDayEntry = history.lastOrNull { it.timestamp < startOfLatestEntryDayTimestamp }
+
+            valueChange = if (previousDayEntry != null) {
+                // Es gibt einen Eintrag von einem früheren Tag
+                latestValue - previousDayEntry.totalValue
+            } else {
+                0.0
+            }
         } else {
-            0.0
+            // Keine Historie, keine Änderung
+            valueChange = 0.0
         }
 
         // 3. Wunschlisten-Wert berechnen
@@ -97,7 +120,8 @@ class HomeViewModel(
             totalCollectionValue = totalCollectionValue,
             valueChange = valueChange,
             totalWishlistValue = totalWishlistValue,
-            setCompletionStats = setCompletionStats
+            setCompletionStats = setCompletionStats,
+            totalCardCount = totalCardCount
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeOverviewStats())
 

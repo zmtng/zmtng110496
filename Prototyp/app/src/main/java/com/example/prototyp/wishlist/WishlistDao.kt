@@ -72,6 +72,10 @@ interface WishlistDao {
     @Query("SELECT * FROM wishlist WHERE setCode = :setCode AND cardNumber = :cardNumber")
     suspend fun getEntry(setCode: String, cardNumber: Int): WishlistEntry?
 
+    // NEU: Hinzugefügt, um von den "AddCardTo..." Fragmenten verwendet zu werden
+    @Query("SELECT * FROM wishlist WHERE setCode = :setCode AND cardNumber = :cardNumber LIMIT 1")
+    suspend fun getByKey(setCode: String, cardNumber: Int): WishlistEntry?
+
     @Insert
     suspend fun insertEntry(entry: WishlistEntry)
 
@@ -108,4 +112,3 @@ interface WishlistDao {
     @Query("SELECT * FROM wishlist")
     suspend fun getWishlistForExport(): List<WishlistEntry>
 }
-

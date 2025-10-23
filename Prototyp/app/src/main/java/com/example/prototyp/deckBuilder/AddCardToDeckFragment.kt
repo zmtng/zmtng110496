@@ -19,19 +19,27 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import com.example.prototyp.R
+import com.example.prototyp.data.db.CardDao // NEU
+import com.example.prototyp.wishlist.WishlistDao // NEU
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class AddCardToDeckFragment : Fragment() {
 
     private var _binding: FragmentAddCardWithFiltersBinding? = null
     private val binding get() = _binding!!
 
-    // The camera view model is no longer needed here since the button was removed.
-    // private val cameraViewModel: CameraViewModel by activityViewModels()
-
     private val viewModel: DeckDetailViewModel by activityViewModels {
         val db = AppDatabase.getInstance(requireContext())
-        // CORRECTED: Added the missing db.cardDao()
         DeckDetailViewModelFactory(db.deckDao(), db.masterCardDao(), db.wishlistDao(), db.cardDao())
+    }
+
+    // NEU: Direkter DAO-Zugriff für Anzahlen
+    private val cardDao: CardDao by lazy {
+        AppDatabase.getInstance(requireContext()).cardDao()
+    }
+    private val wishlistDao: WishlistDao by lazy {
+        AppDatabase.getInstance(requireContext()).wishlistDao()
     }
 
     private lateinit var searchAdapter: MasterCardSearchAdapter
@@ -52,17 +60,19 @@ class AddCardToDeckFragment : Fragment() {
 
         binding.toolbar.title = "Karte zum Deck hinzufügen"
 
-        // The camera button and its listener are removed.
-
         setupAdapter()
         setupFilters()
         observeFilteredResults()
     }
 
     private fun setupAdapter() {
-        searchAdapter = MasterCardSearchAdapter(emptyList()) { card ->
+        // NEU: Initialisiert den neuen Adapter
+        searchAdapter = MasterCardSearchAdapter { card ->
             viewModel.addCardToDeck(card)
             Toast.makeText(requireContext(), "'${card.cardName}' zum Deck hinzugefügt", Toast.LENGTH_SHORT).show()
+
+            // NEU: Trigger ein Re-Query, um die "Pille" sofort zu aktualisieren
+            triggerSearchRefresh()
         }
         binding.rvMasterCards.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMasterCards.adapter = searchAdapter
@@ -103,14 +113,39 @@ class AddCardToDeckFragment : Fragment() {
     private fun observeFilteredResults() {
         viewLifecycleOwner.lifecycleScope.launch {
             combine(searchQuery.debounce(300), colorFilter, setFilter) { query, color, set ->
+                Triple(query, color, set) // NEU: Triple erstellen
+            }.collectLatest { (query, color, set) -> // NEU: Triple destrukturieren
                 if (query.isBlank() && color.isBlank() && set.isBlank()) {
-                    emptyList() // Empty list when no filters are active
+                    searchAdapter.submitList(emptyList()) // Empty list when no filters are active
                 } else {
-                    viewModel.searchMasterCards(query, color, set)
+                    // NEU: Logik zur Anreicherung der Daten
+                    val resultsWithQuantity = withContext(Dispatchers.IO) {
+                        val results = viewModel.searchMasterCards(query, color, set)
+                        results.map { masterCard ->
+                            val collectionQty = cardDao.getByKey(masterCard.setCode, masterCard.cardNumber)?.quantity ?: 0
+                            val wishlistQty = wishlistDao.getByKey(masterCard.setCode, masterCard.cardNumber)?.quantity ?: 0
+
+                            MasterCardWithQuantity(
+                                masterCard = masterCard,
+                                collectionQuantity = collectionQty,
+                                wishlistQuantity = wishlistQty
+                            )
+                        }
+                    }
+                    searchAdapter.submitList(resultsWithQuantity)
                 }
-            }.collectLatest { results ->
-                searchAdapter.updateData(results)
             }
+        }
+    }
+
+    // NEU: Hilfsfunktion, um die Suche neu anzustoßen
+    private fun triggerSearchRefresh() {
+        val currentQuery = searchQuery.value
+        if (currentQuery.isBlank()) {
+            searchQuery.value = " "
+            searchQuery.value = ""
+        } else {
+            searchQuery.value = currentQuery
         }
     }
 

@@ -70,6 +70,10 @@
                     android:paddingBottom="4dp"
                     android:text="Set"
                     android:textColor="@color/collection_card_text"
+                    android:shadowColor="#000000"
+                    android:shadowDx="0.0"
+                    android:shadowDy="0.0"
+                    android:shadowRadius="2.0"
                     android:textSize="12sp" />
 
                 <TextView
@@ -83,6 +87,10 @@
                     android:paddingBottom="4dp"
                     android:text="Nummer"
                     android:textColor="@color/collection_card_text"
+                    android:shadowColor="#000000"
+                    android:shadowDx="0.0"
+                    android:shadowDy="0.0"
+                    android:shadowRadius="2.0"
                     android:textSize="12sp" />
             </LinearLayout>
 

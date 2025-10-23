@@ -20,6 +20,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import com.example.prototyp.deckBuilder.MasterCardWithQuantity // NEU
+import com.example.prototyp.data.db.CardDao // NEU
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 
 class AddCardToWishlistFragment : Fragment() {
@@ -31,6 +35,14 @@ class AddCardToWishlistFragment : Fragment() {
     private val viewModel: WishlistViewModel by activityViewModels {
         val db = AppDatabase.getInstance(requireContext())
         WishlistViewModelFactory(db.wishlistDao(), db.masterCardDao(),db.cardDao())
+    }
+
+    // NEU: Direkter DAO-Zugriff für Anzahlen
+    private val cardDao: CardDao by lazy {
+        AppDatabase.getInstance(requireContext()).cardDao()
+    }
+    private val wishlistDao: WishlistDao by lazy {
+        AppDatabase.getInstance(requireContext()).wishlistDao()
     }
 
     private lateinit var searchAdapter: MasterCardSearchAdapter
@@ -57,9 +69,13 @@ class AddCardToWishlistFragment : Fragment() {
     }
 
     private fun setupAdapter() {
-        searchAdapter = MasterCardSearchAdapter(emptyList()) { card ->
+        // NEU: Initialisiert den neuen Adapter
+        searchAdapter = MasterCardSearchAdapter { card ->
             viewModel.addCardToWishlist(card)
             Toast.makeText(requireContext(), "'${card.cardName}' zur Wunschliste hinzugefügt", Toast.LENGTH_SHORT).show()
+
+            // NEU: Trigger ein Re-Query, um die "Pille" sofort zu aktualisieren
+            triggerSearchRefresh()
         }
         binding.rvMasterCards.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMasterCards.adapter = searchAdapter
@@ -102,14 +118,39 @@ class AddCardToWishlistFragment : Fragment() {
     private fun observeFilteredResults() {
         viewLifecycleOwner.lifecycleScope.launch {
             combine(searchQuery.debounce(300), colorFilter, setFilter) { query, color, set ->
+                Triple(query, color, set) // NEU: Triple erstellen
+            }.collectLatest { (query, color, set) -> // NEU: Triple destrukturieren
                 if (query.isBlank() && color.isBlank() && set.isBlank()) {
-                    emptyList() // Leere Liste, wenn keine Filter aktiv sind
+                    searchAdapter.submitList(emptyList()) // Leere Liste, wenn keine Filter aktiv sind
                 } else {
-                    viewModel.searchMasterCards(query, color, set)
+                    // NEU: Logik zur Anreicherung der Daten
+                    val resultsWithQuantity = withContext(Dispatchers.IO) {
+                        val results = viewModel.searchMasterCards(query, color, set)
+                        results.map { masterCard ->
+                            val collectionQty = cardDao.getByKey(masterCard.setCode, masterCard.cardNumber)?.quantity ?: 0
+                            val wishlistQty = wishlistDao.getByKey(masterCard.setCode, masterCard.cardNumber)?.quantity ?: 0
+
+                            MasterCardWithQuantity(
+                                masterCard = masterCard,
+                                collectionQuantity = collectionQty,
+                                wishlistQuantity = wishlistQty
+                            )
+                        }
+                    }
+                    searchAdapter.submitList(resultsWithQuantity)
                 }
-            }.collectLatest { results ->
-                searchAdapter.updateData(results)
             }
+        }
+    }
+
+    // NEU: Hilfsfunktion, um die Suche neu anzustoßen
+    private fun triggerSearchRefresh() {
+        val currentQuery = searchQuery.value
+        if (currentQuery.isBlank()) {
+            searchQuery.value = " "
+            searchQuery.value = ""
+        } else {
+            searchQuery.value = currentQuery
         }
     }
 
@@ -118,3 +159,4 @@ class AddCardToWishlistFragment : Fragment() {
         _binding = null
     }
 }
+

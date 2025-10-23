@@ -19,6 +19,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import com.example.prototyp.deckBuilder.MasterCardWithQuantity // NEU
+import com.example.prototyp.data.db.CardDao // NEU
+import com.example.prototyp.wishlist.WishlistDao // NEU
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class AddCardToCollectionFragment : Fragment() {
 
@@ -34,7 +39,13 @@ class AddCardToCollectionFragment : Fragment() {
         )
     }
 
-
+    // NEU: Direkter DAO-Zugriff für Anzahlen
+    private val cardDao: CardDao by lazy {
+        AppDatabase.getInstance(requireContext()).cardDao()
+    }
+    private val wishlistDao: WishlistDao by lazy {
+        AppDatabase.getInstance(requireContext()).wishlistDao()
+    }
 
     private lateinit var searchAdapter: MasterCardSearchAdapter
     private val colorMap = mapOf("R" to "Rot", "B" to "Blau", "G" to "Grün", "Y" to "Gelb", "P" to "Lila", "O" to "Orange", "U" to "Grau", "M" to "Mehrfarbig")
@@ -59,9 +70,13 @@ class AddCardToCollectionFragment : Fragment() {
     }
 
     private fun setupAdapter() {
-        searchAdapter = MasterCardSearchAdapter(emptyList()) { card ->
+        // NEU: Initialisiert den neuen Adapter
+        searchAdapter = MasterCardSearchAdapter { card ->
             viewModel.addCardToCollection(card)
             Toast.makeText(requireContext(), "'${card.cardName}' zur Sammlung hinzugefügt", Toast.LENGTH_SHORT).show()
+
+            // NEU: Trigger ein Re-Query, um die "Pille" sofort zu aktualisieren
+            triggerSearchRefresh()
         }
         binding.rvMasterCards.layoutManager = LinearLayoutManager(requireContext())
         binding.rvMasterCards.adapter = searchAdapter
@@ -107,14 +122,45 @@ class AddCardToCollectionFragment : Fragment() {
             combine(searchQuery.debounce(300), colorFilter, setFilter) { query, color, set ->
                 Triple(query, color, set)
             }.collectLatest { (query, color, set) ->
-                // Nur suchen, wenn mindestens ein Filter aktiv ist, um eine leere Startliste zu haben
+                // Nur suchen, wenn mindestens ein Filter aktiv ist
                 if (query.isNotBlank() || color.isNotBlank() || set.isNotBlank()) {
-                    val results = viewModel.searchMasterCards(query, color, set)
-                    searchAdapter.updateData(results)
+
+                    // NEU: Führe die DB-Abfragen im IO-Dispatcher aus
+                    val resultsWithQuantity = withContext(Dispatchers.IO) {
+                        // 1. Master-Karten suchen
+                        val results = viewModel.searchMasterCards(query, color, set)
+
+                        // 2. Ergebnisse mappen und mit Anzahlen anreichern
+                        results.map { masterCard ->
+                            val collectionQty = cardDao.getByKey(masterCard.setCode, masterCard.cardNumber)?.quantity ?: 0
+                            val wishlistQty = wishlistDao.getByKey(masterCard.setCode, masterCard.cardNumber)?.quantity ?: 0 // Annahme: wishlistDao.getByKey existiert
+
+                            MasterCardWithQuantity(
+                                masterCard = masterCard,
+                                collectionQuantity = collectionQty,
+                                wishlistQuantity = wishlistQty
+                            )
+                        }
+                    }
+                    // 3. Aktualisiere den Adapter im Main-Thread
+                    searchAdapter.submitList(resultsWithQuantity)
                 } else {
-                    searchAdapter.updateData(emptyList())
+                    searchAdapter.submitList(emptyList()) // Liste leeren
                 }
             }
+        }
+    }
+
+    // NEU: Hilfsfunktion, um die Suche neu anzustoßen
+    private fun triggerSearchRefresh() {
+        val currentQuery = searchQuery.value
+        if (currentQuery.isBlank()) {
+            // Falls die Suche leer war, müssen wir sie "flackern" lassen
+            searchQuery.value = " "
+            searchQuery.value = ""
+        } else {
+            // Ansonsten reicht es, den Wert neu zu setzen
+            searchQuery.value = currentQuery
         }
     }
 
@@ -123,3 +169,4 @@ class AddCardToCollectionFragment : Fragment() {
         _binding = null
     }
 }
+

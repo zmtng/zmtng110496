@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
         PriceHistory::class,
         TotalValueHistory::class
     ],
-    version = 20, // Version updated
+    version = 22, // Version updated
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -67,7 +67,7 @@ abstract class AppDatabase : RoomDatabase() {
 
         private fun build(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "riftbound.db")
-                .addMigrations(MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
+                .addMigrations(MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22)
                 .addCallback(object : RoomDatabase.Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
@@ -133,6 +133,18 @@ abstract class AppDatabase : RoomDatabase() {
 
         //Neue Karten hinzugefügt, App soll Mastertable neu laden
         val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DELETE FROM master_cards")
+            }
+        }
+
+        val MIGRATION_20_21 = object : Migration(20, 21) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DELETE FROM master_cards")
+            }
+        }
+
+        val MIGRATION_21_22 = object : Migration(21, 22) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("DELETE FROM master_cards")
             }

@@ -74,7 +74,7 @@ interface MasterCardDao {
     WHERE
         (:q = '' OR LOWER(cardName) LIKE '%' || LOWER(:q) || '%') AND
         (:color = '' OR color = :color) AND
-        (:set = '' OR setName = :set)
+        (:set = '' OR setCode = :set) 
     ORDER BY cardName, setCode, cardNumber
 """)
     suspend fun search(q: String, color: String, set: String): List<MasterCard>

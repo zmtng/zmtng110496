@@ -104,18 +104,20 @@ class AddCardToCollectionFragment : Fragment() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             }
 
-            // Set-Spinner füllen
             val setsFromDb = viewModel.getFilterSets()
-            val setItems = setsFromDb.toMutableList().apply { add(0, "Alle Sets") }
-            binding.spinnerSet.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, setItems)
+            val setItemsForSpinner = setsFromDb.toMutableList().apply { add(0, "Alle Sets") }
+            binding.spinnerSet.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, setItemsForSpinner)
             binding.spinnerSet.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    setFilter.value = if (position == 0) "" else setsFromDb[position - 1]
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
+                    val selection = if (position == 0) null else setsFromDb[position - 1]
+                    viewModel.setSetFilter(selection)
                 }
-                override fun onNothingSelected(parent: AdapterView<*>?) {}
+                override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
         }
     }
+
+
 
     private fun observeCombinedFilters() {
         viewLifecycleOwner.lifecycleScope.launch {

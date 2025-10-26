@@ -92,11 +92,20 @@ class CollectionViewModel(
             .replace("Origins: ", "")
             .trim()
             .lowercase()
+            .replace(Regex("\\s+-\\s+"), "-")
             .replace("\\s+".toRegex(), "-")
             .replace(Regex("[^a-z0-9\\-]"), "")
+
+        // FIX 2: Eine Liste von "Stop-Wörtern", die kleibleiben sollen
+        val stopWords = setOf("to", "of", "the", "a", "an")
         return cleanedText.split('-').joinToString("-") { part ->
-            part.replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(java.util.Locale.getDefault()) else it.toString()
+
+            if (part in stopWords) {
+                part
+            } else {
+                part.replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(java.util.Locale.getDefault()) else it.toString()
+                }
             }
         }
     }
@@ -145,6 +154,7 @@ class CollectionViewModel(
                 val cardNameUrl = formatForUrl(row.cardName)
                 val setNameUrl = formatForUrl(row.setName)
                 url = "https://www.cardmarket.com/de/Riftbound/Products/Singles/$setNameUrl/$cardNameUrl"
+                Log.d("PriceScraper", "Versuche URL abzurufen: $url")
 
                 val response = Jsoup.connect(url)
                     .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0")
@@ -161,7 +171,7 @@ class CollectionViewModel(
                     return@launch
                 }
                 val doc = response.parse()
-                val priceText = doc.select("dt:contains(Preis-Trend) + dd").first()?.text()
+                val priceText = doc.select("dt:matchesOwn(Preis-?Trend) + dd").first()?.text()
                 if (priceText.isNullOrBlank()) {
                     if (showSuccessMessage) _userMessage.value = "Kein Trendpreis für '${row.cardName}' gefunden."
                     return@launch
